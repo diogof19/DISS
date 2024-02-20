@@ -60,7 +60,7 @@ public class StartTool extends AnAction {
 
             if (!done) {
                 getGitInfo(project);
-                activateFirebase();
+                //activateFirebase(); FIREBASE DOES NOT EXIST FOR ME
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 LocalDateTime now = LocalDateTime.now();
                 Values.token = dtf.format(now);

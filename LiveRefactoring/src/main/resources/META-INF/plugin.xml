@@ -14,15 +14,16 @@
         <toolWindow id="Quality Metrics" anchor="right" factoryClass="com.ui.metrics.WindowFactory"/>
         <projectService id="metricsWindowService" serviceImplementation="com.ui.metrics.MetricsWindowService"/>
     </extensions>-->
-    <extensions defaultExtensionNs="com.intellij">
+    <!--<extensions defaultExtensionNs="com.intellij">
         <postStartupActivity implementation="com.Bot"/>
-    </extensions>
-    <!--<actions>
+    </extensions>-->
+    <actions>
         <group id="LiveRefactoring.Start" text="Live Refactoring" description="Live refactoring menu">
             <add-to-group group-id="MainMenu" anchor="last"/>
             <action class="com.StartTool" id="LiveRefactoring.Start.Action" text="Start Analysis"/>
             <action class="com.ui.ConfigureTool" id="LiveRefactoring.Config.Tool" text="Configure Tool"/>
            <action class="com.RunMetrics" id="LiveRefactoring.Start.Metrics" text="Run Metrics"/>
+            <action class="com.datamining.DataCollection" id="LiveRefactoring.Start.DataCollection" text="Data Collection"/>
         </group>
-    </actions>-->
+    </actions>
 </idea-plugin>
