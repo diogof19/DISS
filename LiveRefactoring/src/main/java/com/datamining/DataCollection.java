@@ -1,7 +1,9 @@
 package com.datamining;
 
+import com.analysis.metrics.ClassMetrics;
 import com.analysis.metrics.FileMetrics;
 import com.analysis.metrics.MethodMetrics;
+import com.core.Pair;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -15,7 +17,10 @@ import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 
@@ -31,6 +36,9 @@ public class DataCollection extends AnAction {
     private static final String CONNECTION_STRING = "mongodb://localhost:27017";
     private static final String DATABASE_NAME = "smartshark_2_2";
     private static final String COLLECTION_NAME = "refactoring";
+
+    private static final String EXTRACTED_METRICS_FILE_PATH =
+            "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\java\\com\\datamining\\data\\extracted_metrics.csv";
 
     private MongoClient mongoClient;
     private Project project;
@@ -53,7 +61,13 @@ public class DataCollection extends AnAction {
 
         HashSet<Document> refactoringData = getRefactoringData();
 
-        extractMetrics(refactoringData);
+        System.out.println("Data extracted: " + refactoringData.size());
+
+        try {
+            extractMetrics(refactoringData);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
@@ -83,40 +97,129 @@ public class DataCollection extends AnAction {
         return collection.aggregate(pipeline).into(new HashSet<>());
     }
 
-    private void extractMetrics(HashSet<Document> documents) {
+    private void extractMetrics(HashSet<Document> documents) throws IOException {
+        File metricsFile = new File(EXTRACTED_METRICS_FILE_PATH);
+        FileWriter writer = new FileWriter(metricsFile, false);
+        BufferedWriter bufferedWriter = new BufferedWriter(writer);
+
+        bufferedWriter.write(
+                "id," +
+                "numberLinesOfCode," +
+                "numberComments," +
+                "numberBlankLines," +
+                "totalLines," +
+                "numParameters," +
+                "numStatements," +
+                "halsteadLength," +
+                "halsteadVocabulary," +
+                "halsteadVolume," +
+                "halsteadDifficulty," +
+                "halsteadEffort," +
+                "halsteadLevel," +
+                "halsteadTime," +
+                "halsteadBugsDelivered," +
+                "halsteadMaintainability," +
+                "cyclomaticComplexity," +
+                "cognitiveComplexity," +
+                "lackOfCohesionInMethod\n"
+        );
+
         for (Document document : documents) {
             System.out.println(document);
 
             //TODO: Test when I have the final database
-            //FileInfo fileInfo = getFileInfo(document);
+            //RefactoringInfo refactoringInfo = getRefactoringInfo(document);
 
             PsiJavaFile file =
                     loadFile("C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\test_files\\AbstractGraphTest.java");
-            FileInfo fileInfo = new FileInfo("streamLanguageTagsCaseInsensitive",
+            RefactoringInfo refactoringInfo = new RefactoringInfo(null, "streamLanguageTagsCaseInsensitive",
                     "AbstractGraphTest", "org.apache.commons.rdf.api.AbstractGraphTest",
                     "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\test_files\\AbstractGraphTest.java",
-                    file);
+                    file, null);
 
-            FileMetrics fileMetrics;
-            try {
-                fileMetrics = new FileMetrics(fileInfo.getFile());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            /*
+               ML model:
+                -> methodMetrics from BeforeFile
 
-            MethodMetrics methodMetrics = fileMetrics.methodMetrics.stream()
-                    .filter(m -> m.methodName.equals(fileInfo.getMethodName()) && m.className.equals(fileInfo.getClassName()))
-                    .findFirst()
-                    .orElse(null);
+               methodMetrics from AfterFile:
+                -> numberOfLinesOfCode could be used to refine one of the thresholds
+                -> can be used for later analysis
+
+               classMetrics from BeforeFile & AfterFile:
+                -> can be used for later analysis and comparison reasons
+             */
+
+            Pair<ClassMetrics, MethodMetrics> beforeMetrics = getMethodMetricsFromFile(refactoringInfo.getBeforeFile(),
+                    refactoringInfo.getMethodName(), refactoringInfo.getClassName());
+
+//            Pair<ClassMetrics, MethodMetrics> afterMetrics = getMethodMetricsFromFile(refactoringInfo.getAfterFile(),
+//                    refactoringInfo.getMethodName(), refactoringInfo.getClassName());
+            
+            //write the metrics to the file
+            
+            MethodMetrics beforeMethodMetrics = beforeMetrics.getSecond();
+
+            int totalLines = beforeMethodMetrics.numberLinesOfCode + beforeMethodMetrics.numberComments +
+                    beforeMethodMetrics.numberBlankLines;
+
+            bufferedWriter.write(
+                    "\"" + refactoringInfo.get_id() + "\"," +
+                    beforeMethodMetrics.numberLinesOfCode + "," +
+                    beforeMethodMetrics.numberComments + "," +
+                    beforeMethodMetrics.numberBlankLines + "," +
+                    totalLines + "," +
+                    beforeMethodMetrics.numParameters + "," +
+                    beforeMethodMetrics.numberOfStatements + "," +
+                    beforeMethodMetrics.halsteadLength + "," +
+                    beforeMethodMetrics.halsteadVocabulary + "," +
+                    beforeMethodMetrics.halsteadVolume + "," +
+                    beforeMethodMetrics.halsteadDifficulty + "," +
+                    beforeMethodMetrics.halsteadEffort + "," +
+                    beforeMethodMetrics.halsteadLevel + "," +
+                    beforeMethodMetrics.halsteadTime + "," +
+                    beforeMethodMetrics.halsteadBugsDelivered + "," +
+                    beforeMethodMetrics.halsteadMaintainability + "," +
+                    beforeMethodMetrics.complexityOfMethod + "," +
+                    beforeMethodMetrics.cognitiveComplexity + "," +
+                    beforeMethodMetrics.lackOfCohesionInMethod + "\n"
+            );
 
             break;
         }
+
+        
+        bufferedWriter.close();
+    }
+
+    private Pair<ClassMetrics, MethodMetrics> getMethodMetricsFromFile(PsiJavaFile file, String methodName, String className) {
+        FileMetrics fileMetrics;
+        try {
+            fileMetrics = new FileMetrics(file);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        ClassMetrics classMetrics = fileMetrics.classMetrics.stream()
+                .filter(c -> c.className.equals(className))
+                .findFirst()
+                .orElse(null);
+
+        assert classMetrics != null;
+        MethodMetrics methodMetrics = classMetrics.methodMetrics.stream()
+                .filter(m -> m.methodName.equals(methodName))
+                .findFirst()
+                .orElse(null);
+
+        return new Pair<>(classMetrics, methodMetrics);
+
     }
 
     //TODO: Test when I have the final database
     //Maybe add comparison between old method and new method to extract the old and new size
-    private FileInfo getFileInfo(Document document) {
-        FileInfo info = new FileInfo();
+    private RefactoringInfo getRefactoringInfo(Document document) {
+        RefactoringInfo info = new RefactoringInfo();
+
+        info.set_id(document.getObjectId("_id"));
 
         String description = document.getString("description");
 
@@ -132,10 +235,13 @@ public class DataCollection extends AnAction {
         final String className = parts[parts.length - 1];
         info.setClassName(className);
 
+        //TODO: Add git search using the revision hash for the parent commit and the commit
+        //Then search for the file in the parent commit and the commit
+
         for (String filePath : document.getList("files", String.class)) {
             if (filePath.contains(fullClass.replace(".", "/"))) {
                 info.setFilePath(filePath);
-                info.setFile(loadFile(filePath));
+                info.setBeforeFile(loadFile(filePath));
                 return info;
             }
         }
@@ -147,7 +253,7 @@ public class DataCollection extends AnAction {
             for (PsiClass _class : file.getClasses()){
                 if (_class.getName().equals(className)){
                     info.setFilePath(filePath);
-                    info.setFile(file);
+                    info.setBeforeFile(file);
                     return info;
                 }
             }

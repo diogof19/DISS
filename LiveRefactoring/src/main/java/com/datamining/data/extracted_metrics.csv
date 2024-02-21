@@ -1,0 +1,2 @@
+id,numberLinesOfCode,numberComments,numberBlankLines,totalLines,numParameters,numStatements,halsteadLength,halsteadVocabulary,halsteadVolume,halsteadDifficulty,halsteadEffort,halsteadLevel,halsteadTime,halsteadBugsDelivered,halsteadMaintainability,cyclomaticComplexity,cognitiveComplexity,lackOfCohesionInMethod
+"null",14,4,4,22,0,12,46.0,221.0,254.0838499786226,8.541666666666668,2170.299551900735,0.1170731707317073,120.57219732781861,3.333333333333333E-4,58.024220316538646,1,1,0.0
