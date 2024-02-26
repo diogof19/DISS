@@ -104,24 +104,42 @@ public class DataCollection extends AnAction {
 
         bufferedWriter.write(
                 "id," +
-                "numberLinesOfCode," +
-                "numberComments," +
-                "numberBlankLines," +
-                "totalLines," +
-                "numParameters," +
-                "numStatements," +
-                "halsteadLength," +
-                "halsteadVocabulary," +
-                "halsteadVolume," +
-                "halsteadDifficulty," +
-                "halsteadEffort," +
-                "halsteadLevel," +
-                "halsteadTime," +
-                "halsteadBugsDelivered," +
-                "halsteadMaintainability," +
-                "cyclomaticComplexity," +
-                "cognitiveComplexity," +
-                "lackOfCohesionInMethod\n"
+                "numberLinesOfCodeBef," +
+                "numberCommentsBef," +
+                "numberBlankLinesBef," +
+                "totalLinesBef," +
+                "numParametersBef," +
+                "numStatementsBef," +
+                "halsteadLengthBef," +
+                "halsteadVocabularyBef," +
+                "halsteadVolumeBef," +
+                "halsteadDifficultyBef," +
+                "halsteadEffortBef," +
+                "halsteadLevelBef," +
+                "halsteadTimeBef," +
+                "halsteadBugsDeliveredBef," +
+                "halsteadMaintainabilityBef," +
+                "cyclomaticComplexityBef," +
+                "cognitiveComplexityBef," +
+                "lackOfCohesionInMethodBef," +
+                "numberLinesOfCodeAft," +
+                "numberCommentsAft," +
+                "numberBlankLinesAft," +
+                "totalLinesAft," +
+                "numParametersAft," +
+                "numStatementsAft," +
+                "halsteadLengthAft," +
+                "halsteadVocabularyAft," +
+                "halsteadVolumeAft," +
+                "halsteadDifficultyAft," +
+                "halsteadEffortAft," +
+                "halsteadLevelAft," +
+                "halsteadTimeAft," +
+                "halsteadBugsDeliveredAft," +
+                "halsteadMaintainabilityAft," +
+                "cyclomaticComplexityAft," +
+                "cognitiveComplexityAft," +
+                "lackOfCohesionInMethodAft\n"
         );
 
         for (Document document : documents) {
@@ -135,60 +153,65 @@ public class DataCollection extends AnAction {
             RefactoringInfo refactoringInfo = new RefactoringInfo(null, "streamLanguageTagsCaseInsensitive",
                     "AbstractGraphTest", "org.apache.commons.rdf.api.AbstractGraphTest",
                     "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\test_files\\AbstractGraphTest.java",
-                    file, null);
+                    file, file);
 
-            /*
-               ML model:
-                -> methodMetrics from BeforeFile
-
-               methodMetrics from AfterFile:
-                -> numberOfLinesOfCode could be used to refine one of the thresholds
-                -> can be used for later analysis
-
-               classMetrics from BeforeFile & AfterFile:
-                -> can be used for later analysis and comparison reasons
-             */
-
-            Pair<ClassMetrics, MethodMetrics> beforeMetrics = getMethodMetricsFromFile(refactoringInfo.getBeforeFile(),
-                    refactoringInfo.getMethodName(), refactoringInfo.getClassName());
-
-//            Pair<ClassMetrics, MethodMetrics> afterMetrics = getMethodMetricsFromFile(refactoringInfo.getAfterFile(),
-//                    refactoringInfo.getMethodName(), refactoringInfo.getClassName());
-            
-            //write the metrics to the file
-            
-            MethodMetrics beforeMethodMetrics = beforeMetrics.getSecond();
-
-            int totalLines = beforeMethodMetrics.numberLinesOfCode + beforeMethodMetrics.numberComments +
-                    beforeMethodMetrics.numberBlankLines;
-
-            bufferedWriter.write(
-                    "\"" + refactoringInfo.get_id() + "\"," +
-                    beforeMethodMetrics.numberLinesOfCode + "," +
-                    beforeMethodMetrics.numberComments + "," +
-                    beforeMethodMetrics.numberBlankLines + "," +
-                    totalLines + "," +
-                    beforeMethodMetrics.numParameters + "," +
-                    beforeMethodMetrics.numberOfStatements + "," +
-                    beforeMethodMetrics.halsteadLength + "," +
-                    beforeMethodMetrics.halsteadVocabulary + "," +
-                    beforeMethodMetrics.halsteadVolume + "," +
-                    beforeMethodMetrics.halsteadDifficulty + "," +
-                    beforeMethodMetrics.halsteadEffort + "," +
-                    beforeMethodMetrics.halsteadLevel + "," +
-                    beforeMethodMetrics.halsteadTime + "," +
-                    beforeMethodMetrics.halsteadBugsDelivered + "," +
-                    beforeMethodMetrics.halsteadMaintainability + "," +
-                    beforeMethodMetrics.complexityOfMethod + "," +
-                    beforeMethodMetrics.cognitiveComplexity + "," +
-                    beforeMethodMetrics.lackOfCohesionInMethod + "\n"
-            );
+            saveMetricsToFile(bufferedWriter, refactoringInfo, true);
+            saveMetricsToFile(bufferedWriter, refactoringInfo, false);
 
             break;
         }
 
         
         bufferedWriter.close();
+    }
+
+    void saveMetricsToFile(BufferedWriter writer, RefactoringInfo refactoringInfo, boolean isBefore) throws IOException {
+        Pair<ClassMetrics, MethodMetrics> metrics;
+        if(isBefore){
+            metrics = getMethodMetricsFromFile(refactoringInfo.getBeforeFile(), refactoringInfo.getMethodName(),
+                    refactoringInfo.getClassName());
+        }
+        else{
+            metrics = getMethodMetricsFromFile(refactoringInfo.getAfterFile(), refactoringInfo.getMethodName(),
+                    refactoringInfo.getClassName());
+        }
+
+        MethodMetrics methodMetrics = metrics.getSecond();
+
+        int totalLines = methodMetrics.numberLinesOfCode + methodMetrics.numberComments +
+                methodMetrics.numberBlankLines;
+
+        if (isBefore){
+            writer.write(
+                    "\"" + refactoringInfo.get_id() + "\","
+            );
+        }
+
+        writer.write(
+                methodMetrics.numberLinesOfCode + "," +
+                methodMetrics.numberComments + "," +
+                methodMetrics.numberBlankLines + "," +
+                totalLines + "," +
+                methodMetrics.numParameters + "," +
+                methodMetrics.numberOfStatements + "," +
+                methodMetrics.halsteadLength + "," +
+                methodMetrics.halsteadVocabulary + "," +
+                methodMetrics.halsteadVolume + "," +
+                methodMetrics.halsteadDifficulty + "," +
+                methodMetrics.halsteadEffort + "," +
+                methodMetrics.halsteadLevel + "," +
+                methodMetrics.halsteadTime + "," +
+                methodMetrics.halsteadBugsDelivered + "," +
+                methodMetrics.halsteadMaintainability + "," +
+                methodMetrics.complexityOfMethod + "," +
+                methodMetrics.cognitiveComplexity + "," +
+                methodMetrics.lackOfCohesionInMethod
+        );
+
+        if (!isBefore){
+            writer.write("\n");
+        }
+
     }
 
     private Pair<ClassMetrics, MethodMetrics> getMethodMetricsFromFile(PsiJavaFile file, String methodName, String className) {
