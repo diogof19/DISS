@@ -2,6 +2,7 @@
 .gradle
 **/build/
 !src/**/build/
+src/main/java/com/datamining/PredictionModel.java
 
 # Ignore Gradle GUI config
 gradle-app.setting

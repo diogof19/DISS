@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PMML xmlns="http://www.dmg.org/PMML-4_4" xmlns:data="http://jpmml.org/jpmml-model/InlineTable" version="4.4">
+	<Header>
+		<Application name="SkLearn2PMML package" version="0.103.2"/>
+		<Timestamp>2024-03-02T17:21:41Z</Timestamp>
+	</Header>
+	<DataDictionary>
+		<DataField name="x1" optype="continuous" dataType="double"/>
+	</DataDictionary>
+	<SupportVectorMachineModel functionName="regression" algorithmName="sklearn.svm._classes.OneClassSVM">
+		<MiningSchema>
+			<MiningField name="x1"/>
+		</MiningSchema>
+		<Output>
+			<OutputField name="decisionFunction" optype="continuous" dataType="double"/>
+			<OutputField name="outlier" optype="categorical" dataType="boolean" feature="decision">
+				<Decisions businessProblem="Is this sample an outlier?">
+					<Decision value="true" description="Outlier"/>
+					<Decision value="false" description="Not outlier"/>
+				</Decisions>
+				<Apply function="lessOrEqual">
+					<FieldRef field="decisionFunction"/>
+					<Constant dataType="double">0.0</Constant>
+				</Apply>
+			</OutputField>
+			<OutputField name="predict(outlier)" optype="categorical" dataType="integer" feature="transformedValue">
+				<Apply function="if">
+					<FieldRef field="outlier"/>
+					<Constant dataType="integer">-1</Constant>
+					<Constant dataType="integer">1</Constant>
+				</Apply>
+				<Value value="-1"/>
+				<Value value="1"/>
+			</OutputField>
+		</Output>
+		<RadialBasisKernelType gamma="1.0"/>
+		<VectorDictionary>
+			<VectorFields>
+				<FieldRef field="x1"/>
+			</VectorFields>
+			<VectorInstance id="0">
+				<REAL-SparseArray n="1">
+					<Indices></Indices>
+					<REAL-Entries></REAL-Entries>
+				</REAL-SparseArray>
+			</VectorInstance>
+			<VectorInstance id="1">
+				<Array type="real">0.44</Array>
+			</VectorInstance>
+			<VectorInstance id="4">
+				<Array type="real">1.0</Array>
+			</VectorInstance>
+		</VectorDictionary>
+		<SupportVectorMachine>
+			<SupportVectors>
+				<SupportVector vectorId="0"/>
+				<SupportVector vectorId="1"/>
+				<SupportVector vectorId="4"/>
+			</SupportVectors>
+			<Coefficients absoluteValue="-2.054798722267151">
+				<Coefficient value="1.0"/>
+				<Coefficient value="0.5"/>
+				<Coefficient value="1.0"/>
+			</Coefficients>
+		</SupportVectorMachine>
+	</SupportVectorMachineModel>
+</PMML>
