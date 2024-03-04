@@ -10,10 +10,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Classification Model/model.pkl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Classification Model/model.pmml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Classification Model/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Classification Model/pipeline.pmml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -587,7 +588,8 @@
       <workItem from="1709216606835" duration="1177000" />
       <workItem from="1709217861914" duration="790000" />
       <workItem from="1709391054871" duration="100000" />
-      <workItem from="1709391171971" duration="6079000" />
+      <workItem from="1709391171971" duration="6824000" />
+      <workItem from="1709544424234" duration="950000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>
