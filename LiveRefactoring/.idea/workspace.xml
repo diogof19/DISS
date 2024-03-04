@@ -10,11 +10,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
-      <change beforePath="$PROJECT_DIR$/../Classification Model/model.pkl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Classification Model/model.pmml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../Classification Model/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Classification Model/pipeline.pmml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/data/extracted_metrics.csv" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/data/extracted_metrics.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -590,6 +588,7 @@
       <workItem from="1709391054871" duration="100000" />
       <workItem from="1709391171971" duration="6824000" />
       <workItem from="1709544424234" duration="950000" />
+      <workItem from="1709570524129" duration="600000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>
