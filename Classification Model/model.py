@@ -128,13 +128,14 @@ def grid_search(X_train):
     
     return df
 
+
 def predict(X_test):
     #TODO: change to the final model
-	one_class_svm = load('models/one_class_svm.joblib')
+	one_class_svm = load("C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\Classification Model\\models\\one_class_svm.joblib")
 	
 	one_class_svm_pred = one_class_svm.predict(X_test)
  
-	return one_class_svm_pred
+	return one_class_svm_pred[0]
   
 
 if __name__ == '__main__':
