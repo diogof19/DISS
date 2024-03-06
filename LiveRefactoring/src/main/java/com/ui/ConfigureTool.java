@@ -250,7 +250,7 @@ public class ConfigureTool extends AnAction {
         private JLabel label_minValParameters = new JLabel("Min. Num. Parameters");
         private final JLabel warning = new JLabel("");
         private final JLabel label_pythonPath = new JLabel("Python Path");
-        private JBTextField textField_pythonPath = new JBTextField();
+        private JBTextField textField_pythonPath = new JBTextField(Values.pythonPath);
         public final JRadioButton selectExtractMethod = new JRadioButton();
         public final JRadioButton selectExtractVariable = new JRadioButton();
         public final JRadioButton selectExtractClass = new JRadioButton();

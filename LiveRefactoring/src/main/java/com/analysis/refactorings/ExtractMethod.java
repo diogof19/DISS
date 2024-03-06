@@ -5,6 +5,7 @@ import com.analysis.metrics.MethodMetrics;
 import com.core.Fragment;
 import com.core.LastRefactoring;
 import com.core.MyRange;
+import com.datamining.PredictionModel;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.psi.*;
@@ -51,26 +52,24 @@ public class ExtractMethod{
 
         for (MethodMetrics metrics : Values.before.methodMetrics) {
             if(!sourceFile.getName().contains(metrics.methodName)) {
-                int totalLines = metrics.numberBlankLines + metrics.numberComments + metrics.numberLinesOfCode;
-                if (metrics.isLong || totalLines >= ThresholdsCandidates.extractMethodLines || metrics.complexityOfMethod >= ThresholdsCandidates.extractMethodComplexity ||
-                        metrics.halsteadEffort >= ThresholdsCandidates.extractMethodEffort) {
-                    if(metrics.method.getBody() != null) {
+                if(metrics.method.getBody() != null) {
+                    if(PredictionModel.predict(metrics)) {
                         PsiStatement[] statements = metrics.method.getBody().getStatements();
-                        if (refactorUtils.getAllStatements(metrics.method).size() >= 2 * ThresholdsCandidates.minNumStatements) {
-                            for (PsiStatement statement : statements) {
-                                if (!(statement instanceof PsiReturnStatement) && !refactorUtils.containsBreakOrContinueOrReturn(statement)) {
-                                    ArrayList<PsiStatement> children = getChildrenStatements(statement);
-                                    if (children.size() == 0) fragments.add(addFragments(statement, metrics));
-                                    else {
-                                        for (PsiStatement child : children) {
-                                            fragments.add(addFragments(child, metrics));
-                                        }
+                        for (PsiStatement statement : statements) {
+                            if (!(statement instanceof PsiReturnStatement) && !refactorUtils.containsBreakOrContinueOrReturn(statement)) {
+                                ArrayList<PsiStatement> children = getChildrenStatements(statement);
+                                if (children.size() == 0) fragments.add(addFragments(statement, metrics));
+                                else {
+                                    for (PsiStatement child : children) {
+                                        fragments.add(addFragments(child, metrics));
                                     }
                                 }
                             }
                         }
                     }
+
                 }
+
             }
         }
 

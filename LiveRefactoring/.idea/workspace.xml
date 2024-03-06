@@ -10,14 +10,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
-      <change beforePath="$PROJECT_DIR$/../Classification Model/model.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Classification Model/models/elliptic_envelope.joblib" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/models/elliptic_envelope.joblib" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Classification Model/models/isolation_forest.joblib" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/models/isolation_forest.joblib" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Classification Model/models/one_class_svm.joblib" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/models/one_class_svm.joblib" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractMethod.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractMethod.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/ui/ConfigureTool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ui/ConfigureTool.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/utils/importantValues/Values.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/utils/importantValues/Values.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,6 +91,12 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "git-widget-placeholder": "main",
+    "node.js.selected.package.tslint": "(autodetect)"
+  }
+}]]></component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="com.analysis.refactorings" />
@@ -579,7 +581,7 @@
       <workItem from="1709544424234" duration="950000" />
       <workItem from="1709570524129" duration="600000" />
       <workItem from="1709632030431" duration="5222000" />
-      <workItem from="1709719385374" duration="3407000" />
+      <workItem from="1709719385374" duration="5637000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>
