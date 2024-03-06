@@ -1,10 +1,12 @@
 package com.datamining;
 
+import com.utils.importantValues.Values;
+
 import java.io.*;
 import java.util.ArrayList;
 
 public class PredictionModel {
-    private static final String PYTHON_PATH = "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\Classification Model\\model.py";
+    private static final String PYTHON_PATH = "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\Classification Model\\prediction.py";
     public static void main(String[] args) {
         ArrayList<Double> data = new ArrayList<>();
 
@@ -25,7 +27,13 @@ public class PredictionModel {
     }
 
     public static boolean predict(ArrayList<Double> data) throws IOException, InterruptedException {
-        String pythonPath = "C:\\Program Files\\Python310\\python.exe";
+        String pythonPath = Values.pythonPath;
+
+        //TODO: Uncomment the exception
+        if (pythonPath.isEmpty()) {
+            //throw new IOException("Python path not set");
+            pythonPath = "C:\\Program Files\\Python310\\python.exe"; //For testing purposes
+        }
 
         Process process = new ProcessBuilder(pythonPath, PYTHON_PATH).redirectErrorStream(true).start();
 
@@ -44,11 +52,11 @@ public class PredictionModel {
         }
 
         int returnCode = process.waitFor();
-        if (returnCode != 0) {
-            throw new IOException("Python script returned non-zero exit status: " + returnCode + "\n" + output);
+        if (returnCode != 0 || output.toString().contains("Warning")) {
+            throw new IOException("Python script Problem: " + returnCode + "\n" + output);
         }
 
-        Float result = Float.parseFloat(output.toString());
+        float result = Float.parseFloat(output.toString());
 
         stdOutput.close();
 

@@ -64,6 +64,7 @@ public class Values {
     public static boolean afterRefactoring = false;
     public static int numSeconds = 5;
     public static String projectName = "unknown";
+    public static String pythonPath = "";
 
 
     public void setLastRefactoring(LastRefactoring refactoring) {

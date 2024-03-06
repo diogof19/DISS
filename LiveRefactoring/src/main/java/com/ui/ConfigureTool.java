@@ -111,6 +111,11 @@ public class ConfigureTool extends AnAction {
                     maxNumberRefactorings = Integer.MAX_VALUE;
             }
 
+            if (!wrapper.textField_pythonPath.getText().isEmpty()) {
+                Values.pythonPath = wrapper.textField_pythonPath.getText();
+                System.out.println("Python path: " + Values.pythonPath);
+            }
+
             if (wrapper.textField_seconds.getText().length() > 0) {
                 seconds = Integer.parseInt(wrapper.textField_seconds.getText());
                 if(seconds == 0)
@@ -244,6 +249,8 @@ public class ConfigureTool extends AnAction {
         private JBTextField textField_minValParameters = new JBTextField();
         private JLabel label_minValParameters = new JLabel("Min. Num. Parameters");
         private final JLabel warning = new JLabel("");
+        private final JLabel label_pythonPath = new JLabel("Python Path");
+        private JBTextField textField_pythonPath = new JBTextField();
         public final JRadioButton selectExtractMethod = new JRadioButton();
         public final JRadioButton selectExtractVariable = new JRadioButton();
         public final JRadioButton selectExtractClass = new JRadioButton();
@@ -768,12 +775,15 @@ public class ConfigureTool extends AnAction {
             boxWithExecutors.setPreferredSize(new Dimension(200, 250));
 
             //JPanel panel4 = new JPanel(new GridLayout(3, 2));
-            JPanel panel4 = new JPanel(new GridLayout(2, 2));
+            JPanel panel4 = new JPanel(new GridLayout(3, 2));
 
             panel4.add(label_number, BorderLayout.WEST);
             panel4.add(textField_number, BorderLayout.EAST);
             /*panel4.add(label_seconds, BorderLayout.WEST);
             panel4.add(textField_seconds, BorderLayout.EAST);*/
+
+            panel4.add(label_pythonPath, BorderLayout.WEST);
+            panel4.add(textField_pythonPath, BorderLayout.EAST);
 
             JPanel panel5 = new JPanel(new GridLayout(1, 1));
 
@@ -783,7 +793,7 @@ public class ConfigureTool extends AnAction {
             panel5.add(selectedColorBlindYes);
             panel4.add(panel5);
 
-            panel4.setPreferredSize(new Dimension(200, 75));
+            panel4.setPreferredSize(new Dimension(200, 100));
 
             panel4.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Further Details"));
