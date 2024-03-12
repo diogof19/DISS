@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 
+import static com.datamining.Utils.getClassName;
+import static com.datamining.Utils.getMethodName;
 import static com.mongodb.client.model.Accumulators.first;
 import static com.mongodb.client.model.Accumulators.push;
 import static com.mongodb.client.model.Aggregates.*;
@@ -72,8 +74,8 @@ public class DataCollection extends AnAction {
     private HashSet<Document> getRefactoringData() {
         MongoCollection<Document> collection = this.mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME);
 
+        //TODO: Remove limit
         List<Bson> pipeline = asList(
-                //(or(eq("type", "extract_method"), eq("type", "extract_class"), eq("type", "extract_variable"))),
                 match(eq("type", "extract_method")),
                 project(fields(include("_id", "commit_id", "type", "description"))),
                 limit(5),
@@ -151,7 +153,7 @@ public class DataCollection extends AnAction {
             RefactoringInfo refactoringInfo = new RefactoringInfo(null, "streamLanguageTagsCaseInsensitive",
                     "AbstractGraphTest", "org.apache.commons.rdf.api.AbstractGraphTest",
                     "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\test_files\\AbstractGraphTest.java",
-                    file, file);
+                    file, file, null);
 
             saveMetricsToFile(bufferedWriter, refactoringInfo, true);
             saveMetricsToFile(bufferedWriter, refactoringInfo, false);
@@ -235,6 +237,7 @@ public class DataCollection extends AnAction {
 
     }
 
+
     //TODO: Test when I have the final database
     //Maybe add comparison between old method and new method to extract the old and new size
     private RefactoringInfo getRefactoringInfo(Document document) {
@@ -244,23 +247,17 @@ public class DataCollection extends AnAction {
 
         String description = document.getString("description");
 
-        String methodName = description.split("\\(\\)")[0].replace("public ", "")
-                .replace("private ", "").replace("protected ", "")
-                .trim().replace("static ", "").trim();
-        info.setMethodName(methodName);
+        info.setMethodName(getMethodName(description));
 
-        String fullClass = description.split("from")[1].split("in class")[1].trim();
-        info.setFullClass(fullClass);
-
-        String[] parts = fullClass.split("\\.");
-        final String className = parts[parts.length - 1];
-        info.setClassName(className);
+        Pair<String, String> classInfo = getClassName(description);
+        info.setFullClass(classInfo.getFirst());
+        info.setClassName(classInfo.getSecond());
 
         //TODO: Add git search using the revision hash for the parent commit and the commit
         //Then search for the file in the parent commit and the commit
 
         for (String filePath : document.getList("files", String.class)) {
-            if (filePath.contains(fullClass.replace(".", "/"))) {
+            if (filePath.contains(info.getFullClass().replace(".", "/"))) {
                 info.setFilePath(filePath);
                 info.setBeforeFile(loadFile(filePath));
                 return info;
@@ -272,7 +269,7 @@ public class DataCollection extends AnAction {
             PsiJavaFile file = loadFile(filePath);
             assert file != null;
             for (PsiClass _class : file.getClasses()){
-                if (_class.getName().equals(className)){
+                if (_class.getName().equals(info.getClassName())){
                     info.setFilePath(filePath);
                     info.setBeforeFile(file);
                     return info;

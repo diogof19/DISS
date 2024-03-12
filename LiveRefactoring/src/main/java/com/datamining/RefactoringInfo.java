@@ -11,8 +11,9 @@ public class RefactoringInfo {
     private String filePath;
     private PsiJavaFile beforeFile;
     private PsiJavaFile afterFile;
+    private String commitId;
 
-    public RefactoringInfo(ObjectId _id ,String methodName, String className, String fullClass, String filePath, PsiJavaFile beforeFile, PsiJavaFile afterFile) {
+    public RefactoringInfo(ObjectId _id ,String methodName, String className, String fullClass, String filePath, PsiJavaFile beforeFile, PsiJavaFile afterFile, String commitId) {
         this._id = _id;
         this.methodName = methodName;
         this.className = className;
@@ -20,6 +21,7 @@ public class RefactoringInfo {
         this.filePath = filePath;
         this.beforeFile = beforeFile;
         this.afterFile = afterFile;
+        this.commitId = commitId;
     }
 
     public RefactoringInfo(){
@@ -30,6 +32,7 @@ public class RefactoringInfo {
         this.filePath = null;
         this.beforeFile = null;
         this.afterFile = null;
+        this.commitId = null;
     }
 
     public ObjectId get_id() {
@@ -59,6 +62,8 @@ public class RefactoringInfo {
         return afterFile;
     }
 
+    public String getCommitId() {return commitId;}
+
     public void set_id(ObjectId _id) {
         this._id = _id;
     }
@@ -86,6 +91,8 @@ public class RefactoringInfo {
     public void setAfterFile(PsiJavaFile file) {
         this.afterFile = file;
     }
+
+    public void setCommitId(String commitId) {this.commitId = commitId;}
 
     @Override
     public String toString() {
