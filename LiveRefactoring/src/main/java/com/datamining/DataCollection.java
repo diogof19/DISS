@@ -1,8 +1,5 @@
 package com.datamining;
 
-import com.analysis.metrics.ClassMetrics;
-import com.analysis.metrics.FileMetrics;
-import com.analysis.metrics.MethodMetrics;
 import com.core.Pair;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -24,8 +21,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 
-import static com.datamining.Utils.getClassName;
-import static com.datamining.Utils.getMethodName;
+import static com.datamining.Utils.*;
 import static com.mongodb.client.model.Accumulators.first;
 import static com.mongodb.client.model.Accumulators.push;
 import static com.mongodb.client.model.Aggregates.*;
@@ -163,78 +159,6 @@ public class DataCollection extends AnAction {
 
         
         bufferedWriter.close();
-    }
-
-    void saveMetricsToFile(BufferedWriter writer, RefactoringInfo refactoringInfo, boolean isBefore) throws IOException {
-        Pair<ClassMetrics, MethodMetrics> metrics;
-        if(isBefore){
-            metrics = getMethodMetricsFromFile(refactoringInfo.getBeforeFile(), refactoringInfo.getMethodName(),
-                    refactoringInfo.getClassName());
-        }
-        else{
-            metrics = getMethodMetricsFromFile(refactoringInfo.getAfterFile(), refactoringInfo.getMethodName(),
-                    refactoringInfo.getClassName());
-        }
-
-        MethodMetrics methodMetrics = metrics.getSecond();
-
-        int totalLines = methodMetrics.numberLinesOfCode + methodMetrics.numberComments +
-                methodMetrics.numberBlankLines;
-
-        if (isBefore){
-            writer.write(
-                    "\"" + refactoringInfo.get_id() + "\","
-            );
-        }
-
-        writer.write(
-                methodMetrics.numberLinesOfCode + "," +
-                methodMetrics.numberComments + "," +
-                methodMetrics.numberBlankLines + "," +
-                totalLines + "," +
-                methodMetrics.numParameters + "," +
-                methodMetrics.numberOfStatements + "," +
-                methodMetrics.halsteadLength + "," +
-                methodMetrics.halsteadVocabulary + "," +
-                methodMetrics.halsteadVolume + "," +
-                methodMetrics.halsteadDifficulty + "," +
-                methodMetrics.halsteadEffort + "," +
-                methodMetrics.halsteadLevel + "," +
-                methodMetrics.halsteadTime + "," +
-                methodMetrics.halsteadBugsDelivered + "," +
-                methodMetrics.halsteadMaintainability + "," +
-                methodMetrics.complexityOfMethod + "," +
-                methodMetrics.cognitiveComplexity + "," +
-                methodMetrics.lackOfCohesionInMethod
-        );
-
-        if (!isBefore){
-            writer.write("\n");
-        }
-
-    }
-
-    private Pair<ClassMetrics, MethodMetrics> getMethodMetricsFromFile(PsiJavaFile file, String methodName, String className) {
-        FileMetrics fileMetrics;
-        try {
-            fileMetrics = new FileMetrics(file);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        ClassMetrics classMetrics = fileMetrics.classMetrics.stream()
-                .filter(c -> c.className.equals(className))
-                .findFirst()
-                .orElse(null);
-
-        assert classMetrics != null;
-        MethodMetrics methodMetrics = classMetrics.methodMetrics.stream()
-                .filter(m -> m.methodName.equals(methodName))
-                .findFirst()
-                .orElse(null);
-
-        return new Pair<>(classMetrics, methodMetrics);
-
     }
 
 
