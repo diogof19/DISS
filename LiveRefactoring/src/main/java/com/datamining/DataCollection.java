@@ -49,8 +49,6 @@ public class DataCollection extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
-        System.out.println("Hello World");
-
         this.project = anActionEvent.getProject();
 
         try {
