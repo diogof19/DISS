@@ -10,7 +10,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,6 +95,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Gradle.LiveRefactoring [:RepositoryMetricsExtraction.main()].executor": "Run",
     "git-widget-placeholder": "main",
     "node.js.selected.package.tslint": "(autodetect)"
   }
@@ -120,7 +126,7 @@
       <recent name="com.ui.icons" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.LiveRefactoring">
+  <component name="RunManager" selected="Application.RepositoryMetricsExtraction">
     <configuration name="DataCollection" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.datamining.DataCollection" />
       <module name="LiveRefactoring.main" />
@@ -149,7 +155,6 @@
     </configuration>
     <configuration name="RepositoryMetricsExtraction" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="ALTERNATIVE_JRE_PATH" value="17" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
       <option name="MAIN_CLASS_NAME" value="com.datamining.RepositoryMetricsExtraction" />
       <module name="LiveRefactoring.main" />
       <extension name="coverage">
@@ -600,6 +605,7 @@
       <workItem from="1709632030431" duration="5222000" />
       <workItem from="1709719385374" duration="5649000" />
       <workItem from="1710235240476" duration="13536000" />
+      <workItem from="1710409660945" duration="7603000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>

@@ -20,9 +20,12 @@ public class Utils {
      * @return method name
      */
     public static String getMethodName(String description) {
-        return description.split("\\(\\)")[0].replace("public ", "")
-                .replace("private ", "").replace("protected ", "")
-                .trim().replace("static ", "").trim();
+//        return description.split("\\(\\)")[0].replace("public ", "")
+//                .replace("private ", "").replace("protected ", "")
+//                .trim().replace("static ", "").trim();
+        return description.split("\\(")[0].replace("public ", "")
+        .replace("private ", "").replace("protected ", "")
+        .trim().replace("static ", "").replace("Extract Method", "").trim();
     }
 
     /**

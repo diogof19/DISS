@@ -22,7 +22,7 @@
             <add-to-group group-id="MainMenu" anchor="last"/>
             <action class="com.StartTool" id="LiveRefactoring.Start.Action" text="Start Analysis"/>
             <action class="com.ui.ConfigureTool" id="LiveRefactoring.Config.Tool" text="Configure Tool"/>
-           <action class="com.RunMetrics" id="LiveRefactoring.Start.Metrics" text="Run Metrics"/>
+            <action class="com.RunMetrics" id="LiveRefactoring.Start.Metrics" text="Run Metrics"/>
             <action class="com.datamining.DataCollection" id="LiveRefactoring.Start.DataCollection" text="Data Collection"/>
             <!--<action class="com.datamining.RepositoryMetricsExtraction" id="LiveRefactoring.Start.RepositoryMetricsExtraction" text="Repository Metrics Extraction"/>-->
         </group>
