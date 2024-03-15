@@ -4,8 +4,10 @@ import com.core.Pair;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiJavaFile;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -13,6 +15,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevSort;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.jetbrains.annotations.NotNull;
 import org.refactoringminer.api.*;
 import org.refactoringminer.rm1.GitHistoryRefactoringMinerImpl;
 import org.refactoringminer.util.GitServiceImpl;
@@ -26,46 +29,47 @@ import java.util.*;
 //TODO: Maybe I need to save the branch and commit the repo currently is, so I can return to it after the extraction
 public class RepositoryMetricsExtraction extends AnAction {
 //public class RepositoryMetricsExtraction {
-    private static final String REPOSITORY_PATH = "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\lpoo-2021-g61";
     private static final String EXTRACTED_METRICS_FILE_PATH = "tmp/repo_extracted_metrics.csv";
-    private static final String BRANCH_NAME = "main";
+    private String repositoryPath;
+    private String branch;
     private Project project;
     private Map<String, Set<String>> changedFiles = new HashMap<>();
     @Override
-    public void actionPerformed(AnActionEvent anActionEvent) {
-        this.project = anActionEvent.getProject();
+    public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
+        RMEDialogWrapper dialogWrapper = new RMEDialogWrapper();
+        dialogWrapper.show();
+        
+        if(dialogWrapper.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
+            this.repositoryPath = dialogWrapper.getRepositoryPath();
+            this.branch = dialogWrapper.getBranch();
+            
+            this.project = anActionEvent.getProject();
 
-        System.out.println("Extracting metrics");
+            System.out.println("Extracting metrics");
 
-        try {
-            extractMetrics();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            try {
+                extractMetrics();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
-//    public static void main(String[] args) {
-//        System.out.println("Extracting metrics");
-//        new RepositoryMetricsExtraction();
-//    }
-//
-//    public RepositoryMetricsExtraction() {
-//        System.out.println("\n\nRunning this\n\n");
-//        try {
-//            extractMetrics();
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
 
+    /**
+     * Extracts the metrics from all the Extract Method refactorings in the specific branch of the repository and saves them to a file
+     * @throws Exception If there is an error with the git API, the repository or the file
+     */
     private void extractMetrics() throws Exception {
-        Set<RefactoringInfo> refactoringInfos = getRefactorings();
-
-        System.out.println("Refactorings extracted: " + refactoringInfos.size());
-
         File tmpFolder = new File("tmp");
         if(!tmpFolder.exists()) {
             tmpFolder.mkdir();
         }
+
+        cloneRepo(tmpFolder);
+
+        Set<RefactoringInfo> refactoringInfos = getRefactorings();
+
+        System.out.println("Refactorings extracted: " + refactoringInfos.size());
 
         File metricsFile = new File(EXTRACTED_METRICS_FILE_PATH);
         if(!metricsFile.exists()) {
@@ -90,13 +94,65 @@ public class RepositoryMetricsExtraction extends AnAction {
         }
 
         bufferedWriter.close();
+
+        System.out.println("Metrics extracted");
+
+        deleteClonedRepo();
+
+        System.out.println("Cloned repo deleted");
     }
 
+    /**
+     * Clone the repository to a temporary folder
+     * @param file The temporary folder
+     * @throws IOException If there is an error with the repository
+     * @throws GitAPIException If there is an error with the git API
+     */
+    private void cloneRepo(File file) throws IOException, GitAPIException {
+        //Check if there is already a cloned repo and delete if there is
+        File clonedRepo = new File("tmp/repo");
+        if(clonedRepo.exists()) {
+            FileUtils.deleteDirectory(clonedRepo);
+        }
+
+        //Clone the repository so the original one is not affected
+        Git.cloneRepository()
+                .setURI("file://" + this.repositoryPath)
+                .setDirectory(new File("tmp/repo"))
+                .setBranch(this.branch)
+                .call();
+
+        this.repositoryPath = file.getAbsolutePath() + "/repo";
+
+        System.out.println("Finished cloning the repository");
+    }
+
+    /**
+     * Delete the cloned repository
+     * @throws IOException If there is an error deleting the repository
+     */
+    private void deleteClonedRepo() throws IOException {
+        File clonedRepo = new File("tmp/repo");
+        if(clonedRepo.exists()) {
+            try {
+                FileUtils.deleteDirectory(clonedRepo);
+            } catch (IOException e) {
+                System.out.println("Path: " + clonedRepo.getAbsolutePath());
+                System.out.println("Error deleting the cloned repository: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Get the refactorings in the repository, on the previously specified branch, using RefactoringMiner
+     * @return A set with the refactorings
+     * @throws Exception If there is an error with the git API or the repository
+     */
     private Set<RefactoringInfo> getRefactorings() throws Exception {
         GitService gitService = new GitServiceImpl();
         GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
 
-        Repository repo = gitService.openRepository(REPOSITORY_PATH);
+        Repository repo = gitService.openRepository(this.repositoryPath);
 
         Set<String> commits = getCommits();
 
@@ -104,6 +160,10 @@ public class RepositoryMetricsExtraction extends AnAction {
 
         for(String commit : commits) {
             try {
+                if(refactoringInfos.size() > 0){
+                    break;
+                }
+
                 List<RefactoringInfo> temp = refactoringsAtCommit(miner, repo, commit);
                 refactoringInfos.addAll(temp);
 
@@ -115,7 +175,6 @@ public class RepositoryMetricsExtraction extends AnAction {
             } catch (Exception e) {
                 //I have to use an old implementation of RefactoringMiner to be compatible with the Plugin, so there are unresolved issues
                 //Currently ignoring all the commits that provoke an error
-                //System.out.println("Error at commits " + commits.get(i).getName() + ":\n" + e.getMessage());
             }
         }
 
@@ -124,6 +183,13 @@ public class RepositoryMetricsExtraction extends AnAction {
         return refactoringInfos;
     }
 
+    /**
+     * Get the refactorings at a specific commit using RefactoringMiner
+     * @param miner The RefactoringMiner object
+     * @param repo The repository
+     * @param commitId The commit id
+     * @return A list with the refactorings at the commit
+     */
     private List<RefactoringInfo> refactoringsAtCommit(GitHistoryRefactoringMiner miner, Repository repo, String commitId) {
         List<RefactoringInfo> refactoringInfos = new ArrayList<>();
 
@@ -134,7 +200,7 @@ public class RepositoryMetricsExtraction extends AnAction {
                 for (Refactoring ref : refactorings) {
 
                     if(ref.getRefactoringType().equals(RefactoringType.EXTRACT_OPERATION)) {
-                        System.out.println(ref);
+                        //System.out.println(ref);
 
                         RefactoringInfo refInfo = getRefactoringInfoFromRefactoring(ref);
 
@@ -149,6 +215,11 @@ public class RepositoryMetricsExtraction extends AnAction {
         return refactoringInfos;
     }
 
+    /**
+     * Create the RefactoringInfo from the Refactoring object obtained from RefactoringMiner
+     * @param ref The refactoring object
+     * @return The RefactoringInfo object
+     */
     private RefactoringInfo getRefactoringInfoFromRefactoring(Refactoring ref) {
         RefactoringInfo refInfo = new RefactoringInfo();
 
@@ -161,12 +232,18 @@ public class RepositoryMetricsExtraction extends AnAction {
         return refInfo;
     }
 
+    /**
+     * Get all the commits in the repository for the branch specified in the class attribute
+     * @return A set with all the commit ids
+     * @throws GitAPIException If there is an error with the git API
+     * @throws IOException If there is an error with the repository
+     */
     private Set<String> getCommits() throws GitAPIException, IOException {
-        Repository repository = Git.open(new File(REPOSITORY_PATH)).getRepository();
+        Repository repository = Git.open(new File(this.repositoryPath)).getRepository();
 
         Set<String> commits = new HashSet<>();
         try (Git git = new Git(repository)) {
-            Iterable<RevCommit> allCommits = git.log().add(repository.resolve(BRANCH_NAME)).call();
+            Iterable<RevCommit> allCommits = git.log().add(repository.resolve(this.branch)).call();
 
             allCommits.forEach(commit -> commits.add(commit.getName()));
         }
@@ -175,8 +252,15 @@ public class RepositoryMetricsExtraction extends AnAction {
         return commits;
     }
 
-    private void saveMetrics(RefactoringInfo refInfo, BufferedWriter bufferedWriter) throws IOException, GitAPIException, InterruptedException {
-        Git git = Git.open(new File(REPOSITORY_PATH));
+    /**
+     * Save the metrics of the file before the refactoring
+     * @param refInfo The refactoring info
+     * @param bufferedWriter The writer of file where the metrics are to be saved
+     * @throws IOException If there is an error writing to the file
+     * @throws GitAPIException If there is an error with the git API
+     */
+    private void saveMetrics(RefactoringInfo refInfo, BufferedWriter bufferedWriter) throws IOException, GitAPIException {
+        Git git = Git.open(new File(this.repositoryPath));
 
         Repository repo = git.getRepository();
 
@@ -195,7 +279,7 @@ public class RepositoryMetricsExtraction extends AnAction {
             previousCommit = revWalk.next();
         }
 
-        //checkout to the correct commit
+        //Checkout to the commit before the refactoring
         git.checkout().setName(previousCommit.getName()).call();
 
         revWalk.close();
@@ -203,7 +287,7 @@ public class RepositoryMetricsExtraction extends AnAction {
         git.close();
 
         String temp = refInfo.getFilePath().replace(".java", "").replace("\\", ".");
-        String filePath = REPOSITORY_PATH + "\\" + temp + ".java";
+        String filePath = this.repositoryPath + "\\" + temp + ".java";
 
         PsiJavaFile psiFile = Utils.loadFile(filePath, this.project);
 
@@ -212,6 +296,11 @@ public class RepositoryMetricsExtraction extends AnAction {
         Utils.saveMetricsToFile(bufferedWriter, refInfo, true);
     }
 
+    /**
+     * Get the file path of the class that was refactored
+     * @param refactoringInfo The refactoring info
+     * @return The file path
+     */
     private String getFilePath(RefactoringInfo refactoringInfo){
         Set<String> filesChanged = changedFiles.get(refactoringInfo.getCommitId());
 
@@ -240,14 +329,18 @@ public class RepositoryMetricsExtraction extends AnAction {
         return null;
     }
 
-    Set<String> getFilesChanged(String commitId) {
+    /**
+     * Finds all the changed files in a commit (including merges)
+     * @param commitId The commit id
+     * @return A set with the names of the files changed in the commit (it's a set, due to merges)
+     */
+    private Set<String> getFilesChanged(String commitId) {
         Set<String> filesChanged = new HashSet<>();
         try {
-            //Example: git diff-tree --no-commit-id --name-only 3b20ca83da2b7546989701211f4878efc800b0ec -r
             //Example: git log -m -1 --name-only --pretty="format:" 38983ec445339ed03efe389c53cc0bb6861f30f2
             ProcessBuilder processBuilder = new ProcessBuilder("git", "log", "-m", "-1", "--name-only", "--pretty=\"format:\"", commitId);
             processBuilder.redirectErrorStream(true);
-            processBuilder.directory(new File(REPOSITORY_PATH));
+            processBuilder.directory(new File(this.repositoryPath));
             Process process = processBuilder.start();
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -267,6 +360,4 @@ public class RepositoryMetricsExtraction extends AnAction {
 
         return filesChanged;
     }
-
-
 }

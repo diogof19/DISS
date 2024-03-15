@@ -23,6 +23,11 @@ public class PredictionModel {
         }
     }
 
+    /**
+     * Predicts if a method is an outlier or not
+     * @param methodMetrics the metrics of the method
+     * @return true if the method is an inlier, false if it is an outlier
+     */
     public static boolean predict(MethodMetrics methodMetrics){
         ArrayList<Double> data = new ArrayList<>();
 
@@ -53,6 +58,13 @@ public class PredictionModel {
         }
     }
 
+    /**
+     * Uses the python script to predict if a method is an outlier or not
+     * @param data the data to be used for the prediction
+     * @return true if the method is an inlier, false if it is an outlier
+     * @throws IOException if the python script has a problem
+     * @throws InterruptedException if the process is interrupted
+     */
     private static boolean predictPython(ArrayList<Double> data) throws IOException, InterruptedException {
         String pythonPath = Values.pythonPath;
 

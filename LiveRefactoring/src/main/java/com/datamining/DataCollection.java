@@ -4,8 +4,6 @@ import com.core.Pair;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiJavaFile;
 import com.mongodb.client.MongoClient;
@@ -34,16 +32,10 @@ public class DataCollection extends AnAction {
     private static final String CONNECTION_STRING = "mongodb://localhost:27017";
     private static final String DATABASE_NAME = "smartshark_2_2";
     private static final String COLLECTION_NAME = "refactoring";
-
     private static final String EXTRACTED_METRICS_FILE_PATH =
             "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\java\\com\\datamining\\data\\extracted_metrics.csv";
-
     private MongoClient mongoClient;
     private Project project;
-
-    public DataCollection() {
-
-    }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
@@ -67,6 +59,10 @@ public class DataCollection extends AnAction {
 
     }
 
+    /**
+     * Gets all the instances where an Extract Method refactoring was performed
+     * @return A set of documents containing the refactoring data
+     */
     private HashSet<Document> getRefactoringData() {
         MongoCollection<Document> collection = this.mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME);
 
@@ -145,7 +141,8 @@ public class DataCollection extends AnAction {
             //RefactoringInfo refactoringInfo = getRefactoringInfo(document);
 
             PsiJavaFile file =
-                    loadFile("C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\test_files\\AbstractGraphTest.java");
+                    loadFile("C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\test_files\\AbstractGraphTest.java",
+                            this.project);
             RefactoringInfo refactoringInfo = new RefactoringInfo(null, "streamLanguageTagsCaseInsensitive",
                     "AbstractGraphTest", "org.apache.commons.rdf.api.AbstractGraphTest",
                     "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\test_files\\AbstractGraphTest.java",
@@ -183,14 +180,14 @@ public class DataCollection extends AnAction {
         for (String filePath : document.getList("files", String.class)) {
             if (filePath.contains(info.getFullClass().replace(".", "/"))) {
                 info.setFilePath(filePath);
-                info.setBeforeFile(loadFile(filePath));
+                info.setBeforeFile(Utils.loadFile(filePath, this.project));
                 return info;
             }
         }
 
         //If file has multiple classes
         for (String filePath : document.getList("files", String.class)) {
-            PsiJavaFile file = loadFile(filePath);
+            PsiJavaFile file = Utils.loadFile(filePath, this.project);
             assert file != null;
             for (PsiClass _class : file.getClasses()){
                 if (_class.getName().equals(info.getClassName())){
@@ -201,21 +198,7 @@ public class DataCollection extends AnAction {
             }
         }
 
-
         System.out.println("File not found");
-
-        return null;
-    }
-
-    //TODO: Update when I have the final database
-    private PsiJavaFile loadFile(String filePath) {
-        VirtualFile vf = LocalFileSystem.getInstance().findFileByIoFile(new File(filePath));
-        if(vf != null){
-            System.out.println("Virtual file found");
-            return (PsiJavaFile) com.intellij.psi.util.PsiUtilBase.getPsiFile(project, vf);
-        } else {
-            System.out.println("Virtual file not found");
-        }
 
         return null;
     }
