@@ -1,6 +1,8 @@
 package com.datamining;
 
 import com.core.Pair;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiJavaFile;
@@ -20,35 +22,40 @@ import java.util.*;
 
 //TODO: Give credits to RefactoringMiner
 //      https://github.com/tsantalis/RefactoringMiner?tab=readme-ov-file#how-to-cite-refactoringminer
-//public class RepositoryMetricsExtraction extends AnAction {
-public class RepositoryMetricsExtraction {
-    private static final String REPOSITORY_PATH = "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\lpoo-2021-g61";
-    private static final String EXTRACTED_METRICS_FILE_PATH = "src/main/java/com/datamining/data/repo_extracted_metrics.csv";
 
+//TODO: Maybe I need to save the branch and commit the repo currently is, so I can return to it after the extraction
+public class RepositoryMetricsExtraction extends AnAction {
+//public class RepositoryMetricsExtraction {
+    private static final String REPOSITORY_PATH = "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\lpoo-2021-g61";
+    private static final String EXTRACTED_METRICS_FILE_PATH = "tmp/repo_extracted_metrics.csv";
     private static final String BRANCH_NAME = "main";
     private Project project;
+    private Map<String, Set<String>> changedFiles = new HashMap<>();
+    @Override
+    public void actionPerformed(AnActionEvent anActionEvent) {
+        this.project = anActionEvent.getProject();
 
-    private Map<String, List<String>> changedFiles = new HashMap<>();
-//    @Override
-//    public void actionPerformed(AnActionEvent anActionEvent) {
-//        this.project = anActionEvent.getProject();
-//
-//        System.out.println("Extracting metrics");
-//
-//        new RepositoryMetricsExtraction();
-//    }
-    public static void main(String[] args) {
         System.out.println("Extracting metrics");
-        new RepositoryMetricsExtraction();
-    }
 
-    public RepositoryMetricsExtraction() {
         try {
             extractMetrics();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+//    public static void main(String[] args) {
+//        System.out.println("Extracting metrics");
+//        new RepositoryMetricsExtraction();
+//    }
+//
+//    public RepositoryMetricsExtraction() {
+//        System.out.println("\n\nRunning this\n\n");
+//        try {
+//            extractMetrics();
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     private void extractMetrics() throws Exception {
         GitService gitService = new GitServiceImpl();
@@ -58,12 +65,13 @@ public class RepositoryMetricsExtraction {
 
         Set<String> commits = getCommits();
 
-        List<RefactoringInfo> refactoringInfos = new ArrayList<>();
+        Set<RefactoringInfo> refactoringInfos = new HashSet<>();
+        //TODO: add threads to this for loop - just for this part
         for(String commit : commits) {
             //Testing purposes only
-            if(refactoringInfos.size() > 1) {
-                break;
-            }
+//            if(refactoringInfos.size() > 1) {
+//                break;
+//            }
 
             try {
                 List<RefactoringInfo> temp = refactoringsAtCommit(miner, repo, commit);
@@ -71,7 +79,7 @@ public class RepositoryMetricsExtraction {
 
                 //Set the files changes in the commit, so I can find the correct file path later
                 if(!temp.isEmpty()){
-                    List<String> filesChanged = getFilesChanged(commit);
+                    Set<String> filesChanged = getFilesChanged(commit);
                     changedFiles.put(commit, filesChanged);
                 }
             } catch (Exception e) {
@@ -83,27 +91,34 @@ public class RepositoryMetricsExtraction {
 
         System.out.println("Refactorings extracted: " + refactoringInfos.size());
 
-        setFilePaths(refactoringInfos);
+        File tmpFolder = new File("tmp");
+        if(!tmpFolder.exists()) {
+            tmpFolder.mkdir();
+        }
 
         File metricsFile = new File(EXTRACTED_METRICS_FILE_PATH);
-        FileWriter writer = new FileWriter(metricsFile, false);
+        if(!metricsFile.exists()) {
+            metricsFile.createNewFile();
+        }
+
+        System.out.println("Metrics file path: " + metricsFile.getAbsolutePath());
+
+        FileWriter writer = new FileWriter(metricsFile.getAbsolutePath(), false);
         BufferedWriter bufferedWriter = new BufferedWriter(writer);
 
         for (RefactoringInfo refactoringInfo : refactoringInfos) {
-            //String filePath = getFilePath(refactoringInfo);
+            String filePath = getFilePath(refactoringInfo);
 
-            System.out.println("\nRefactoring in commit: " + refactoringInfo.getCommitId());
-            System.out.println("Full Class name:" + refactoringInfo.getFullClass());
-            System.out.println("Class name:" + refactoringInfo.getClassName());
-            System.out.println("Method name:" + refactoringInfo.getMethodName());
+            if(filePath == null) {
+                System.out.println("File not found for refactoring: " + refactoringInfo.getMethodName() + " at commit " + refactoringInfo.getCommitId());
+                continue;
+            }
 
-            //System.out.println("Refactoring: " + refactoringInfo.getMethodName() + " at commit " + refactoringInfo.getCommitId());
-            //System.out.println("File path: " + filePath);
-
-            //refactoringInfo.setFilePath(filePath);
-            //saveMetrics(refactoringInfo, bufferedWriter);
+            refactoringInfo.setFilePath(filePath);
+            saveMetrics(refactoringInfo, bufferedWriter);
         }
 
+        bufferedWriter.close();
         repo.close();
     }
 
@@ -158,8 +173,10 @@ public class RepositoryMetricsExtraction {
         return commits;
     }
 
-    private void saveMetrics(RefactoringInfo refInfo, BufferedWriter bufferedWriter) throws IOException {
-        Repository repo = Git.open(new File(REPOSITORY_PATH)).getRepository();
+    private void saveMetrics(RefactoringInfo refInfo, BufferedWriter bufferedWriter) throws IOException, GitAPIException, InterruptedException {
+        Git git = Git.open(new File(REPOSITORY_PATH));
+
+        Repository repo = git.getRepository();
 
         ObjectId commitObjectId = repo.resolve(refInfo.getCommitId());
 
@@ -176,71 +193,74 @@ public class RepositoryMetricsExtraction {
             previousCommit = revWalk.next();
         }
 
-        File file = new File(REPOSITORY_PATH + "\\" + refInfo.getFilePath().replace(".", "\\"));
+        //checkout to the correct commit
+        git.checkout().setName(previousCommit.getName()).call();
 
-        //PsiJavaFile psiFile = Utils.loadFile(file.getAbsolutePath(), this.project);
+        revWalk.close();
+        repo.close();
+        git.close();
 
-        //refInfo.setBeforeFile(psiFile);
+        System.out.println("Checkout to commit: " + previousCommit.getName());
 
-        //Utils.saveMetricsToFile(bufferedWriter, refInfo, true);
+        String temp = refInfo.getFilePath().replace(".java", "").replace("\\", ".");
+        String filePath = REPOSITORY_PATH + "\\" + temp + ".java";
+
+        System.out.println("File path: " + filePath);
+
+        PsiJavaFile psiFile = Utils.loadFile(filePath, this.project);
+
+        refInfo.setBeforeFile(psiFile);
+
+        Utils.saveMetricsToFile(bufferedWriter, refInfo, true);
     }
 
-    private void setFilePaths(List<RefactoringInfo> refactoringInfos){
-        String filePath = null;
+    private String getFilePath(RefactoringInfo refactoringInfo){
+        Set<String> filesChanged = changedFiles.get(refactoringInfo.getCommitId());
 
-        for(RefactoringInfo refactoringInfo : refactoringInfos){
-            boolean found = false;
-            for(String file : changedFiles.get(refactoringInfo.getCommitId())){
-                if(file.contains(refactoringInfo.getFullClass().replace(".", "/"))){
-                    filePath = file;
-                    refactoringInfo.setFilePath(filePath);
-                    found = true;
-                    break;
-                }
-            }
-
-            if(found) break;
-
-            //If file has multiple classes
-            for(String file : changedFiles.get(refactoringInfo.getCommitId())){
-                PsiJavaFile psiFile = Utils.loadFile(file, this.project);
-                assert psiFile != null;
-                for (PsiClass _class : psiFile.getClasses()){
-                    if (_class.getName().equals(refactoringInfo.getClassName())){
-                        filePath = file;
-                        refactoringInfo.setFilePath(filePath);
-                        found = true;
-                        break;
-                    }
-                }
-            }
-
-            if(!found){
-                System.out.println("File not found");
-            }
-
+        if (filesChanged.size() == 1){
+            return filesChanged.iterator().next();
         }
 
-        //List<String> filesChanged = getFilesChanged(refactoringInfo.getCommitId());
+        //TODO: Change this
+        for(String file : filesChanged){
+            if(file.contains("/" + refactoringInfo.getFullClass().replace(".", "/") + "/")){
+                return file;
+            }
+        }
+
+        //If file has multiple classes
+        for(String file : filesChanged){
+            PsiJavaFile psiFile = Utils.loadFile(file, this.project);
+            assert psiFile != null;
+            for (PsiClass _class : psiFile.getClasses()){
+                if (_class.getName().equals(refactoringInfo.getClassName())){
+                    return file;
+                }
+            }
+        }
+
+        return null;
     }
 
-    //TODO: Change this because the command isn't working on merges
-    List<String> getFilesChanged(String commitId) {
-        List<String> filesChanged = new ArrayList<>();
+    Set<String> getFilesChanged(String commitId) {
+        Set<String> filesChanged = new HashSet<>();
         try {
             //Example: git diff-tree --no-commit-id --name-only 3b20ca83da2b7546989701211f4878efc800b0ec -r
-            ProcessBuilder processBuilder = new ProcessBuilder("git", "diff-tree", "--no-commit-id", "--name-only", commitId, "-r");
+            //Example: git log -m -1 --name-only --pretty="format:" 38983ec445339ed03efe389c53cc0bb6861f30f2
+            ProcessBuilder processBuilder = new ProcessBuilder("git", "log", "-m", "-1", "--name-only", "--pretty=\"format:\"", commitId);
             processBuilder.redirectErrorStream(true);
             processBuilder.directory(new File(REPOSITORY_PATH));
             Process process = processBuilder.start();
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
-            //System.out.println("Files changed in commit " + commitId + ":");
             while ((line = reader.readLine()) != null) {
-                //System.out.println(line);
-                filesChanged.add(line);
+                //Ignore the empty line that exists when dealing with merges
+                if(!line.isEmpty() && !line.contains(" "))
+                    filesChanged.add(line);
             }
+
+            //System.out.println("Files changed in commit " + commitId + ": " + filesChanged.size());
 
             process.waitFor();
         } catch (IOException | InterruptedException e) {

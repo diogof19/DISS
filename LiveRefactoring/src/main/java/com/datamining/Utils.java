@@ -20,12 +20,15 @@ public class Utils {
      * @return method name
      */
     public static String getMethodName(String description) {
+        //Example description from RefactoringMiner:
+        //Extract Method	private nextPosEmpty(Action ACTION) : boolean extracted from public doAction(Action ACTION) : void in class com.lpoo_2021_g61.Controller.CanvasController
 //        return description.split("\\(\\)")[0].replace("public ", "")
 //                .replace("private ", "").replace("protected ", "")
-//                .trim().replace("static ", "").trim();
-        return description.split("\\(")[0].replace("public ", "")
-        .replace("private ", "").replace("protected ", "")
-        .trim().replace("static ", "").replace("Extract Method", "").trim();
+//                .replace("static ", "").trim();
+
+        return description.split("from")[1].split("in class")[0].trim().split("\\(")[0]
+                .replace("public ", "").replace("private ", "")
+                .replace("protected ", "").replace("static ", "").trim();
     }
 
     /**
@@ -34,7 +37,7 @@ public class Utils {
      * @return pair with full class name and short class name
      */
     public static Pair<String, String> getClassName(String description){
-        String fullClass = description.split("from")[1].split("in class")[1].trim();
+        String fullClass = description.split("in class")[1].trim();
         String[] parts = fullClass.split("\\.");
         final String className = parts[parts.length - 1];
         return new Pair<>(fullClass, className);
@@ -47,9 +50,8 @@ public class Utils {
      * @return PsiJavaFile
      */
     public static PsiJavaFile loadFile(String filePath, Project project) {
-        VirtualFile vf = LocalFileSystem.getInstance().findFileByIoFile(new File(filePath));
+        VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(filePath));
         if(vf != null){
-            System.out.println("Virtual file found");
             return (PsiJavaFile) com.intellij.psi.util.PsiUtilBase.getPsiFile(project, vf);
         } else {
             System.out.println("Virtual file not found");
