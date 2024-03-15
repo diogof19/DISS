@@ -58,36 +58,7 @@ public class RepositoryMetricsExtraction extends AnAction {
 //    }
 
     private void extractMetrics() throws Exception {
-        GitService gitService = new GitServiceImpl();
-        GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
-
-        Repository repo = gitService.openRepository(REPOSITORY_PATH);
-
-        Set<String> commits = getCommits();
-
-        Set<RefactoringInfo> refactoringInfos = new HashSet<>();
-        //TODO: add threads to this for loop - just for this part
-        for(String commit : commits) {
-            //Testing purposes only
-//            if(refactoringInfos.size() > 1) {
-//                break;
-//            }
-
-            try {
-                List<RefactoringInfo> temp = refactoringsAtCommit(miner, repo, commit);
-                refactoringInfos.addAll(temp);
-
-                //Set the files changes in the commit, so I can find the correct file path later
-                if(!temp.isEmpty()){
-                    Set<String> filesChanged = getFilesChanged(commit);
-                    changedFiles.put(commit, filesChanged);
-                }
-            } catch (Exception e) {
-                //I have to use an old implementation of RefactoringMiner to be compatible with the Plugin, so there are unresolved issues
-                //Currently ignoring all the commits that provoke an error
-                //System.out.println("Error at commits " + commits.get(i).getName() + ":\n" + e.getMessage());
-            }
-        }
+        Set<RefactoringInfo> refactoringInfos = getRefactorings();
 
         System.out.println("Refactorings extracted: " + refactoringInfos.size());
 
@@ -119,7 +90,38 @@ public class RepositoryMetricsExtraction extends AnAction {
         }
 
         bufferedWriter.close();
+    }
+
+    private Set<RefactoringInfo> getRefactorings() throws Exception {
+        GitService gitService = new GitServiceImpl();
+        GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
+
+        Repository repo = gitService.openRepository(REPOSITORY_PATH);
+
+        Set<String> commits = getCommits();
+
+        Set<RefactoringInfo> refactoringInfos = new HashSet<>();
+
+        for(String commit : commits) {
+            try {
+                List<RefactoringInfo> temp = refactoringsAtCommit(miner, repo, commit);
+                refactoringInfos.addAll(temp);
+
+                //Set the files changes in the commit, so I can find the correct file path later
+                if(!temp.isEmpty()){
+                    Set<String> filesChanged = getFilesChanged(commit);
+                    changedFiles.put(commit, filesChanged);
+                }
+            } catch (Exception e) {
+                //I have to use an old implementation of RefactoringMiner to be compatible with the Plugin, so there are unresolved issues
+                //Currently ignoring all the commits that provoke an error
+                //System.out.println("Error at commits " + commits.get(i).getName() + ":\n" + e.getMessage());
+            }
+        }
+
         repo.close();
+
+        return refactoringInfos;
     }
 
     private List<RefactoringInfo> refactoringsAtCommit(GitHistoryRefactoringMiner miner, Repository repo, String commitId) {
@@ -200,12 +202,8 @@ public class RepositoryMetricsExtraction extends AnAction {
         repo.close();
         git.close();
 
-        System.out.println("Checkout to commit: " + previousCommit.getName());
-
         String temp = refInfo.getFilePath().replace(".java", "").replace("\\", ".");
         String filePath = REPOSITORY_PATH + "\\" + temp + ".java";
-
-        System.out.println("File path: " + filePath);
 
         PsiJavaFile psiFile = Utils.loadFile(filePath, this.project);
 
@@ -221,9 +219,9 @@ public class RepositoryMetricsExtraction extends AnAction {
             return filesChanged.iterator().next();
         }
 
-        //TODO: Change this
+        String classFilePath = "/" + refactoringInfo.getFullClass().replace(".", "/") + ".java";
         for(String file : filesChanged){
-            if(file.contains("/" + refactoringInfo.getFullClass().replace(".", "/") + "/")){
+            if(file.contains(classFilePath)){
                 return file;
             }
         }

@@ -142,7 +142,7 @@ public class Utils {
                         methodMetrics.lackOfCohesionInMethod
         );
 
-        if (!isBefore){
+        if (!isBefore || refactoringInfo.get_id() == null){
             writer.write("\n");
         }
 
