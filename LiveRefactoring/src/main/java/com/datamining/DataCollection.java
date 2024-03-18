@@ -11,6 +11,8 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -36,6 +38,8 @@ public class DataCollection extends AnAction {
             "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\java\\com\\datamining\\data\\extracted_metrics.csv";
     private MongoClient mongoClient;
     private Project project;
+
+    private String repositoryPath;
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
@@ -95,42 +99,16 @@ public class DataCollection extends AnAction {
         BufferedWriter bufferedWriter = new BufferedWriter(writer);
 
         bufferedWriter.write(
-                "id," +
-                "numberLinesOfCodeBef," +
-                "numberCommentsBef," +
-                "numberBlankLinesBef," +
-                "totalLinesBef," +
-                "numParametersBef," +
-                "numStatementsBef," +
-                "halsteadLengthBef," +
-                "halsteadVocabularyBef," +
-                "halsteadVolumeBef," +
-                "halsteadDifficultyBef," +
-                "halsteadEffortBef," +
-                "halsteadLevelBef," +
-                "halsteadTimeBef," +
-                "halsteadBugsDeliveredBef," +
-                "halsteadMaintainabilityBef," +
-                "cyclomaticComplexityBef," +
-                "cognitiveComplexityBef," +
-                "lackOfCohesionInMethodBef," +
-                "numberLinesOfCodeAft," +
-                "numberCommentsAft," +
-                "numberBlankLinesAft," +
-                "totalLinesAft," +
-                "numParametersAft," +
-                "numStatementsAft," +
-                "halsteadLengthAft," +
-                "halsteadVocabularyAft," +
-                "halsteadVolumeAft," +
-                "halsteadDifficultyAft," +
-                "halsteadEffortAft," +
-                "halsteadLevelAft," +
-                "halsteadTimeAft," +
-                "halsteadBugsDeliveredAft," +
-                "halsteadMaintainabilityAft," +
-                "cyclomaticComplexityAft," +
-                "cognitiveComplexityAft," +
+                "id," + "numberLinesOfCodeBef," + "numberCommentsBef," + "numberBlankLinesBef," +
+                "totalLinesBef," + "numParametersBef," + "numStatementsBef," + "halsteadLengthBef," +
+                "halsteadVocabularyBef," + "halsteadVolumeBef," + "halsteadDifficultyBef," + "halsteadEffortBef," +
+                "halsteadLevelBef," + "halsteadTimeBef," + "halsteadBugsDeliveredBef," +
+                "halsteadMaintainabilityBef," + "cyclomaticComplexityBef," + "cognitiveComplexityBef," +
+                "lackOfCohesionInMethodBef," + "numberLinesOfCodeAft," + "numberCommentsAft," +
+                "numberBlankLinesAft," + "totalLinesAft," + "numParametersAft," + "numStatementsAft," +
+                "halsteadLengthAft," + "halsteadVocabularyAft," + "halsteadVolumeAft," + "halsteadDifficultyAft," +
+                "halsteadEffortAft," + "halsteadLevelAft," + "halsteadTimeAft," + "halsteadBugsDeliveredAft," +
+                "halsteadMaintainabilityAft," + "cyclomaticComplexityAft," + "cognitiveComplexityAft," +
                 "lackOfCohesionInMethodAft\n"
         );
 
@@ -161,7 +139,7 @@ public class DataCollection extends AnAction {
 
     //TODO: Test when I have the final database
     //Maybe add comparison between old method and new method to extract the old and new size
-    private RefactoringInfo getRefactoringInfo(Document document) {
+    private RefactoringInfo getRefactoringInfo(Document document) throws IOException, GitAPIException {
         RefactoringInfo info = new RefactoringInfo();
 
         info.set_id(document.getObjectId("_id"));
@@ -174,32 +152,56 @@ public class DataCollection extends AnAction {
         info.setFullClass(classInfo.getFirst());
         info.setClassName(classInfo.getSecond());
 
-        //TODO: Add git search using the revision hash for the parent commit and the commit
-        //Then search for the file in the parent commit and the commit
+        Git git = Git.open(new File(this.repositoryPath));
 
+        String filePath = findFilePath(git, info, document);
+
+        if (filePath == null) {
+            git.close();
+            throw new RuntimeException("File not found: " + description);
+        }
+
+        if (info.getBeforeFile() == null)
+            info.setBeforeFile(getFileFromCommit(git, filePath, document.getString("parent_revision_hash")));
+
+        info.setAfterFile(getFileFromCommit(git, filePath, document.getString("revision_hash")));
+
+        git.close();
+
+        return info;
+    }
+
+    private String findFilePath(Git git, RefactoringInfo info, Document document) throws IOException, GitAPIException {
+        //TODO: Check if there's the issue with the .java and the class name (Ex: MovableTest and Movable)
         for (String filePath : document.getList("files", String.class)) {
             if (filePath.contains(info.getFullClass().replace(".", "/"))) {
-                info.setFilePath(filePath);
-                info.setBeforeFile(Utils.loadFile(filePath, this.project));
-                return info;
+                return filePath;
             }
         }
 
-        //If file has multiple classes
+        git.checkout().setName(document.getString("parent_revision_hash")).call();
+
         for (String filePath : document.getList("files", String.class)) {
             PsiJavaFile file = Utils.loadFile(filePath, this.project);
             assert file != null;
             for (PsiClass _class : file.getClasses()){
                 if (_class.getName().equals(info.getClassName())){
-                    info.setFilePath(filePath);
                     info.setBeforeFile(file);
-                    return info;
+                    return filePath;
                 }
             }
         }
 
-        System.out.println("File not found");
+        git.close();
 
         return null;
+    }
+
+    private PsiJavaFile getFileFromCommit(Git git, String filePath, String commitHash) throws GitAPIException {
+        git.checkout().setName(commitHash).call();
+
+        PsiJavaFile file = Utils.loadFile(filePath, this.project);
+
+        return file;
     }
 }

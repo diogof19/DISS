@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 //TODO: Create a 'requirements.txt' folder and function that runs it with pip install
+//TODO: Add a pop-up when python path is not set
 public class PredictionModel {
     private static String pythonFilePath;
     private static String modelFilePath;

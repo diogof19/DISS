@@ -81,6 +81,15 @@ public class RepositoryMetricsExtraction extends AnAction {
         FileWriter writer = new FileWriter(metricsFile.getAbsolutePath(), false);
         BufferedWriter bufferedWriter = new BufferedWriter(writer);
 
+        //Write the header of the file
+        writer.write(
+                "numberLinesOfCodeBef," + "numberCommentsBef," + "numberBlankLinesBef," + "totalLinesBef," +
+                    "numParametersBef," + "numStatementsBef," + "halsteadLengthBef," + "halsteadVocabularyBef," +
+                    "halsteadVolumeBef," + "halsteadDifficultyBef," + "halsteadEffortBef," + "halsteadLevelBef," +
+                    "halsteadTimeBef," + "halsteadBugsDeliveredBef," + "halsteadMaintainabilityBef," +
+                    "cyclomaticComplexityBef," + "cognitiveComplexityBef," + "lackOfCohesionInMethodBef\n"
+        );
+
         for (RefactoringInfo refactoringInfo : refactoringInfos) {
             String filePath = getFilePath(refactoringInfo);
 
@@ -160,10 +169,6 @@ public class RepositoryMetricsExtraction extends AnAction {
 
         for(String commit : commits) {
             try {
-                if(refactoringInfos.size() > 0){
-                    break;
-                }
-
                 List<RefactoringInfo> temp = refactoringsAtCommit(miner, repo, commit);
                 refactoringInfos.addAll(temp);
 
