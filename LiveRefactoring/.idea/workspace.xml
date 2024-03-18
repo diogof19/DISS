@@ -10,11 +10,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/datamining/RMEDialogWrapper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/datamining/model.joblib" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Classification Model/prediction.py" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/prediction.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,6 +85,9 @@
   <component name="ProjectCodeStyleSettingsMigration">
     <option name="version" value="2" />
   </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
   <component name="ProjectId" id="23pKHhfg7SI7h0w4xPP8G0zgOyD" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -94,9 +96,17 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Gradle.LiveRefactoring [:PredictionModel.main()].executor": "Run",
     "Gradle.LiveRefactoring.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
     "git-widget-placeholder": "main",
-    "node.js.selected.package.tslint": "(autodetect)"
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/dluis/Documents/Docs/Universidade/M 2 ano/Thesis/DISS/LiveRefactoring/src/main/resources/datamining",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -106,11 +116,11 @@
       <recent name="com.analysis.candidates" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\dluis\Documents\Docs\Universidade\M 2 ano\Thesis\DISS\LiveRefactoring\src\main\resources\datamining" />
       <recent name="$PROJECT_DIR$/src/main/java/com/utils/importantValues" />
       <recent name="$PROJECT_DIR$/src/main/java/com/core" />
       <recent name="$PROJECT_DIR$/src/main/resources" />
       <recent name="$PROJECT_DIR$/src/main/java/com/ui" />
-      <recent name="$PROJECT_DIR$/src/main/java/com/utils/JDeodorant" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/main/java/com/utils/Halstead" />
@@ -125,7 +135,7 @@
       <recent name="com.ui.icons" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.LiveRefactoring">
+  <component name="RunManager" selected="Application.PredictionModel">
     <configuration name="DataCollection" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.datamining.DataCollection" />
       <module name="LiveRefactoring.main" />
@@ -606,6 +616,8 @@
       <workItem from="1710235240476" duration="13536000" />
       <workItem from="1710409660945" duration="8476000" />
       <workItem from="1710493729195" duration="8736000" />
+      <workItem from="1710515443428" duration="10000" />
+      <workItem from="1710749462924" duration="1522000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>

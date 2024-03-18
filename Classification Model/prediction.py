@@ -1,19 +1,18 @@
 from joblib import load
 import warnings
+import numpy as np
+
+model_path = 'C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\resources\\datamining\\model.joblib'
 
 def predict(X_test):
-    #TODO: change to the final model
-    
     warnings.filterwarnings("ignore", category=UserWarning)
-    one_class_svm = load("C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\Classification Model\\models\\one_class_svm.joblib")
+    model = load(model_path)
 	
-    one_class_svm_pred = one_class_svm.predict(X_test)
+    pred = model.predict(X_test)
  
-    return one_class_svm_pred[0]
+    return pred[0]
 
 if __name__ == '__main__':
-    inputData = []
-    for i in range(18):
-        inputData.append(1)
+    data = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0]
     
-    print(predict([inputData]))
+    print(predict([data]))

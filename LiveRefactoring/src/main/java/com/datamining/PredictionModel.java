@@ -3,11 +3,14 @@ package com.datamining;
 import com.analysis.metrics.MethodMetrics;
 import com.utils.importantValues.Values;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 
 public class PredictionModel {
-    private static final String FILE_PATH = "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\Classification Model\\prediction.py";
+    private static final String FILE_PATH = "src/main/resources/datamining/prediction.py";
     public static void main(String[] args) {
         ArrayList<Double> data = new ArrayList<>();
 
@@ -52,7 +55,10 @@ public class PredictionModel {
         data.add(methodMetrics.lackOfCohesionInMethod);
 
         try {
-            return predictPython(data);
+            System.out.println("Starting Prediction");
+            boolean prediction = predictPython(data);
+            System.out.println("Prediction done: " + prediction);
+            return prediction;
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -75,13 +81,20 @@ public class PredictionModel {
             pythonPath = "C:\\Program Files\\Python310\\python.exe"; //For testing purposes
         }
 
-        Process process = new ProcessBuilder(pythonPath, FILE_PATH).redirectErrorStream(true).start();
-
-        OutputStream stdin = process.getOutputStream();
+        List<String> command = new ArrayList<>();
+        command.add(pythonPath);
+        command.add(FILE_PATH);
         for (Double value : data) {
-            stdin.write((value.toString() + "\n").getBytes());
+            command.add(value.toString());
         }
-        stdin.close();
+
+        Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
+
+//        OutputStream stdin = process.getOutputStream();
+//        for (Double value : data) {
+//            stdin.write((value.toString() + "\n").getBytes());
+//        }
+//        stdin.close();
 
         BufferedReader stdOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
@@ -93,7 +106,7 @@ public class PredictionModel {
 
         int returnCode = process.waitFor();
         if (returnCode != 0 || output.toString().contains("Warning")) {
-            throw new IOException("Python script Problem: " + returnCode + "\n" + output);
+            throw new IOException("Python script problem: " + returnCode + "\n" + output);
         }
 
         float result = Float.parseFloat(output.toString());
