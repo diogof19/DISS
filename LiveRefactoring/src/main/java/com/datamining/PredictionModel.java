@@ -3,14 +3,16 @@ package com.datamining;
 import com.analysis.metrics.MethodMetrics;
 import com.utils.importantValues.Values;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+//TODO: Create a 'requirements.txt' folder and function that runs it with pip install
 public class PredictionModel {
-    private static final String FILE_PATH = "src/main/resources/datamining/prediction.py";
+    private static String pythonFilePath;
+    private static String modelFilePath;
     public static void main(String[] args) {
         ArrayList<Double> data = new ArrayList<>();
 
@@ -72,6 +74,9 @@ public class PredictionModel {
      * @throws InterruptedException if the process is interrupted
      */
     private static boolean predictPython(ArrayList<Double> data) throws IOException, InterruptedException {
+        if(pythonFilePath == null || pythonFilePath.isEmpty())
+            extractPythonAndModelFiles();
+
         String pythonPath = Values.pythonPath;
 
         //TODO: Uncomment the exception
@@ -83,18 +88,13 @@ public class PredictionModel {
 
         List<String> command = new ArrayList<>();
         command.add(pythonPath);
-        command.add(FILE_PATH);
+        command.add(pythonFilePath);
+        command.add(modelFilePath);
         for (Double value : data) {
             command.add(value.toString());
         }
 
         Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
-
-//        OutputStream stdin = process.getOutputStream();
-//        for (Double value : data) {
-//            stdin.write((value.toString() + "\n").getBytes());
-//        }
-//        stdin.close();
 
         BufferedReader stdOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
@@ -116,4 +116,45 @@ public class PredictionModel {
         // Result will be -1 for outliers or 1 for inliers
         return result == 1;
     }
+
+    /**
+     * Extracts the python script and the model file from the jar file
+     * @throws IOException if there is a problem extracting the files
+     */
+    private static void extractPythonAndModelFiles() throws IOException {
+        File file = new File("tmp");
+        if(!file.exists()){
+            file.mkdir();
+        }
+
+        extractFile("prediction.py");
+        extractFile("model.joblib");
+
+        pythonFilePath = Paths.get("tmp/prediction.py").toAbsolutePath().toString();
+        modelFilePath = Paths.get("tmp/model.joblib").toAbsolutePath().toString();
+    }
+
+    /**
+     * Extracts a file from the jar file
+     * @param fileName the name of the file to be extracted
+     * @throws IOException if there is a problem extracting the file
+     */
+    private static void extractFile(String fileName) throws IOException {
+        URL url = PredictionModel.class.getResource("/" + fileName);
+
+        InputStream inputStream = url.openStream();
+        OutputStream outputStream = new FileOutputStream("tmp/" + fileName);
+
+        byte[] buffer = new byte[1024];
+        int length;
+        while ((length = inputStream.read(buffer)) > 0) {
+            outputStream.write(buffer, 0, length);
+        }
+
+        inputStream.close();
+        outputStream.close();
+    }
+
 }
+
+
