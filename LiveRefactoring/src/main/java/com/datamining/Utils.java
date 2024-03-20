@@ -91,6 +91,33 @@ public class Utils {
     }
 
     /**
+     * Writes the headers for the metrics file
+     * @param writer file writer
+     * @param beforeAndAfter true if the file will contain before and after metrics
+     * @throws IOException if an I/O error occurs
+     */
+    public static void writeMetricsFileHeader(BufferedWriter writer, boolean beforeAndAfter) throws IOException {
+        writer.write(
+                "author," + "numberLinesOfCodeBef," + "numberCommentsBef," + "numberBlankLinesBef," +
+                        "totalLinesBef," + "numParametersBef," + "numStatementsBef," + "halsteadLengthBef," +
+                        "halsteadVocabularyBef," + "halsteadVolumeBef," + "halsteadDifficultyBef," +
+                        "halsteadEffortBef," + "halsteadLevelBef," + "halsteadTimeBef," + "halsteadBugsDeliveredBef,"
+                        + "halsteadMaintainabilityBef," + "cyclomaticComplexityBef," + "cognitiveComplexityBef," +
+                        "lackOfCohesionInMethodBef"
+        );
+
+        if(beforeAndAfter){
+            writer.write("numberLinesOfCodeAft," + "numberCommentsAft," + "numberBlankLinesAft," + "totalLinesAft,"
+                    + "numParametersAft," + "numStatementsAft," + "halsteadLengthAft," + "halsteadVocabularyAft," +
+                    "halsteadVolumeAft," + "halsteadDifficultyAft," + "halsteadEffortAft," + "halsteadLevelAft," +
+                    "halsteadTimeAft," + "halsteadBugsDeliveredAft," + "halsteadMaintainabilityAft," +
+                    "cyclomaticComplexityAft," + "cognitiveComplexityAft," + "lackOfCohesionInMethodAft");
+        }
+
+        writer.write("\n");
+    }
+
+    /**
      * Saves the metrics to a file (can be used to save before and after changes in the same row)
      * @param writer file writer
      * @param refactoringInfo refactoring info
@@ -113,33 +140,26 @@ public class Utils {
         int totalLines = methodMetrics.numberLinesOfCode + methodMetrics.numberComments +
                 methodMetrics.numberBlankLines;
 
-        if (isBefore){
-            //So that it works when it's only one file and not before and after per row
-            if (refactoringInfo.get_id() != null)
-                writer.write(
-                        "\"" + refactoringInfo.get_id() + "\","
-                );
-        }
-
         writer.write(
-                methodMetrics.numberLinesOfCode + "," +
-                        methodMetrics.numberComments + "," +
-                        methodMetrics.numberBlankLines + "," +
-                        totalLines + "," +
-                        methodMetrics.numParameters + "," +
-                        methodMetrics.numberOfStatements + "," +
-                        methodMetrics.halsteadLength + "," +
-                        methodMetrics.halsteadVocabulary + "," +
-                        methodMetrics.halsteadVolume + "," +
-                        methodMetrics.halsteadDifficulty + "," +
-                        methodMetrics.halsteadEffort + "," +
-                        methodMetrics.halsteadLevel + "," +
-                        methodMetrics.halsteadTime + "," +
-                        methodMetrics.halsteadBugsDelivered + "," +
-                        methodMetrics.halsteadMaintainability + "," +
-                        methodMetrics.complexityOfMethod + "," +
-                        methodMetrics.cognitiveComplexity + "," +
-                        methodMetrics.lackOfCohesionInMethod
+                refactoringInfo.getAuthor() + "," +
+                    methodMetrics.numberLinesOfCode + "," +
+                    methodMetrics.numberComments + "," +
+                    methodMetrics.numberBlankLines + "," +
+                    totalLines + "," +
+                    methodMetrics.numParameters + "," +
+                    methodMetrics.numberOfStatements + "," +
+                    methodMetrics.halsteadLength + "," +
+                    methodMetrics.halsteadVocabulary + "," +
+                    methodMetrics.halsteadVolume + "," +
+                    methodMetrics.halsteadDifficulty + "," +
+                    methodMetrics.halsteadEffort + "," +
+                    methodMetrics.halsteadLevel + "," +
+                    methodMetrics.halsteadTime + "," +
+                    methodMetrics.halsteadBugsDelivered + "," +
+                    methodMetrics.halsteadMaintainability + "," +
+                    methodMetrics.complexityOfMethod + "," +
+                    methodMetrics.cognitiveComplexity + "," +
+                    methodMetrics.lackOfCohesionInMethod
         );
 
         if (!isBefore || refactoringInfo.get_id() == null){

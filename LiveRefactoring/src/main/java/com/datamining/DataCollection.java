@@ -98,19 +98,7 @@ public class DataCollection extends AnAction {
         FileWriter writer = new FileWriter(metricsFile, false);
         BufferedWriter bufferedWriter = new BufferedWriter(writer);
 
-        bufferedWriter.write(
-                "id," + "numberLinesOfCodeBef," + "numberCommentsBef," + "numberBlankLinesBef," +
-                "totalLinesBef," + "numParametersBef," + "numStatementsBef," + "halsteadLengthBef," +
-                "halsteadVocabularyBef," + "halsteadVolumeBef," + "halsteadDifficultyBef," + "halsteadEffortBef," +
-                "halsteadLevelBef," + "halsteadTimeBef," + "halsteadBugsDeliveredBef," +
-                "halsteadMaintainabilityBef," + "cyclomaticComplexityBef," + "cognitiveComplexityBef," +
-                "lackOfCohesionInMethodBef," + "numberLinesOfCodeAft," + "numberCommentsAft," +
-                "numberBlankLinesAft," + "totalLinesAft," + "numParametersAft," + "numStatementsAft," +
-                "halsteadLengthAft," + "halsteadVocabularyAft," + "halsteadVolumeAft," + "halsteadDifficultyAft," +
-                "halsteadEffortAft," + "halsteadLevelAft," + "halsteadTimeAft," + "halsteadBugsDeliveredAft," +
-                "halsteadMaintainabilityAft," + "cyclomaticComplexityAft," + "cognitiveComplexityAft," +
-                "lackOfCohesionInMethodAft\n"
-        );
+        Utils.writeMetricsFileHeader(bufferedWriter, true);
 
         for (Document document : documents) {
             System.out.println(document);
@@ -124,7 +112,7 @@ public class DataCollection extends AnAction {
             RefactoringInfo refactoringInfo = new RefactoringInfo(null, "streamLanguageTagsCaseInsensitive",
                     "AbstractGraphTest", "org.apache.commons.rdf.api.AbstractGraphTest",
                     "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\test_files\\AbstractGraphTest.java",
-                    file, file, null);
+                    file, file, null, null);
 
             saveMetricsToFile(bufferedWriter, refactoringInfo, true);
             saveMetricsToFile(bufferedWriter, refactoringInfo, false);

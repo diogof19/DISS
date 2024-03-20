@@ -26,9 +26,7 @@ import java.util.*;
 //TODO: Give credits to RefactoringMiner
 //      https://github.com/tsantalis/RefactoringMiner?tab=readme-ov-file#how-to-cite-refactoringminer
 
-//TODO: Maybe I need to save the branch and commit the repo currently is, so I can return to it after the extraction
 public class RepositoryMetricsExtraction extends AnAction {
-//public class RepositoryMetricsExtraction {
     private static final String EXTRACTED_METRICS_FILE_PATH = "tmp/repo_extracted_metrics.csv";
     private String repositoryPath;
     private String branch;
@@ -81,14 +79,7 @@ public class RepositoryMetricsExtraction extends AnAction {
         FileWriter writer = new FileWriter(metricsFile.getAbsolutePath(), false);
         BufferedWriter bufferedWriter = new BufferedWriter(writer);
 
-        //Write the header of the file
-        writer.write(
-                "numberLinesOfCodeBef," + "numberCommentsBef," + "numberBlankLinesBef," + "totalLinesBef," +
-                    "numParametersBef," + "numStatementsBef," + "halsteadLengthBef," + "halsteadVocabularyBef," +
-                    "halsteadVolumeBef," + "halsteadDifficultyBef," + "halsteadEffortBef," + "halsteadLevelBef," +
-                    "halsteadTimeBef," + "halsteadBugsDeliveredBef," + "halsteadMaintainabilityBef," +
-                    "cyclomaticComplexityBef," + "cognitiveComplexityBef," + "lackOfCohesionInMethodBef\n"
-        );
+        Utils.writeMetricsFileHeader(bufferedWriter, false);
 
         for (RefactoringInfo refactoringInfo : refactoringInfos) {
             String filePath = getFilePath(refactoringInfo);
@@ -169,6 +160,11 @@ public class RepositoryMetricsExtraction extends AnAction {
 
         for(String commit : commits) {
             try {
+                //For testing purposes
+//                if (refactoringInfos.size() > 1) {
+//                    break;
+//                }
+
                 List<RefactoringInfo> temp = refactoringsAtCommit(miner, repo, commit);
                 refactoringInfos.addAll(temp);
 
@@ -205,7 +201,7 @@ public class RepositoryMetricsExtraction extends AnAction {
                 for (Refactoring ref : refactorings) {
 
                     if(ref.getRefactoringType().equals(RefactoringType.EXTRACT_OPERATION)) {
-                        //System.out.println(ref);
+                        //System.out.println(commitId + ": " + ref);
 
                         RefactoringInfo refInfo = getRefactoringInfoFromRefactoring(ref);
 
@@ -273,6 +269,8 @@ public class RepositoryMetricsExtraction extends AnAction {
 
         RevWalk revWalk = new RevWalk(repo);
         RevCommit commit = revWalk.parseCommit(commitObjectId);
+
+        refInfo.setAuthor(commit.getAuthorIdent().getEmailAddress());
 
         revWalk.markStart(commit);
         revWalk.sort(RevSort.COMMIT_TIME_DESC);
