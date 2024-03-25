@@ -10,11 +10,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/datamining/TODO.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Classification Model/Model Prep.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/Model Prep.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Classification Model/models/isolation_forest.joblib" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/models/isolation_forest.joblib" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/RefactoringInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/RefactoringInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -94,8 +95,8 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Gradle.LiveRefactoring.executor": "Run",
     "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/Users/dluis/Documents/Docs/Universidade/M 2 ano/Thesis/DISS/LiveRefactoring/src/main/resources",
     "node.js.selected.package.tslint": "(autodetect)"
   }
 }]]></component>
@@ -106,11 +107,11 @@
       <recent name="com.analysis.candidates" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\dluis\Documents\Docs\Universidade\M 2 ano\Thesis\DISS\LiveRefactoring\src\main\resources" />
       <recent name="C:\Users\dluis\Documents\Docs\Universidade\M 2 ano\Thesis\DISS\LiveRefactoring\src\main\resources\datamining" />
       <recent name="$PROJECT_DIR$/src/main/java/com/utils/importantValues" />
       <recent name="$PROJECT_DIR$/src/main/java/com/core" />
       <recent name="$PROJECT_DIR$/src/main/resources" />
-      <recent name="$PROJECT_DIR$/src/main/java/com/ui" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\dluis\Documents\Docs\Universidade\M 2 ano\Thesis\DISS\LiveRefactoring\src\main\resources" />
@@ -610,7 +611,9 @@
       <workItem from="1710515443428" duration="10000" />
       <workItem from="1710749462924" duration="3189000" />
       <workItem from="1710755661499" duration="661000" />
-      <workItem from="1710925697706" duration="2927000" />
+      <workItem from="1710925697706" duration="4683000" />
+      <workItem from="1711102509194" duration="600000" />
+      <workItem from="1711358038138" duration="3927000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>

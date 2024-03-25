@@ -32,6 +32,7 @@ public class RepositoryMetricsExtraction extends AnAction {
     private String branch;
     private Project project;
     private Map<String, Set<String>> changedFiles = new HashMap<>();
+    private Set<String> authors = new HashSet<>();
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
         RMEDialogWrapper dialogWrapper = new RMEDialogWrapper();
@@ -96,6 +97,8 @@ public class RepositoryMetricsExtraction extends AnAction {
         bufferedWriter.close();
 
         System.out.println("Metrics extracted");
+
+        saveAuthorsToFile();
 
         deleteClonedRepo();
 
@@ -270,7 +273,9 @@ public class RepositoryMetricsExtraction extends AnAction {
         RevWalk revWalk = new RevWalk(repo);
         RevCommit commit = revWalk.parseCommit(commitObjectId);
 
-        refInfo.setAuthor(commit.getAuthorIdent().getEmailAddress());
+        String author = commit.getAuthorIdent().getEmailAddress();
+        refInfo.setAuthor(author);
+        authors.add(author);
 
         revWalk.markStart(commit);
         revWalk.sort(RevSort.COMMIT_TIME_DESC);
@@ -362,5 +367,30 @@ public class RepositoryMetricsExtraction extends AnAction {
         }
 
         return filesChanged;
+    }
+
+    /**
+     * Saves all the authors to a file
+     * @throws IOException If there is an error writing to the file
+     */
+    private void saveAuthorsToFile() throws IOException {
+        File authorsFile = new File("tmp/authors.txt");
+        if(!authorsFile.exists()) {
+            authorsFile.createNewFile();
+        }
+
+        BufferedReader reader = new BufferedReader(new FileReader(authorsFile));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            authors.add(line.trim());
+        }
+
+        FileWriter writer = new FileWriter(authorsFile.getAbsolutePath(), false);
+        BufferedWriter bufferedWriter = new BufferedWriter(writer);
+        for(String author : authors) {
+            bufferedWriter.write(author + "\n");
+        }
+
+        bufferedWriter.close();
     }
 }
