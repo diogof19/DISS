@@ -2,11 +2,14 @@ package com.datamining;
 
 import com.analysis.metrics.MethodMetrics;
 import com.utils.importantValues.Values;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
-import java.net.URL;
-import java.nio.file.Paths;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+
+import static com.datamining.Utils.extractFile;
 
 //TODO: Create a 'requirements.txt' folder and function that runs it with pip install
 //TODO: Add a pop-up when python path is not set
@@ -100,35 +103,6 @@ public class PredictionModel {
         return result == 1;
     }
 
-    /**
-     * Extracts a file from the jar file
-     * @param fileName the name of the file to be extracted
-     * @throws IOException if there is a problem extracting the file
-     * @return the path of the extracted file
-     */
-    private static String extractFile(String fileName) throws IOException {
-        File file = new File("tmp");
-        if(!file.exists()){
-            file.mkdir();
-        }
-
-        URL url = PredictionModel.class.getResource("/" + fileName);
-
-        InputStream inputStream = url.openStream();
-        OutputStream outputStream = new FileOutputStream("tmp/" + fileName);
-
-        byte[] buffer = new byte[1024];
-        int length;
-        while ((length = inputStream.read(buffer)) > 0) {
-            outputStream.write(buffer, 0, length);
-        }
-
-        inputStream.close();
-        outputStream.close();
-
-        return Paths.get("tmp/" + fileName).toAbsolutePath().toString();
-    }
-
     public static void biasModel(ArrayList<String> authors) throws IOException, InterruptedException {
         if(pythonBiasFilePath == null || pythonBiasFilePath.isEmpty())
             pythonBiasFilePath = extractFile("bias.py");
@@ -166,7 +140,7 @@ public class PredictionModel {
         return pythonPath;
     }
 
-    private static String pythonScriptRun(ArrayList<String> command) throws IOException, InterruptedException {
+    private static @NotNull String pythonScriptRun(ArrayList<String> command) throws IOException, InterruptedException {
         Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
 
         BufferedReader stdOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));

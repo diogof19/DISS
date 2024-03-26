@@ -23,11 +23,13 @@ import org.refactoringminer.util.GitServiceImpl;
 import java.io.*;
 import java.util.*;
 
+import static com.datamining.Utils.extractFile;
+
 //TODO: Give credits to RefactoringMiner
 //      https://github.com/tsantalis/RefactoringMiner?tab=readme-ov-file#how-to-cite-refactoringminer
 
 public class RepositoryMetricsExtraction extends AnAction {
-    private static final String EXTRACTED_METRICS_FILE_PATH = "tmp/repo_extracted_metrics.csv";
+    private static String extractedMetricsFilePath;
     private String repositoryPath;
     private String branch;
     private Project project;
@@ -70,17 +72,16 @@ public class RepositoryMetricsExtraction extends AnAction {
 
         System.out.println("Refactorings extracted: " + refactoringInfos.size());
 
-        File metricsFile = new File(EXTRACTED_METRICS_FILE_PATH);
-        if(!metricsFile.exists()) {
-            metricsFile.createNewFile();
+        if(extractedMetricsFilePath == null || extractedMetricsFilePath.isEmpty()) {
+            extractedMetricsFilePath = extractFile("extracted_metrics.csv");
         }
+
+        File metricsFile = new File(extractedMetricsFilePath);
 
         System.out.println("Metrics file path: " + metricsFile.getAbsolutePath());
 
-        FileWriter writer = new FileWriter(metricsFile.getAbsolutePath(), false);
+        FileWriter writer = new FileWriter(metricsFile.getAbsolutePath(), true);
         BufferedWriter bufferedWriter = new BufferedWriter(writer);
-
-        Utils.writeMetricsFileHeader(bufferedWriter, false);
 
         for (RefactoringInfo refactoringInfo : refactoringInfos) {
             String filePath = getFilePath(refactoringInfo);
@@ -164,9 +165,9 @@ public class RepositoryMetricsExtraction extends AnAction {
         for(String commit : commits) {
             try {
                 //For testing purposes
-//                if (refactoringInfos.size() > 1) {
-//                    break;
-//                }
+                if (refactoringInfos.size() > 1) {
+                    break;
+                }
 
                 List<RefactoringInfo> temp = refactoringsAtCommit(miner, repo, commit);
                 refactoringInfos.addAll(temp);
@@ -374,17 +375,9 @@ public class RepositoryMetricsExtraction extends AnAction {
      * @throws IOException If there is an error writing to the file
      */
     private void saveAuthorsToFile() throws IOException {
+        authors.addAll(Utils.getAuthors());
+
         File authorsFile = new File("tmp/authors.txt");
-        if(!authorsFile.exists()) {
-            authorsFile.createNewFile();
-        }
-
-        BufferedReader reader = new BufferedReader(new FileReader(authorsFile));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            authors.add(line.trim());
-        }
-
         FileWriter writer = new FileWriter(authorsFile.getAbsolutePath(), false);
         BufferedWriter bufferedWriter = new BufferedWriter(writer);
         for(String author : authors) {

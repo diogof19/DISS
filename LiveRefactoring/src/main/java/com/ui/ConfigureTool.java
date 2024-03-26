@@ -13,6 +13,8 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextField;
+import com.intellij.ui.tabs.TabInfo;
+import com.intellij.ui.tabs.impl.JBTabsImpl;
 import com.utils.UtilitiesOverall;
 import com.utils.importantValues.SelectedRefactorings;
 import com.utils.importantValues.ThresholdsCandidates;
@@ -34,7 +36,7 @@ public class ConfigureTool extends AnAction {
     UtilitiesOverall utils = new UtilitiesOverall();
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        ConfigureTool.MyDialogWrapper wrapper = new ConfigureTool.MyDialogWrapper();
+        ConfigureTool.MyDialogWrapper wrapper = new ConfigureTool.MyDialogWrapper(e.getProject());
         wrapper.show();
 
         double minNumExtractedMethods = 0, maxOrigMethodPercentageEC = 0, maxOrigMethodPercentageEM = 0, minNumStatements = 0,
@@ -267,8 +269,11 @@ public class ConfigureTool extends AnAction {
 
         public HashMap<String,Boolean>selections = new HashMap<>();
 
-        public MyDialogWrapper() {
+        public Project project;
+
+        public MyDialogWrapper(Project project) {
             super(false);
+            this.project = project;
             init();
             setTitle("Configure Tool");
         }
@@ -815,7 +820,49 @@ public class ConfigureTool extends AnAction {
             selections.put("All", false);
             counter = 0;
 
-            return box;
+            JBTabsImpl tabbedPane = new JBTabsImpl(this.project);
+
+            JPanel tab1Panel = new JPanel();
+            tab1Panel.setLayout(new BorderLayout());
+            tab1Panel.add(box, BorderLayout.CENTER);
+
+            TabInfo tabInfo1 = new TabInfo(tab1Panel);
+            tabInfo1.setText("Refactorings");
+
+            TabInfo tabInfo2 = createAdvancedExtractMethodTab();
+
+            tabbedPane.addTab(tabInfo1);
+            tabbedPane.addTab(tabInfo2);
+
+            return tabbedPane.getComponent();
+        }
+
+        private TabInfo createAdvancedExtractMethodTab() {
+            JPanel tabPanel = new JPanel();
+            tabPanel.setLayout(new BorderLayout());
+            tabPanel.add(new JLabel("Content for Tab 2"), BorderLayout.CENTER);
+
+            TabInfo tabInfo = new TabInfo(tabPanel);
+            tabInfo.setText("Advanced Extract Method Configuration");
+
+            /**
+             * Panel for Python:
+             * - Set Python Path
+             * - Run pip requirements
+             */
+
+            /**
+             * Panel for Author Bias:
+             * - Scrollable list of authors with checkboxes
+             * - Button to select all authors (or deselect all)
+             * - Warning message for time it takes to retrain the model
+             */
+
+            /**
+             * Maybe move the Repository Metrics Extraction to this tab
+             */
+
+            return tabInfo;
         }
     }
 }

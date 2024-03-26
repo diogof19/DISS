@@ -9,9 +9,11 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiJavaFile;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.net.URL;
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Utils {
     /**
@@ -166,5 +168,58 @@ public class Utils {
             writer.write("\n");
         }
 
+    }
+
+    /**
+     * Extracts a file from the jar file to the tmp folder
+     * @param fileName the name of the file to be extracted
+     * @throws IOException if there is a problem extracting the file
+     * @return the path of the extracted file
+     */
+    public static String extractFile(String fileName) throws IOException {
+        File file = new File("tmp");
+        if(!file.exists()){
+            file.mkdir();
+        }
+
+        URL url = PredictionModel.class.getResource("/" + fileName);
+
+        InputStream inputStream = url.openStream();
+        OutputStream outputStream = new FileOutputStream("tmp/" + fileName);
+
+        byte[] buffer = new byte[1024];
+        int length;
+        while ((length = inputStream.read(buffer)) > 0) {
+            outputStream.write(buffer, 0, length);
+        }
+
+        inputStream.close();
+        outputStream.close();
+
+        return Paths.get("tmp/" + fileName).toAbsolutePath().toString();
+    }
+
+    public static Set<String> getAuthors() throws IOException {
+        Set<String> authors = new HashSet<>();
+
+        File tmpFolder = new File("tmp");
+        if(!tmpFolder.exists()) {
+            tmpFolder.mkdir();
+        }
+
+        File authorsFile = new File("tmp/authors.txt");
+        if(!authorsFile.exists()){
+            authorsFile.createNewFile();
+            return authors;
+        }
+
+        BufferedReader reader = new BufferedReader(new FileReader(authorsFile));
+        String line;
+        while((line = reader.readLine()) != null) {
+            authors.add(line);
+        }
+        reader.close();
+
+        return authors;
     }
 }
