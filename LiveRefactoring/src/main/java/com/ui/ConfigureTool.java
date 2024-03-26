@@ -1,6 +1,7 @@
 package com.ui;
 
 import com.core.Refactorings;
+import com.datamining.Utils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.markup.RangeHighlighter;
@@ -11,6 +12,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.tabs.TabInfo;
@@ -26,11 +28,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 
 public class ConfigureTool extends AnAction {
     UtilitiesOverall utils = new UtilitiesOverall();
@@ -780,15 +781,12 @@ public class ConfigureTool extends AnAction {
             boxWithExecutors.setPreferredSize(new Dimension(200, 250));
 
             //JPanel panel4 = new JPanel(new GridLayout(3, 2));
-            JPanel panel4 = new JPanel(new GridLayout(3, 2));
+            JPanel panel4 = new JPanel(new GridLayout(2, 2));
 
             panel4.add(label_number, BorderLayout.WEST);
             panel4.add(textField_number, BorderLayout.EAST);
             /*panel4.add(label_seconds, BorderLayout.WEST);
             panel4.add(textField_seconds, BorderLayout.EAST);*/
-
-            panel4.add(label_pythonPath, BorderLayout.WEST);
-            panel4.add(textField_pythonPath, BorderLayout.EAST);
 
             JPanel panel5 = new JPanel(new GridLayout(1, 1));
 
@@ -827,7 +825,7 @@ public class ConfigureTool extends AnAction {
             tab1Panel.add(box, BorderLayout.CENTER);
 
             TabInfo tabInfo1 = new TabInfo(tab1Panel);
-            tabInfo1.setText("Refactorings");
+            tabInfo1.setText("General");
 
             TabInfo tabInfo2 = createAdvancedExtractMethodTab();
 
@@ -840,29 +838,99 @@ public class ConfigureTool extends AnAction {
         private TabInfo createAdvancedExtractMethodTab() {
             JPanel tabPanel = new JPanel();
             tabPanel.setLayout(new BorderLayout());
-            tabPanel.add(new JLabel("Content for Tab 2"), BorderLayout.CENTER);
 
-            TabInfo tabInfo = new TabInfo(tabPanel);
-            tabInfo.setText("Advanced Extract Method Configuration");
+            JPanel pythonPanel = getPythonConfigPanel();
+            tabPanel.add(pythonPanel, BorderLayout.NORTH);
 
-            /**
-             * Panel for Python:
-             * - Set Python Path
-             * - Run pip requirements
-             */
+            JPanel authorPanel = getAuthorBiasPanel();
+            tabPanel.add(authorPanel, BorderLayout.CENTER);
 
-            /**
-             * Panel for Author Bias:
-             * - Scrollable list of authors with checkboxes
-             * - Button to select all authors (or deselect all)
-             * - Warning message for time it takes to retrain the model
-             */
-
-            /**
+            /*
              * Maybe move the Repository Metrics Extraction to this tab
              */
 
+            TabInfo tabInfo = new TabInfo(tabPanel);
+            tabInfo.setText("Advanced Extract Method");
+
             return tabInfo;
         }
+
+        /**
+         * Creates a panel with the python configuration options.
+         * @return JPanel with the python configuration
+         */
+        private JPanel getPythonConfigPanel() {
+            JPanel pythonPanel = new JPanel(new GridLayout(1, 2));
+            pythonPanel.setBorder(BorderFactory.createTitledBorder(
+                    BorderFactory.createEtchedBorder(), "Python Configuration"));
+
+            pythonPanel.add(label_pythonPath, BorderLayout.WEST);
+            pythonPanel.add(textField_pythonPath, BorderLayout.EAST);
+
+            //TODO: Add python requirements button - will need to change rows in gridlayout to 2
+
+            return pythonPanel;
+        }
+
+        /**
+         * Creates a panel with a list of authors and checkboxes to select them.
+         * @return JPanel with the author bias configuration
+         */
+        private JPanel getAuthorBiasPanel() {
+            JPanel authorPanel = new JPanel();
+            authorPanel.setBorder(BorderFactory.createTitledBorder(
+                    BorderFactory.createEtchedBorder(), "Model Bias Configuration"));
+            authorPanel.setAutoscrolls(true);
+
+            JButton selectAllAuthors = new JButton("Select All");
+
+            selectAllAuthors.addActionListener(e -> {
+                boolean allSelected = true;
+                for (Component component: authorPanel.getComponents()) {
+                    if (component instanceof JCheckBox) {
+                        JCheckBox checkBox = (JCheckBox) component;
+                        if (!checkBox.isSelected()) {
+                            allSelected = false;
+                            break;
+                        }
+                    }
+                }
+
+                for (Component component: authorPanel.getComponents()) {
+                    if (component instanceof JCheckBox) {
+                        JCheckBox checkBox = (JCheckBox) component;
+                        checkBox.setSelected(!allSelected);
+                    }
+                }
+            });
+
+            ArrayList<String> authors = new ArrayList<>();
+            try {
+                authors.addAll(Utils.getAuthors());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            authors.add("Hello Author");
+            authors.add("Goodbye Author");
+
+            authors.sort(Comparator.comparing(String::toLowerCase));
+
+            authorPanel.setLayout(new GridLayout(authors.size() + 2, 1));
+
+            authorPanel.add(selectAllAuthors);
+
+            for (String author: authors) {
+                JCheckBox checkBox = new JCheckBox(author);
+                authorPanel.add(checkBox);
+            }
+
+            JBLabel warning = new JBLabel("Warning: Retraining the model may take a long time.");
+            authorPanel.add(warning);
+
+            return authorPanel;
+        }
     }
+
+
 }
