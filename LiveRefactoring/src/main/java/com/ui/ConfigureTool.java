@@ -1,6 +1,7 @@
 package com.ui;
 
 import com.core.Refactorings;
+import com.datamining.AuthorInfo;
 import com.datamining.Utils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -838,6 +839,7 @@ public class ConfigureTool extends AnAction {
         private TabInfo createAdvancedExtractMethodTab() {
             JPanel tabPanel = new JPanel();
             tabPanel.setLayout(new BorderLayout());
+            //tabPanel.setPreferredSize(new Dimension(200,400));
 
             JPanel pythonPanel = getPythonConfigPanel();
             tabPanel.add(pythonPanel, BorderLayout.NORTH);
@@ -877,56 +879,62 @@ public class ConfigureTool extends AnAction {
          * @return JPanel with the author bias configuration
          */
         private JPanel getAuthorBiasPanel() {
-            JPanel authorPanel = new JPanel();
+            JPanel authorPanel = new JPanel(new BorderLayout());
             authorPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Model Bias Configuration"));
-            authorPanel.setAutoscrolls(true);
+
+            Box overallBox = Box.createVerticalBox();
+            overallBox.setPreferredSize(new Dimension(100, 100));
 
             JButton selectAllAuthors = new JButton("Select All");
+            selectAllAuthors.setMaximumSize(new Dimension(70, 30));
+
+            Box authorsBox = Box.createVerticalBox();
 
             selectAllAuthors.addActionListener(e -> {
                 boolean allSelected = true;
-                for (Component component: authorPanel.getComponents()) {
-                    if (component instanceof JCheckBox) {
-                        JCheckBox checkBox = (JCheckBox) component;
-                        if (!checkBox.isSelected()) {
-                            allSelected = false;
-                            break;
-                        }
+                for (Component component: authorsBox.getComponents()) {
+                    JCheckBox checkBox = (JCheckBox) component;
+                    if (!checkBox.isSelected()) {
+                        allSelected = false;
+                        break;
                     }
                 }
 
-                for (Component component: authorPanel.getComponents()) {
-                    if (component instanceof JCheckBox) {
-                        JCheckBox checkBox = (JCheckBox) component;
-                        checkBox.setSelected(!allSelected);
-                    }
+                for (Component component: authorsBox.getComponents()) {
+                    JCheckBox checkBox = (JCheckBox) component;
+                    checkBox.setSelected(!allSelected);
                 }
             });
 
-            ArrayList<String> authors = new ArrayList<>();
+            ArrayList<AuthorInfo> authors = new ArrayList<>();;
             try {
                 authors.addAll(Utils.getAuthors());
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
 
-            authors.add("Hello Author");
-            authors.add("Goodbye Author");
+            authors.sort(AuthorInfo::compareTo);
 
-            authors.sort(Comparator.comparing(String::toLowerCase));
-
-            authorPanel.setLayout(new GridLayout(authors.size() + 2, 1));
-
-            authorPanel.add(selectAllAuthors);
-
-            for (String author: authors) {
-                JCheckBox checkBox = new JCheckBox(author);
-                authorPanel.add(checkBox);
+            for (AuthorInfo author: authors) {
+                JCheckBox checkBox = new JCheckBox(author.toString());
+                checkBox.setPreferredSize(new Dimension(100, 30));
+                authorsBox.add(checkBox);
             }
 
-            JBLabel warning = new JBLabel("Warning: Retraining the model may take a long time.");
-            authorPanel.add(warning);
+            JBScrollPane pane = new JBScrollPane(authorsBox, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+            overallBox.add(selectAllAuthors);
+            overallBox.add(pane);
+
+            JBLabel warning =
+                    new JBLabel("Warning: Retraining the model after this selection may take a long time.");
+            warning.setPreferredSize(new Dimension(100, 30));
+
+            overallBox.add(warning);
+
+            authorPanel.add(overallBox, BorderLayout.CENTER);
 
             return authorPanel;
         }

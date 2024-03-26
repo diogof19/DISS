@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevSort;
@@ -34,7 +35,7 @@ public class RepositoryMetricsExtraction extends AnAction {
     private String branch;
     private Project project;
     private Map<String, Set<String>> changedFiles = new HashMap<>();
-    private Set<String> authors = new HashSet<>();
+    private Set<AuthorInfo> authors = new HashSet<>();
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
         RMEDialogWrapper dialogWrapper = new RMEDialogWrapper();
@@ -165,9 +166,9 @@ public class RepositoryMetricsExtraction extends AnAction {
         for(String commit : commits) {
             try {
                 //For testing purposes
-                if (refactoringInfos.size() > 1) {
-                    break;
-                }
+//                if (refactoringInfos.size() > 1) {
+//                    break;
+//                }
 
                 List<RefactoringInfo> temp = refactoringsAtCommit(miner, repo, commit);
                 refactoringInfos.addAll(temp);
@@ -274,9 +275,10 @@ public class RepositoryMetricsExtraction extends AnAction {
         RevWalk revWalk = new RevWalk(repo);
         RevCommit commit = revWalk.parseCommit(commitObjectId);
 
-        String author = commit.getAuthorIdent().getEmailAddress();
-        refInfo.setAuthor(author);
-        authors.add(author);
+        PersonIdent author = commit.getAuthorIdent();
+        AuthorInfo authorInfo = new AuthorInfo(author.getName(), author.getEmailAddress());
+        refInfo.setAuthor(authorInfo);
+        authors.add(authorInfo);
 
         revWalk.markStart(commit);
         revWalk.sort(RevSort.COMMIT_TIME_DESC);
@@ -374,16 +376,11 @@ public class RepositoryMetricsExtraction extends AnAction {
      * Saves all the authors to a file
      * @throws IOException If there is an error writing to the file
      */
-    private void saveAuthorsToFile() throws IOException {
+    private void saveAuthorsToFile() throws IOException, ClassNotFoundException {
         authors.addAll(Utils.getAuthors());
 
         File authorsFile = new File("tmp/authors.txt");
-        FileWriter writer = new FileWriter(authorsFile.getAbsolutePath(), false);
-        BufferedWriter bufferedWriter = new BufferedWriter(writer);
-        for(String author : authors) {
-            bufferedWriter.write(author + "\n");
-        }
 
-        bufferedWriter.close();
+        AuthorInfo.writeAuthorInfoSet(authors, authorsFile.getAbsolutePath());
     }
 }

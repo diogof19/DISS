@@ -199,9 +199,7 @@ public class Utils {
         return Paths.get("tmp/" + fileName).toAbsolutePath().toString();
     }
 
-    public static Set<String> getAuthors() throws IOException {
-        Set<String> authors = new HashSet<>();
-
+    public static Set<AuthorInfo> getAuthors() throws IOException, ClassNotFoundException {
         File tmpFolder = new File("tmp");
         if(!tmpFolder.exists()) {
             tmpFolder.mkdir();
@@ -210,16 +208,9 @@ public class Utils {
         File authorsFile = new File("tmp/authors.txt");
         if(!authorsFile.exists()){
             authorsFile.createNewFile();
-            return authors;
+            return new HashSet<>();
         }
 
-        BufferedReader reader = new BufferedReader(new FileReader(authorsFile));
-        String line;
-        while((line = reader.readLine()) != null) {
-            authors.add(line);
-        }
-        reader.close();
-
-        return authors;
+        return AuthorInfo.readAuthorInfoSet(authorsFile.getAbsolutePath());
     }
 }
