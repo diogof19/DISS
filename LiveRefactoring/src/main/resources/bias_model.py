@@ -8,9 +8,15 @@ from sklearn.model_selection import train_test_split
 
 def bias(authors, model_path, data_path):
     df = pd.read_csv(data_path)
-    df['author'] = df['author'].apply(lambda x: 1 if x in authors else 0)
+
+    if len(authors) == 1 and authors[0] == "no_bias":
+        df['author'] = 0
+        sample_weights = np.ones(df.shape[0])
+    else:
+        df['author'] = df['author'].apply(lambda x: 1 if x in authors else 0)
+        sample_weights = np.where(df['author'] == 1, 2, 1)
     
-    sample_weights = np.where(df['author'] == 1, 2, 1)
+
     X = df.values
     
     old_model = load(model_path)

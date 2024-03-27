@@ -37,6 +37,14 @@ public class AuthorInfo implements Serializable, Comparable<AuthorInfo> {
         return authorName + " (" + authorEmail + ")";
     }
 
+    public String getAuthorEmail() {
+        return authorEmail;
+    }
+
+    public String getAuthorName() {
+        return authorName;
+    }
+
     public static Set<AuthorInfo> readAuthorInfoSet(String filePath) throws IOException, ClassNotFoundException {
         ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath));
 

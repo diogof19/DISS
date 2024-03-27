@@ -143,7 +143,7 @@ public class Utils {
                 methodMetrics.numberBlankLines;
 
         writer.write(
-                refactoringInfo.getAuthor() + "," +
+                refactoringInfo.getAuthor().toString() + "," +
                     methodMetrics.numberLinesOfCode + "," +
                     methodMetrics.numberComments + "," +
                     methodMetrics.numberBlankLines + "," +
@@ -199,6 +199,12 @@ public class Utils {
         return Paths.get("tmp/" + fileName).toAbsolutePath().toString();
     }
 
+    /**
+     * Gets all the different commit authors from all the commits where metrics were extracted
+     * @return set of authors
+     * @throws IOException if there is a problem reading the authors file
+     * @throws ClassNotFoundException if the class of the object read from the file cannot be found
+     */
     public static Set<AuthorInfo> getAuthors() throws IOException, ClassNotFoundException {
         File tmpFolder = new File("tmp");
         if(!tmpFolder.exists()) {

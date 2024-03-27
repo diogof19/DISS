@@ -192,7 +192,47 @@ public class ConfigureTool extends AnAction {
                     }
                 }
             }
+
+            try {
+                applySelectedAuthors(wrapper.authorsBox);
+            } catch (IOException | ClassNotFoundException | InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
         }
+    }
+
+    /**
+     * Checks if there were any changes to the checkboxes for the authors and, if so, adds the bias to the model
+     * @param authorsBox the box containing the checkboxes for the authors
+     * @throws IOException if there is an error reading the authors file
+     * @throws ClassNotFoundException if there is an error reading the authors file due to not finding the correct class
+     * @throws InterruptedException if there is an interruption during the bias model application
+     */
+    private void applySelectedAuthors(Box authorsBox) throws IOException, ClassNotFoundException, InterruptedException {
+        Set<String> checkedAuthors = new HashSet<>();
+        for (Component component : authorsBox.getComponents()) {
+            if (component instanceof JCheckBox) {
+                JCheckBox checkBox = (JCheckBox) component;
+                if (checkBox.isSelected()) {
+                    checkedAuthors.add(checkBox.getText());
+                }
+            }
+        }
+
+        Set<AuthorInfo> allAuthors = Utils.getAuthors();
+        Set<AuthorInfo> authors = new HashSet<>();
+        for (AuthorInfo author : allAuthors) {
+            if (checkedAuthors.contains(author.toString())) {
+                authors.add(author);
+            }
+        }
+
+        if(!authors.equals(Values.selectedAuthors)){
+            Values.selectedAuthors = authors;
+            System.out.println("Authors: " + authors);
+            //PredictionModel.biasModel();
+        }
+
     }
 
     private String calculateHash(String name) {
@@ -272,6 +312,7 @@ public class ConfigureTool extends AnAction {
         public HashMap<String,Boolean>selections = new HashMap<>();
 
         public Project project;
+        public Box authorsBox;
 
         public MyDialogWrapper(Project project) {
             super(false);
@@ -889,11 +930,11 @@ public class ConfigureTool extends AnAction {
             JButton selectAllAuthors = new JButton("Select All");
             selectAllAuthors.setMaximumSize(new Dimension(70, 30));
 
-            Box authorsBox = Box.createVerticalBox();
+            this.authorsBox = Box.createVerticalBox();
 
             selectAllAuthors.addActionListener(e -> {
                 boolean allSelected = true;
-                for (Component component: authorsBox.getComponents()) {
+                for (Component component: this.authorsBox.getComponents()) {
                     JCheckBox checkBox = (JCheckBox) component;
                     if (!checkBox.isSelected()) {
                         allSelected = false;
@@ -901,7 +942,7 @@ public class ConfigureTool extends AnAction {
                     }
                 }
 
-                for (Component component: authorsBox.getComponents()) {
+                for (Component component: this.authorsBox.getComponents()) {
                     JCheckBox checkBox = (JCheckBox) component;
                     checkBox.setSelected(!allSelected);
                 }
@@ -919,10 +960,14 @@ public class ConfigureTool extends AnAction {
             for (AuthorInfo author: authors) {
                 JCheckBox checkBox = new JCheckBox(author.toString());
                 checkBox.setPreferredSize(new Dimension(100, 30));
-                authorsBox.add(checkBox);
+
+                if(Values.selectedAuthors.contains(author))
+                    checkBox.setSelected(true);
+
+                this.authorsBox.add(checkBox);
             }
 
-            JBScrollPane pane = new JBScrollPane(authorsBox, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+            JBScrollPane pane = new JBScrollPane(this.authorsBox, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                     ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
             overallBox.add(selectAllAuthors);

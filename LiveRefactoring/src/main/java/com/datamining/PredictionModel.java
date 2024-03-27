@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Set;
 
 import static com.datamining.Utils.extractFile;
 
@@ -103,7 +104,14 @@ public class PredictionModel {
         return result == 1;
     }
 
-    public static void biasModel(ArrayList<String> authors) throws IOException, InterruptedException {
+    /**
+     * Uses the python script to bias the model for the selected authors
+     * @throws IOException if the python script has a problem
+     * @throws InterruptedException if the process is interrupted
+     */
+    public static void biasModel() throws IOException, InterruptedException {
+        //TODO: Test better
+
         if(pythonBiasFilePath == null || pythonBiasFilePath.isEmpty())
             pythonBiasFilePath = extractFile("bias.py");
 
@@ -113,6 +121,8 @@ public class PredictionModel {
         if(dataFilePath == null || dataFilePath.isEmpty())
             dataFilePath = extractFile("extracted_metrics.csv");
 
+        Set<AuthorInfo> authors = Values.selectedAuthors;
+
         String pythonPath = getPythonPath();
 
         ArrayList<String> command = new ArrayList<>();
@@ -120,7 +130,14 @@ public class PredictionModel {
         command.add(pythonBiasFilePath);
         command.add(modelFilePath);
         command.add(dataFilePath);
-        command.addAll(authors);
+
+        for (AuthorInfo author : authors) {
+            command.add(author.toString());
+        }
+
+        //If there are no authors, add this string so the python script knows to add no bias
+        if(authors.isEmpty())
+            command.add("no_bias");
 
         pythonScriptRun(command);
 
@@ -140,6 +157,13 @@ public class PredictionModel {
         return pythonPath;
     }
 
+    /**
+     * Runs a python script with the given command
+     * @param command the command to run the python script
+     * @return the output of the python script
+     * @throws IOException if the python script has a problem
+     * @throws InterruptedException if the process is interrupted
+     */
     private static @NotNull String pythonScriptRun(ArrayList<String> command) throws IOException, InterruptedException {
         Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
 

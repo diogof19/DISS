@@ -6,15 +6,14 @@ import com.analysis.metrics.FileMetrics;
 import com.analysis.metrics.MethodMetrics;
 import com.core.LastRefactoring;
 import com.core.Severity;
+import com.datamining.AuthorInfo;
 import com.google.firebase.database.DatabaseReference;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.markup.RangeHighlighter;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class Values {
     public static Editor editor = null;
@@ -65,6 +64,7 @@ public class Values {
     public static int numSeconds = 5;
     public static String projectName = "unknown";
     public static String pythonPath = "";
+    public static Set<AuthorInfo> selectedAuthors = new HashSet<>();
 
 
     public void setLastRefactoring(LastRefactoring refactoring) {
