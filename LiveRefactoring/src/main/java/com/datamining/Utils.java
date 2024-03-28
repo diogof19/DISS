@@ -4,6 +4,8 @@ import com.analysis.metrics.ClassMetrics;
 import com.analysis.metrics.FileMetrics;
 import com.analysis.metrics.MethodMetrics;
 import com.core.Pair;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -218,5 +220,25 @@ public class Utils {
         }
 
         return AuthorInfo.readAuthorInfoSet(authorsFile.getAbsolutePath());
+    }
+
+    /**
+     * Creates a balloon type notification
+     * @param project project
+     * @param title title of the notification
+     * @param content content of the notification
+     * @param type type of the notification
+     */
+    public static void popup(Project project, String title, String content, NotificationType type){
+        //For some reason, I need to define a groupID before creating the notification
+        String groupID = "LiveRefactor";
+        Notification error = new Notification(
+                groupID,
+                title,
+                content,
+                type
+        );
+
+        error.notify(project);
     }
 }

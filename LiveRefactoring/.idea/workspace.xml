@@ -11,7 +11,10 @@
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/TODO.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,12 +92,6 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "git-widget-placeholder": "main",
-    "node.js.selected.package.tslint": "(autodetect)"
-  }
-}]]></component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="com.analysis.refactorings" />
@@ -611,7 +608,9 @@
       <workItem from="1711358038138" duration="5308000" />
       <workItem from="1711364086602" duration="2894000" />
       <workItem from="1711442727282" duration="16464000" />
-      <workItem from="1711534366026" duration="4033000" />
+      <workItem from="1711534366026" duration="4057000" />
+      <workItem from="1711625659838" duration="867000" />
+      <workItem from="1711646742039" duration="1304000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>
@@ -1049,6 +1048,7 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="LOCAL_CHANGES_DETAILS_PREVIEW_SHOWN" value="false" />

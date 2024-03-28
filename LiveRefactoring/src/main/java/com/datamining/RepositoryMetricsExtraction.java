@@ -1,6 +1,7 @@
 package com.datamining;
 
 import com.core.Pair;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -54,6 +55,11 @@ public class RepositoryMetricsExtraction extends AnAction {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+
+            Utils.popup(this.project,
+                    "LiveRef - Metrics extracted",
+                    "The metrics were extracted successfully.",
+                    NotificationType.INFORMATION);
         }
     }
 
@@ -113,7 +119,7 @@ public class RepositoryMetricsExtraction extends AnAction {
      * @throws IOException If there is an error with the repository
      * @throws GitAPIException If there is an error with the git API
      */
-    private void cloneRepo(File file) throws IOException, GitAPIException {
+    private void cloneRepo(File file) throws IOException {
         //Check if there is already a cloned repo and delete if there is
         File clonedRepo = new File("tmp/repo");
         if(clonedRepo.exists()) {
@@ -121,11 +127,19 @@ public class RepositoryMetricsExtraction extends AnAction {
         }
 
         //Clone the repository so the original one is not affected
-        Git.cloneRepository()
-                .setURI("file://" + this.repositoryPath)
-                .setDirectory(new File("tmp/repo"))
-                .setBranch(this.branch)
-                .call();
+        try {
+            Git.cloneRepository()
+                    .setURI("file://" + this.repositoryPath)
+                    .setDirectory(new File("tmp/repo"))
+                    .setBranch(this.branch)
+                    .call();
+        } catch (GitAPIException e) {
+            Utils.popup(this.project,
+                    "LiveRef - Error cloning the repository",
+                    "Check if the repository path is correct, if the branch exists, and if you have the necessary permissions to clone it.",
+                    NotificationType.ERROR);
+            System.out.println("Error cloning the repository: " + e.getMessage());
+        }
 
         this.repositoryPath = file.getAbsolutePath() + "/repo";
 

@@ -1,6 +1,7 @@
 package com.datamining;
 
 import com.analysis.metrics.MethodMetrics;
+import com.intellij.notification.NotificationType;
 import com.utils.importantValues.Values;
 import org.jetbrains.annotations.NotNull;
 
@@ -81,12 +82,19 @@ public class PredictionModel {
      */
     private static boolean predictPython(ArrayList<Double> data) throws IOException, InterruptedException {
         if(pythonPredictionFilePath == null || pythonPredictionFilePath.isEmpty())
-            pythonPredictionFilePath = extractFile("predict.py");
+            pythonPredictionFilePath = extractFile("prediction.py");
 
         if(modelFilePath == null || modelFilePath.isEmpty())
             modelFilePath = extractFile("model.joblib");
 
         String pythonPath = getPythonPath();
+        if (pythonPath == null) {
+            Utils.popup(Values.event.getProject(),
+                    "LiveRef - Python path not set",
+                    "Extract Method Refactoring won't work.Please set the python path by opening the 'Configure Tool' window and going to the 'Advanced Extract Method' tab.",
+                    NotificationType.ERROR);
+            return false;
+        }
 
         ArrayList<String> command = new ArrayList<>();
         command.add(pythonPath);
@@ -124,6 +132,13 @@ public class PredictionModel {
         Set<AuthorInfo> authors = Values.selectedAuthors;
 
         String pythonPath = getPythonPath();
+        if (pythonPath == null) {
+            Utils.popup(Values.event.getProject(),
+                    "LiveRef - Python path not set",
+                    "Model bias won't work. Please set the python path by opening the 'Configure Tool' window and going to the 'Advanced Extract Method' tab.",
+                    NotificationType.ERROR);
+            return;
+        }
 
         ArrayList<String> command = new ArrayList<>();
         command.add(pythonPath);
@@ -141,17 +156,23 @@ public class PredictionModel {
 
         pythonScriptRun(command);
 
+        Utils.popup(Values.event.getProject(),
+                "LiveRef - Model Bias",
+                "Model bias has been applied for the selected authors.",
+                NotificationType.INFORMATION);
     }
 
+    /**
+     * Gets the python path from the settings
+     * @return the python path or null if it is not set
+     */
     private static String getPythonPath() {
         String pythonPath = Values.pythonPath;
 
-        //TODO: Uncomment the exception
-        //TODO: Add pop-up when the python path is not set
         if (pythonPath.isEmpty()) {
-            //throw new IOException("Python path not set");
-            System.out.println("Python path not set");
-            pythonPath = "C:\\Program Files\\Python310\\python.exe"; //For testing purposes
+            //TODO: Removed this after testing
+            pythonPath = "C:\\Program Files\\Python310\\python.exe";
+            return null;
         }
 
         return pythonPath;
