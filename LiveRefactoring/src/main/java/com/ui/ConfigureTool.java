@@ -2,6 +2,7 @@ package com.ui;
 
 import com.core.Refactorings;
 import com.datamining.AuthorInfo;
+import com.datamining.PredictionModel;
 import com.datamining.Utils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -229,8 +230,7 @@ public class ConfigureTool extends AnAction {
 
         if(!authors.equals(Values.selectedAuthors)){
             Values.selectedAuthors = authors;
-            System.out.println("Authors: " + authors);
-            //PredictionModel.biasModel();
+            PredictionModel.biasModel();
         }
 
     }

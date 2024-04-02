@@ -1,8 +1,17 @@
 package com.datamining;
 
 import com.analysis.metrics.MethodMetrics;
+import com.core.Pair;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vcs.ProjectLevelVcsManager;
+import com.intellij.openapi.vcs.VcsException;
+import com.intellij.openapi.vcs.changes.VcsDirtyScope;
+import com.intellij.openapi.vcs.changes.VcsDirtyScopeManager;
 import com.utils.importantValues.Values;
+import git4idea.GitUtil;
+import git4idea.GitVcs;
+import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -41,27 +50,7 @@ public class PredictionModel {
      * @return true if the method is an inlier, false if it is an outlier
      */
     public static boolean predict(MethodMetrics methodMetrics){
-        ArrayList<Double> data = new ArrayList<>();
-
-        data.add((double) methodMetrics.numberLinesOfCode);
-        data.add((double) methodMetrics.numberComments);
-        data.add((double) methodMetrics.numberBlankLines);
-        data.add((double) methodMetrics.numberLinesOfCode + methodMetrics.numberComments +
-                methodMetrics.numberBlankLines);
-        data.add((double) methodMetrics.numParameters);
-        data.add((double) methodMetrics.numberOfStatements);
-        data.add(methodMetrics.halsteadLength);
-        data.add(methodMetrics.halsteadVocabulary);
-        data.add(methodMetrics.halsteadVolume);
-        data.add(methodMetrics.halsteadDifficulty);
-        data.add(methodMetrics.halsteadEffort);
-        data.add(methodMetrics.halsteadLevel);
-        data.add(methodMetrics.halsteadTime);
-        data.add(methodMetrics.halsteadBugsDelivered);
-        data.add(methodMetrics.halsteadMaintainability);
-        data.add((double) methodMetrics.complexityOfMethod);
-        data.add((double) methodMetrics.cognitiveComplexity);
-        data.add(methodMetrics.lackOfCohesionInMethod);
+        ArrayList<Double> data = getMetrics(methodMetrics);
 
         try {
             System.out.println("Starting Prediction");
@@ -206,6 +195,67 @@ public class PredictionModel {
         return output.toString();
     }
 
+    /**
+     * Gets the required metrics for the prediction model from the method metrics
+     * @param methodMetrics the metrics of the method
+     * @return the metrics required for the prediction model
+     */
+    private static ArrayList<Double> getMetrics(MethodMetrics methodMetrics) {
+        ArrayList<Double> data = new ArrayList<>();
+
+        data.add((double) methodMetrics.numberLinesOfCode);
+        data.add((double) methodMetrics.numberComments);
+        data.add((double) methodMetrics.numberBlankLines);
+        data.add((double) methodMetrics.numberLinesOfCode + methodMetrics.numberComments +
+                methodMetrics.numberBlankLines);
+        data.add((double) methodMetrics.numParameters);
+        data.add((double) methodMetrics.numberOfStatements);
+        data.add(methodMetrics.halsteadLength);
+        data.add(methodMetrics.halsteadVocabulary);
+        data.add(methodMetrics.halsteadVolume);
+        data.add(methodMetrics.halsteadDifficulty);
+        data.add(methodMetrics.halsteadEffort);
+        data.add(methodMetrics.halsteadLevel);
+        data.add(methodMetrics.halsteadTime);
+        data.add(methodMetrics.halsteadBugsDelivered);
+        data.add(methodMetrics.halsteadMaintainability);
+        data.add((double) methodMetrics.complexityOfMethod);
+        data.add((double) methodMetrics.cognitiveComplexity);
+        data.add(methodMetrics.lackOfCohesionInMethod);
+
+        return data;
+    }
+
+    public static void updateModel(MethodMetrics methodMetrics, Project project) {
+        //TODO: How do I get the author?
+        //TODO: Actually update the model - incremental training?
+
+        ArrayList<Double> data = getMetrics(methodMetrics);
+    }
+
+    private static String getCurrentGitAuthor(Project project) {
+        String author;
+
+        ProjectLevelVcsManager vcsManager = ProjectLevelVcsManager.getInstance(project);
+
+        if (vcsManager.checkVcsIsActive("Git")) {
+            try {
+                //Get user
+                GitVcs gitVcs = (GitVcs) vcsManager.findVcsByName("Git");
+
+                GitRepositoryManager repositoryManager = GitUtil.getRepositoryManager(project);
+
+                VcsDirtyScopeManager dirtyScopeManager = VcsDirtyScopeManager.getInstance(project);
+                VcsDirtyScope dirtyScope = dirtyScopeManager.
+
+
+            } catch (VcsException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return author;
+    }
 }
 
 

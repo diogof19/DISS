@@ -3,7 +3,6 @@
 - Fix the delete repositories error
 - Add bias to model (sample weights with author):
   - Function that changes weight based on an author or list of authors (DONE - NEEDS MORE TESTING)
-  - Connect the ui to the function
 - Add more ui:
   - Try to add a progress bar for the Repository Metrics Extraction
 - Selection of authors to bias the model:
@@ -18,3 +17,4 @@
 - After having the data:
   - Check for feature selection
   - Covariance matrix (EllipticEnvelope)
+- Add data to the model after an Extract Method is done

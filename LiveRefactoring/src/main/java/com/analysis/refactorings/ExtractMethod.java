@@ -94,6 +94,12 @@ public class ExtractMethod{
                 ExtractMethodHandler.invokeOnElements(editor.getProject(), processor, candidate.sourceFile, true);
                 Values.allEM.add(candidate);
                 System.out.println("============ Extract Method Done!!! ============");
+
+                //Update Extract Method model with new data
+                PsiMethod method = candidate.method;
+                MethodMetrics metrics = candidate.metrics.getMethodMetrics(method);
+                PredictionModel.updateModel(metrics, editor.getProject());
+
             }else Values.isRefactoring = false;
         } catch (PrepareFailedException e) {
             e.printStackTrace();
