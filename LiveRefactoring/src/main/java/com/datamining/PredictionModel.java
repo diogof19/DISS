@@ -1,17 +1,9 @@
 package com.datamining;
 
 import com.analysis.metrics.MethodMetrics;
-import com.core.Pair;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vcs.ProjectLevelVcsManager;
-import com.intellij.openapi.vcs.VcsException;
-import com.intellij.openapi.vcs.changes.VcsDirtyScope;
-import com.intellij.openapi.vcs.changes.VcsDirtyScopeManager;
 import com.utils.importantValues.Values;
-import git4idea.GitUtil;
-import git4idea.GitVcs;
-import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -227,34 +219,52 @@ public class PredictionModel {
     }
 
     public static void updateModel(MethodMetrics methodMetrics, Project project) {
-        //TODO: How do I get the author?
         //TODO: Actually update the model - incremental training?
 
         ArrayList<Double> data = getMetrics(methodMetrics);
+        String author = getCurrentGitAuthor(project);
+        if (author == null) {
+            Utils.popup(project,
+                    "LiveRef - Git author not found",
+                    "The current git author could not be found. Please make sure you have git installed and configured.",
+                    NotificationType.ERROR);
+            author = "";
+        }
+
+        //Call the python script to update the model
     }
 
     private static String getCurrentGitAuthor(Project project) {
-        String author;
+        try {
+            String email = runCommand("git config user.email");
+            String name = runCommand("git config user.name");
+            return name + " (" + email + ")";
+        } catch (IOException | InterruptedException e) {
+            return null;
+        }
+    }
 
-        ProjectLevelVcsManager vcsManager = ProjectLevelVcsManager.getInstance(project);
+    private static String runCommand(String command) throws IOException, InterruptedException {
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
+        processBuilder.redirectErrorStream(true);
 
-        if (vcsManager.checkVcsIsActive("Git")) {
-            try {
-                //Get user
-                GitVcs gitVcs = (GitVcs) vcsManager.findVcsByName("Git");
+        Process process = processBuilder.start();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line;
+        StringBuilder output = new StringBuilder();
 
-                GitRepositoryManager repositoryManager = GitUtil.getRepositoryManager(project);
-
-                VcsDirtyScopeManager dirtyScopeManager = VcsDirtyScopeManager.getInstance(project);
-                VcsDirtyScope dirtyScope = dirtyScopeManager.
-
-
-            } catch (VcsException e) {
-                e.printStackTrace();
-            }
+        while ((line = reader.readLine()) != null) {
+            output.append(line);
         }
 
-        return author;
+        int exitCode = process.waitFor();
+        if (exitCode == 0) {
+            return output.toString().trim();
+        } else {
+            System.err.println("Error executing command: " + command);
+        }
+
+        return output.toString();
     }
 }
 

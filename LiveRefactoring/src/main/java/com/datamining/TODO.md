@@ -3,8 +3,6 @@
 - Fix the delete repositories error
 - Add bias to model (sample weights with author):
   - Function that changes weight based on an author or list of authors (DONE - NEEDS MORE TESTING)
-- Add more ui:
-  - Try to add a progress bar for the Repository Metrics Extraction
 - Selection of authors to bias the model:
   - Connect to the prediction model to retrain it (DONE - NEEDS MORE TESTING)
   - Possibly add the possibility to create a pre-determined profile with a set of authors:
@@ -17,4 +15,6 @@
 - After having the data:
   - Check for feature selection
   - Covariance matrix (EllipticEnvelope)
-- Add data to the model after an Extract Method is done
+- Add data to the model after an Extract Method is done:
+  - Initial part (DONE)
+  - Should it be incremental training? Might be too hard. Maybe just retrain the model with the new data after a certain number of refactorings (10)
