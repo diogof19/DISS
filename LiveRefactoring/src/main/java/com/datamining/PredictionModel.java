@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -22,18 +23,20 @@ public class PredictionModel {
     private static String pythonBiasFilePath;
     private static String dataFilePath;
     public static void main(String[] args) {
-        ArrayList<Double> data = new ArrayList<>();
+//        ArrayList<Double> data = new ArrayList<>();
+//
+//        // Add 18 test values to the array
+//        for (int i = 0; i < 18; i++) {
+//            data.add(0.0 + i);
+//        }
+//
+//        try {
+//            System.out.println(predictPython(data));
+//        } catch (IOException | InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
 
-        // Add 18 test values to the array
-        for (int i = 0; i < 18; i++) {
-            data.add(0.0 + i);
-        }
-
-        try {
-            System.out.println(predictPython(data));
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        System.out.println(getCurrentGitAuthor());
     }
 
     /**
@@ -222,7 +225,8 @@ public class PredictionModel {
         //TODO: Actually update the model - incremental training?
 
         ArrayList<Double> data = getMetrics(methodMetrics);
-        String author = getCurrentGitAuthor(project);
+        String author = getCurrentGitAuthor();
+        System.out.println(author);
         if (author == null) {
             Utils.popup(project,
                     "LiveRef - Git author not found",
@@ -234,7 +238,7 @@ public class PredictionModel {
         //Call the python script to update the model
     }
 
-    private static String getCurrentGitAuthor(Project project) {
+    private static String getCurrentGitAuthor() {
         try {
             String email = runCommand("git config user.email");
             String name = runCommand("git config user.name");
@@ -265,6 +269,52 @@ public class PredictionModel {
         }
 
         return output.toString();
+    }
+
+    public static boolean checkPipRequirements() throws IOException, InterruptedException {
+        String pythonPath = getPythonPath();
+        if (pythonPath == null) {
+            Utils.popup(Values.event.getProject(),
+                    "LiveRef - Python path not set",
+                    "Cannot check pip requirements without python path. Please set the python path by opening the 'Configure Tool' window and going to the 'Advanced Extract Method' tab.",
+                    NotificationType.ERROR);
+            return false;
+        }
+
+        URL url = PredictionModel.class.getResource("/requirements.txt");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if(!isPythonPackagedInstalled(pythonPath, line))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static boolean isPythonPackagedInstalled(String pythonPath, String packageName) throws IOException, InterruptedException {
+        Process process = new ProcessBuilder(pythonPath, "-c",
+                "import " + packageName).start();
+
+        int exitCode = process.waitFor();
+
+        return exitCode == 0;
+    }
+
+    public static void installPipRequirements() throws IOException, InterruptedException {
+        String pythonPath = getPythonPath();
+        if (pythonPath == null) {
+            Utils.popup(Values.event.getProject(),
+                    "LiveRef - Python path not set",
+                    "Cannot install pip requirements without python path. Please set the python path by opening the 'Configure Tool' window and going to the 'Advanced Extract Method' tab.",
+                    NotificationType.ERROR);
+            return;
+        }
+
+        extractFile("requirements.txt");
+
+        runCommand(pythonPath + " -m pip install -r tmp/requirements.txt");
     }
 }
 

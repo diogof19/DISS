@@ -94,6 +94,7 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;Gradle.LiveRefactoring [:PredictionModel.main()].executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
@@ -131,7 +132,7 @@
       <recent name="com.ui.icons" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.LiveRefactoring">
+  <component name="RunManager" selected="Application.PredictionModel">
     <configuration name="DataCollection" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.datamining.DataCollection" />
       <module name="LiveRefactoring.main" />
@@ -624,6 +625,9 @@
       <workItem from="1711625659838" duration="867000" />
       <workItem from="1711646742039" duration="1304000" />
       <workItem from="1712045165286" duration="4452000" />
+      <workItem from="1712133681961" duration="1014000" />
+      <workItem from="1712141293048" duration="594000" />
+      <workItem from="1712221879046" duration="979000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>
