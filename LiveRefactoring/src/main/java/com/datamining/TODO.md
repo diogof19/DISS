@@ -18,3 +18,9 @@
 - Add data to the model after an Extract Method is done:
   - Initial part (DONE)
   - Should it be incremental training? Might be too hard. Maybe just retrain the model with the new data after a certain number of refactorings (10)
+
+- Topics/Questions:
+  - If no disk, I can get the data with my code, though it won't be as good (need to do it soon)
+  - Incremental training or retrain the model after a certain number of refactorings?
+  - Groups of authors with pre-trained models for easy switch?
+  - What to do after finishing the bias?
