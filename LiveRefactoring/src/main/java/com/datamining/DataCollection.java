@@ -14,10 +14,9 @@ import org.bson.conversions.Bson;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 
@@ -57,7 +56,7 @@ public class DataCollection extends AnAction {
 
         try {
             extractMetrics(refactoringData);
-        } catch (IOException e) {
+        } catch (IOException | SQLException e) {
             throw new RuntimeException(e);
         }
 
@@ -93,13 +92,7 @@ public class DataCollection extends AnAction {
         return collection.aggregate(pipeline).into(new HashSet<>());
     }
 
-    private void extractMetrics(HashSet<Document> documents) throws IOException {
-        File metricsFile = new File(EXTRACTED_METRICS_FILE_PATH);
-        FileWriter writer = new FileWriter(metricsFile, false);
-        BufferedWriter bufferedWriter = new BufferedWriter(writer);
-
-        Utils.writeMetricsFileHeader(bufferedWriter, true);
-
+    private void extractMetrics(HashSet<Document> documents) throws IOException, SQLException {
         for (Document document : documents) {
             System.out.println(document);
 
@@ -114,14 +107,11 @@ public class DataCollection extends AnAction {
                     "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\test_files\\AbstractGraphTest.java",
                     file, file, null, null);
 
-            saveMetricsToFile(bufferedWriter, refactoringInfo, true);
-            saveMetricsToFile(bufferedWriter, refactoringInfo, false);
+            //TODO: Replace the 2nd argument with the correct refactoringInfo
+            Database.saveMetrics(refactoringInfo, refactoringInfo);
 
             break;
         }
-
-        
-        bufferedWriter.close();
     }
 
 

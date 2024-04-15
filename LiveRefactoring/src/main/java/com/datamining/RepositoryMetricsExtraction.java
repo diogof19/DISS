@@ -22,16 +22,17 @@ import org.refactoringminer.api.*;
 import org.refactoringminer.rm1.GitHistoryRefactoringMinerImpl;
 import org.refactoringminer.util.GitServiceImpl;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.sql.SQLException;
 import java.util.*;
-
-import static com.datamining.Utils.extractFile;
 
 //TODO: Give credits to RefactoringMiner
 //      https://github.com/tsantalis/RefactoringMiner?tab=readme-ov-file#how-to-cite-refactoringminer
 
 public class RepositoryMetricsExtraction extends AnAction {
-    private static String extractedMetricsFilePath;
     private String repositoryPath;
     private String branch;
     private Project project;
@@ -79,17 +80,6 @@ public class RepositoryMetricsExtraction extends AnAction {
 
         System.out.println("Refactorings extracted: " + refactoringInfos.size());
 
-        if(extractedMetricsFilePath == null || extractedMetricsFilePath.isEmpty()) {
-            extractedMetricsFilePath = extractFile("extracted_metrics.csv");
-        }
-
-        File metricsFile = new File(extractedMetricsFilePath);
-
-        System.out.println("Metrics file path: " + metricsFile.getAbsolutePath());
-
-        FileWriter writer = new FileWriter(metricsFile.getAbsolutePath(), true);
-        BufferedWriter bufferedWriter = new BufferedWriter(writer);
-
         for (RefactoringInfo refactoringInfo : refactoringInfos) {
             String filePath = getFilePath(refactoringInfo);
 
@@ -99,10 +89,8 @@ public class RepositoryMetricsExtraction extends AnAction {
             }
 
             refactoringInfo.setFilePath(filePath);
-            saveMetrics(refactoringInfo, bufferedWriter);
+            saveMetrics(refactoringInfo);
         }
-
-        bufferedWriter.close();
 
         System.out.println("Metrics extracted");
 
@@ -180,9 +168,9 @@ public class RepositoryMetricsExtraction extends AnAction {
         for(String commit : commits) {
             try {
                 //For testing purposes
-//                if (refactoringInfos.size() > 1) {
-//                    break;
-//                }
+                if (refactoringInfos.size() > 1) {
+                    break;
+                }
 
                 List<RefactoringInfo> temp = refactoringsAtCommit(miner, repo, commit);
                 refactoringInfos.addAll(temp);
@@ -275,11 +263,10 @@ public class RepositoryMetricsExtraction extends AnAction {
     /**
      * Save the metrics of the file before the refactoring
      * @param refInfo The refactoring info
-     * @param bufferedWriter The writer of file where the metrics are to be saved
      * @throws IOException If there is an error writing to the file
      * @throws GitAPIException If there is an error with the git API
      */
-    private void saveMetrics(RefactoringInfo refInfo, BufferedWriter bufferedWriter) throws IOException, GitAPIException {
+    private void saveMetrics(RefactoringInfo refInfo) throws IOException, GitAPIException, SQLException {
         Git git = Git.open(new File(this.repositoryPath));
 
         Repository repo = git.getRepository();
@@ -318,7 +305,7 @@ public class RepositoryMetricsExtraction extends AnAction {
 
         refInfo.setBeforeFile(psiFile);
 
-        Utils.saveMetricsToFile(bufferedWriter, refInfo, true);
+        Database.saveMetrics(refInfo, null);
     }
 
     /**

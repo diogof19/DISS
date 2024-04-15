@@ -25,6 +25,7 @@ dependencies {
     implementation 'org.mongodb:mongodb-driver-sync:4.4.0'
     //implementation 'com.github.tsantalis:refactoring-miner:2.0.3'
     implementation fileTree(dir: 'src/main/resources/RefactoringMiner/lib', include: ['*.jar'], excludes: ['JavaEWAH-1.1.6.jar'])
+    implementation 'org.xerial:sqlite-jdbc:3.45.2.0'
 }
 
 apply plugin: 'java'

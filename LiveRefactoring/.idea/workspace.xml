@@ -12,7 +12,10 @@
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/TODO.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -117,9 +120,22 @@
       <recent name="com.ui.icons" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.LiveRefactoring">
+  <component name="RunManager" selected="Application.Database">
     <configuration name="DataCollection" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.datamining.DataCollection" />
+      <module name="LiveRefactoring.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.datamining.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Database" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.datamining.Database" />
       <module name="LiveRefactoring.main" />
       <extension name="coverage">
         <pattern>
@@ -203,6 +219,7 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="Application.Database" />
       <item itemvalue="Application.RepositoryMetricsExtraction" />
       <item itemvalue="Application.PredictionModel" />
       <item itemvalue="Application.DataCollection" />
@@ -211,6 +228,7 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.Database" />
         <item itemvalue="Application.RepositoryMetricsExtraction" />
         <item itemvalue="Application.PredictionModel" />
         <item itemvalue="Application.DataCollection" />
@@ -220,11 +238,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="jdk-11.0.22-corretto-11.0.22-4caba194b151-868cef46" />
-        <option value="jdk-15.0.10-azul-15.0.10-4caba194b151-739f9a4f" />
-        <option value="jdk-17.0.10-corretto-17.0.10-4caba194b151-5cd809f4" />
-        <option value="jdk-19.0.2-corretto-19.0.2-4caba194b151-48ba4555" />
-        <option value="jdk-21.0.2-openjdk-21.0.2-4caba194b151-4f524021" />
+        <option value="bundled-jdk-9f38398b9061-18abd8497189-intellij.indexing.shared.core-IU-241.14494.240" />
+        <option value="bundled-js-predefined-1d06a55b98c1-74d2a5396914-JavaScript-IU-241.14494.240" />
       </set>
     </attachedChunks>
   </component>
@@ -613,6 +628,7 @@
       <workItem from="1712133681961" duration="1014000" />
       <workItem from="1712141293048" duration="594000" />
       <workItem from="1712221879046" duration="979000" />
+      <workItem from="1713166990866" duration="4872000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>
@@ -1050,7 +1066,6 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="LOCAL_CHANGES_DETAILS_PREVIEW_SHOWN" value="false" />

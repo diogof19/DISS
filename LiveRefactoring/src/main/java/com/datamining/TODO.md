@@ -20,7 +20,17 @@
   - Should it be incremental training? Might be too hard. Maybe just retrain the model with the new data after a certain number of refactorings (10)
 
 - Topics/Questions:
-  - If no disk, I can get the data with my code, though it won't be as good (need to do it soon)
-  - Incremental training or retrain the model after a certain number of refactorings?
-  - Groups of authors with pre-trained models for easy switch?
-  - What to do after finishing the bias?
+  - If no disk, I can get the data with my code, though it won't be as good (need to do it soon) - The disk is coming
+  - Incremental training or retrain the model after a certain number of refactorings? - Retrain now & Future work para incremental training
+  - Groups of authors with pre-trained models for easy switch? - Yes
+  - What to do after finishing the bias? - Future Work
+  - I was thinking of getting data from before and after a refactoring to understand if the metrics are doing what they're supposed to do. - Yes
+  - Also, checking the metrics on the before version to understand what threshold values are good. - Yes
+
+- Comparar com o extract method do intellij
+
+Trabalho futuro:
+- Adicionar Extract Class
+- Aumnentar número de dados - script que utilizada recursos de alta computação
+- Incremental training (future work escrito na tese pq é muito difícil)
+- Synchronize profiles between different machines
