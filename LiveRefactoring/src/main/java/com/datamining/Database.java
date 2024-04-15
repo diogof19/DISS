@@ -16,7 +16,7 @@ public class Database {
     private static String DATABASE_URL;
 
     public static void main(String[] args) throws SQLException {
-        printData();
+
     }
 
     private static Connection connect() {
@@ -138,6 +138,12 @@ public class Database {
         MethodMetrics beforeMethodMetrics = beforeMetrics.getSecond();
         MethodMetrics afterMethodMetrics = afterMetrics != null ? afterMetrics.getSecond() : null;
 
+        String author = beforeInfo.getAuthor().toString();
+
+        saveMetrics(author, beforeMethodMetrics, afterMethodMetrics);
+    }
+
+    public static void saveMetrics(String author, MethodMetrics beforeMethodMetrics, MethodMetrics afterMethodMetrics) throws SQLException {
         int beforeTotalLines = beforeMethodMetrics.numberLinesOfCode + beforeMethodMetrics.numberComments +
                 beforeMethodMetrics.numberBlankLines;
         int afterTotalLines = afterMethodMetrics != null ? afterMethodMetrics.numberLinesOfCode +
@@ -155,9 +161,8 @@ public class Database {
                 "?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = connect()) {
-
             PreparedStatement pstmt = conn.prepareStatement(insertSQL);
-            pstmt.setString(1, beforeInfo.getAuthor().toString());
+            pstmt.setString(1, author);
             pstmt.setInt(2, beforeMethodMetrics.numberLinesOfCode);
             pstmt.setInt(3, beforeMethodMetrics.numberComments);
             pstmt.setInt(4, beforeMethodMetrics.numberBlankLines);
@@ -177,7 +182,7 @@ public class Database {
             pstmt.setInt(18, beforeMethodMetrics.cognitiveComplexity);
             pstmt.setDouble(19, beforeMethodMetrics.lackOfCohesionInMethod);
 
-            if(afterMetrics == null){
+            if(afterMethodMetrics == null){
                 pstmt.setNull(20, Types.INTEGER);
                 pstmt.setNull(21, Types.INTEGER);
                 pstmt.setNull(22, Types.INTEGER);

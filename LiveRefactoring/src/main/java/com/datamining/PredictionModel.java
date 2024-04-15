@@ -1,6 +1,7 @@
 package com.datamining;
 
 import com.analysis.metrics.MethodMetrics;
+import com.core.Pair;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
 import com.utils.importantValues.Values;
@@ -119,7 +120,7 @@ public class PredictionModel {
         if (pythonPath == null) {
             Utils.popup(Values.event.getProject(),
                     "LiveRef - Python path not set",
-                    "Model bias won't work. Please set the python path by opening the 'Configure Tool' window and going to the 'Advanced Extract Method' tab.",
+                    "Please set the python path by opening the 'Configure Tool' window and going to the 'Advanced Extract Method' tab.",
                     NotificationType.ERROR);
             return;
         }
@@ -141,8 +142,8 @@ public class PredictionModel {
         pythonScriptRun(command);
 
         Utils.popup(Values.event.getProject(),
-                "LiveRef - Model Bias",
-                "Model bias has been applied for the selected authors.",
+                "LiveRef",
+                "Model successfully updated.",
                 NotificationType.INFORMATION);
     }
 
@@ -221,12 +222,15 @@ public class PredictionModel {
         return data;
     }
 
-    public static void updateModel(MethodMetrics methodMetrics, Project project) {
-        //TODO: Actually update the model - incremental training?
-
-        ArrayList<Double> data = getMetrics(methodMetrics);
+    /**
+     * Possible updates the model with the new method metrics
+     * @param methodMetrics the metrics of the method
+     * @param project the project
+     * @throws IOException if the python script has a problem
+     * @throws InterruptedException if the process is interrupted
+     */
+    public static void updateModel(MethodMetrics methodMetrics, Project project) throws IOException, InterruptedException {
         String author = getCurrentGitAuthor();
-        System.out.println(author);
         if (author == null) {
             Utils.popup(project,
                     "LiveRef - Git author not found",
@@ -235,9 +239,18 @@ public class PredictionModel {
             author = "";
         }
 
-        //Call the python script to update the model
+        if(Values.lastExtractMethodMetrics.size() < Values.maxExtractMethodsBefUpdate) {
+            Pair<String, MethodMetrics> pair = new Pair<>(author, methodMetrics);
+            Values.lastExtractMethodMetrics.add(pair);
+        } else {
+            biasModel();
+        }
     }
 
+    /**
+     * Gets the current git author
+     * @return the current git author in the format "name (email)" or null if it is not found
+     */
     private static String getCurrentGitAuthor() {
         try {
             String email = runCommand("git config user.email");
@@ -248,6 +261,13 @@ public class PredictionModel {
         }
     }
 
+    /**
+     * Runs a command in the terminal
+     * @param command the command to run
+     * @return the output of the command
+     * @throws IOException if the command has a problem
+     * @throws InterruptedException if the process is interrupted
+     */
     private static String runCommand(String command) throws IOException, InterruptedException {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.redirectErrorStream(true);

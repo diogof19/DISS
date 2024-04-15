@@ -18,6 +18,7 @@ import com.utils.RefactorUtils;
 import com.utils.importantValues.ThresholdsCandidates;
 import com.utils.importantValues.Values;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -103,6 +104,8 @@ public class ExtractMethod{
             }else Values.isRefactoring = false;
         } catch (PrepareFailedException e) {
             e.printStackTrace();
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 

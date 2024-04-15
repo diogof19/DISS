@@ -5,6 +5,7 @@ import com.analysis.metrics.ClassMetrics;
 import com.analysis.metrics.FileMetrics;
 import com.analysis.metrics.MethodMetrics;
 import com.core.LastRefactoring;
+import com.core.Pair;
 import com.core.Severity;
 import com.datamining.AuthorInfo;
 import com.google.firebase.database.DatabaseReference;
@@ -62,9 +63,12 @@ public class Values {
     public static Instant endRefactoring = Instant.now();
     public static boolean afterRefactoring = false;
     public static int numSeconds = 5;
+
     public static String projectName = "unknown";
     public static String pythonPath = "";
     public static Set<AuthorInfo> selectedAuthors = new HashSet<>();
+    public static List<Pair<String, MethodMetrics>> lastExtractMethodMetrics = new ArrayList<>();
+    public static int maxExtractMethodsBefUpdate = 10;
 
 
     public void setLastRefactoring(LastRefactoring refactoring) {

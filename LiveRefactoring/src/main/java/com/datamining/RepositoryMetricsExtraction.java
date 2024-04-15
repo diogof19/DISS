@@ -168,9 +168,9 @@ public class RepositoryMetricsExtraction extends AnAction {
         for(String commit : commits) {
             try {
                 //For testing purposes
-                if (refactoringInfos.size() > 1) {
-                    break;
-                }
+//                if (refactoringInfos.size() > 1) {
+//                    break;
+//                }
 
                 List<RefactoringInfo> temp = refactoringsAtCommit(miner, repo, commit);
                 refactoringInfos.addAll(temp);
