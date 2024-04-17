@@ -2,8 +2,8 @@ package com.ui;
 
 import com.core.Refactorings;
 import com.datamining.AuthorInfo;
+import com.datamining.Database;
 import com.datamining.PredictionModel;
-import com.datamining.Utils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.markup.RangeHighlighter;
@@ -220,10 +220,10 @@ public class ConfigureTool extends AnAction {
             }
         }
 
-        Set<AuthorInfo> allAuthors = Utils.getAuthors();
-        Set<AuthorInfo> authors = new HashSet<>();
+        ArrayList<AuthorInfo> allAuthors = Database.getAllAuthors();
+        ArrayList<AuthorInfo> authors = new ArrayList<>();
         for (AuthorInfo author : allAuthors) {
-            if (checkedAuthors.contains(author.toString())) {
+            if (checkedAuthors.contains(author)) {
                 authors.add(author);
             }
         }
@@ -880,7 +880,6 @@ public class ConfigureTool extends AnAction {
         private TabInfo createAdvancedExtractMethodTab() {
             JPanel tabPanel = new JPanel();
             tabPanel.setLayout(new BorderLayout());
-            //tabPanel.setPreferredSize(new Dimension(200,400));
 
             JPanel pythonPanel = getPythonConfigPanel();
             tabPanel.add(pythonPanel, BorderLayout.NORTH);
@@ -915,14 +914,35 @@ public class ConfigureTool extends AnAction {
             return pythonPanel;
         }
 
-        /**
-         * Creates a panel with a list of authors and checkboxes to select them.
-         * @return JPanel with the author bias configuration
-         */
+
         private JPanel getAuthorBiasPanel() {
             JPanel authorPanel = new JPanel(new BorderLayout());
             authorPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Model Bias Configuration"));
+
+            ArrayList<String> models = Database.getAllModels();
+
+            JBTabsImpl tabbedPane = new JBTabsImpl(this.project);
+
+            for (String model: models) {
+                TabInfo tabInfo = new TabInfo(getBiasProfilePanel(model));
+                tabInfo.setText(model);
+                tabbedPane.addTab(tabInfo);
+            }
+
+            JBLabel warning =
+                    new JBLabel("Warning: Retraining the model after this selection may take a long time.");
+            warning.setPreferredSize(new Dimension(100, 30));
+
+            //tabbedPane.add(warning);
+
+            authorPanel.add(tabbedPane, BorderLayout.CENTER);
+
+            return authorPanel;
+        }
+
+        private JPanel getBiasProfilePanel(String modelName) {
+            JPanel profilePanel = new JPanel(new BorderLayout());
 
             Box overallBox = Box.createVerticalBox();
             overallBox.setPreferredSize(new Dimension(100, 100));
@@ -948,12 +968,7 @@ public class ConfigureTool extends AnAction {
                 }
             });
 
-            ArrayList<AuthorInfo> authors = new ArrayList<>();;
-            try {
-                authors.addAll(Utils.getAuthors());
-            } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+            ArrayList<AuthorInfo> authors = Database.getAuthorsPerModel(modelName);
 
             authors.sort(AuthorInfo::compareTo);
 
@@ -961,8 +976,7 @@ public class ConfigureTool extends AnAction {
                 JCheckBox checkBox = new JCheckBox(author.toString());
                 checkBox.setPreferredSize(new Dimension(100, 30));
 
-                if(Values.selectedAuthors.contains(author))
-                    checkBox.setSelected(true);
+                checkBox.setSelected(author.isSelected());
 
                 this.authorsBox.add(checkBox);
             }
@@ -973,15 +987,9 @@ public class ConfigureTool extends AnAction {
             overallBox.add(selectAllAuthors);
             overallBox.add(pane);
 
-            JBLabel warning =
-                    new JBLabel("Warning: Retraining the model after this selection may take a long time.");
-            warning.setPreferredSize(new Dimension(100, 30));
+            profilePanel.add(overallBox, BorderLayout.CENTER);
 
-            overallBox.add(warning);
-
-            authorPanel.add(overallBox, BorderLayout.CENTER);
-
-            return authorPanel;
+            return profilePanel;
         }
     }
 

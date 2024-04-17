@@ -5,7 +5,6 @@ import com.analysis.metrics.ClassMetrics;
 import com.analysis.metrics.FileMetrics;
 import com.analysis.metrics.MethodMetrics;
 import com.core.LastRefactoring;
-import com.core.Pair;
 import com.core.Severity;
 import com.datamining.AuthorInfo;
 import com.google.firebase.database.DatabaseReference;
@@ -14,7 +13,9 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.markup.RangeHighlighter;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class Values {
     public static Editor editor = null;
@@ -63,11 +64,10 @@ public class Values {
     public static Instant endRefactoring = Instant.now();
     public static boolean afterRefactoring = false;
     public static int numSeconds = 5;
-
     public static String projectName = "unknown";
+
     public static String pythonPath = "";
-    public static Set<AuthorInfo> selectedAuthors = new HashSet<>();
-    public static List<Pair<String, MethodMetrics>> lastExtractMethodMetrics = new ArrayList<>();
+    public static ArrayList<AuthorInfo> selectedAuthors = new ArrayList<>();
     public static int maxExtractMethodsBefUpdate = 10;
 
 

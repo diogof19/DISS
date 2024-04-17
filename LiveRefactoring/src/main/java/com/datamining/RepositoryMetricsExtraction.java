@@ -37,7 +37,6 @@ public class RepositoryMetricsExtraction extends AnAction {
     private String branch;
     private Project project;
     private Map<String, Set<String>> changedFiles = new HashMap<>();
-    private Set<AuthorInfo> authors = new HashSet<>();
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
         RMEDialogWrapper dialogWrapper = new RMEDialogWrapper();
@@ -93,8 +92,6 @@ public class RepositoryMetricsExtraction extends AnAction {
         }
 
         System.out.println("Metrics extracted");
-
-        saveAuthorsToFile();
 
         deleteClonedRepo();
 
@@ -277,9 +274,8 @@ public class RepositoryMetricsExtraction extends AnAction {
         RevCommit commit = revWalk.parseCommit(commitObjectId);
 
         PersonIdent author = commit.getAuthorIdent();
-        AuthorInfo authorInfo = new AuthorInfo(author.getName(), author.getEmailAddress());
+        AuthorInfo authorInfo = new AuthorInfo(null, author.getName(), author.getEmailAddress(), null);
         refInfo.setAuthor(authorInfo);
-        authors.add(authorInfo);
 
         revWalk.markStart(commit);
         revWalk.sort(RevSort.COMMIT_TIME_DESC);
@@ -371,17 +367,5 @@ public class RepositoryMetricsExtraction extends AnAction {
         }
 
         return filesChanged;
-    }
-
-    /**
-     * Saves all the authors to a file
-     * @throws IOException If there is an error writing to the file
-     */
-    private void saveAuthorsToFile() throws IOException, ClassNotFoundException {
-        authors.addAll(Utils.getAuthors());
-
-        File authorsFile = new File("tmp/authors.txt");
-
-        AuthorInfo.writeAuthorInfoSet(authors, authorsFile.getAbsolutePath());
     }
 }

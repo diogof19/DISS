@@ -5,6 +5,7 @@ import com.analysis.metrics.MethodMetrics;
 import com.core.Pair;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 import static com.datamining.Utils.getMethodMetricsFromFile;
 
@@ -15,6 +16,12 @@ public class Database {
 
     public static void main(String[] args) throws SQLException {
         createDatabase();
+        addTestData();
+
+        ArrayList<AuthorInfo> authors = getAuthorsPerModel("Default");
+        for(AuthorInfo author : authors){
+            System.out.println(author + " - " + author.isSelected());
+        }
     }
 
     private static Connection connect() {
@@ -34,7 +41,7 @@ public class Database {
     }
 
     /**
-     * Create a sqlite database
+     * Creates the sqlite database
      */
     public static void createDatabase() {
         try (Connection conn = connect()) {
@@ -60,7 +67,8 @@ public class Database {
         String deleteTableSQL = "DROP TABLE IF EXISTS metrics;";
 
         String createTableSQL = "CREATE TABLE IF NOT EXISTS metrics (\n" +
-                "    author TEXT,\n" +
+                "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+                "    author INTEGER,\n" +
                 "    numberLinesOfCodeBef INTEGER,\n" +
                 "    numberCommentsBef INTEGER,\n" +
                 "    numberBlankLinesBef INTEGER,\n" +
@@ -96,7 +104,8 @@ public class Database {
                 "    halsteadMaintainabilityAft REAL,\n" +
                 "    cyclomaticComplexityAft INTEGER,\n" +
                 "    cognitiveComplexityAft INTEGER,\n" +
-                "    lackOfCohesionInMethodAft REAL\n" +
+                "    lackOfCohesionInMethodAft REAL,\n" +
+                "    FOREIGN KEY (author) REFERENCES authors(id)\n" +
                 ");";
 
         String createIndexSQL = "CREATE INDEX IF NOT EXISTS author_index ON metrics (author);";
@@ -125,10 +134,13 @@ public class Database {
                 "UNIQUE (name, email)\n" +
                 ");";
 
+        String createIndexSQL = "CREATE INDEX IF NOT EXISTS authors_name_email ON authors (name, email);";
+
         try (Connection conn = connect()) {
             if (conn != null) {
                 conn.createStatement().executeUpdate(deleteTableSQL);
                 conn.createStatement().executeUpdate(createTableSQL);
+                conn.createStatement().executeUpdate(createIndexSQL);
             }
         } catch (SQLException e) {
             System.out.println("Create authors table: " + e.getMessage());
@@ -143,7 +155,7 @@ public class Database {
 
         String createTableSQL = "CREATE TABLE IF NOT EXISTS models (\n" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
-                "name TEXT,\n" +
+                "name TEXT UNIQUE,\n" +
                 "path TEXT NOT NULL,\n" +
                 "selected INTEGER NOT NULL,\n" +
                 "UNIQUE (path)\n" +
@@ -214,9 +226,9 @@ public class Database {
         MethodMetrics beforeMethodMetrics = beforeMetrics.getSecond();
         MethodMetrics afterMethodMetrics = afterMetrics != null ? afterMetrics.getSecond() : null;
 
-        String author = beforeInfo.getAuthor().toString();
+        AuthorInfo author = beforeInfo.getAuthor();
 
-        saveMetrics(author, beforeMethodMetrics, afterMethodMetrics);
+        saveMetrics(new Pair<>(author.getAuthorName(), author.getAuthorEmail()), beforeMethodMetrics, afterMethodMetrics);
     }
 
     /**
@@ -226,7 +238,7 @@ public class Database {
      * @param afterMethodMetrics The metrics after the refactoring
      * @throws SQLException If there is an error with the database
      */
-    public static void saveMetrics(String author, MethodMetrics beforeMethodMetrics, MethodMetrics afterMethodMetrics) throws SQLException {
+    public static void saveMetrics(Pair<String, String> author, MethodMetrics beforeMethodMetrics, MethodMetrics afterMethodMetrics) throws SQLException {
         int beforeTotalLines = beforeMethodMetrics.numberLinesOfCode + beforeMethodMetrics.numberComments +
                 beforeMethodMetrics.numberBlankLines;
         int afterTotalLines = afterMethodMetrics != null ? afterMethodMetrics.numberLinesOfCode +
@@ -243,9 +255,26 @@ public class Database {
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " +
                 "?, ?, ?, ?, ?, ?, ?, ?)";
 
+
+        int authorId;
+        if(author == null)
+            authorId = -2;
+        else
+            authorId = findAuthorByNameAndEmail(author.getFirst(), author.getSecond());
+
         try (Connection conn = connect()) {
             PreparedStatement pstmt = conn.prepareStatement(insertSQL);
-            pstmt.setString(1, author);
+
+            if(authorId == -1){
+                authorId = insertAuthor(author.getFirst(), author.getSecond());
+            }
+
+            if (authorId == -2) {
+                pstmt.setNull(1, Types.INTEGER);
+            } else {
+                pstmt.setInt(1, authorId);
+            }
+
             pstmt.setInt(2, beforeMethodMetrics.numberLinesOfCode);
             pstmt.setInt(3, beforeMethodMetrics.numberComments);
             pstmt.setInt(4, beforeMethodMetrics.numberBlankLines);
@@ -327,4 +356,208 @@ public class Database {
 
         return null;
     }
+
+    private static int findAuthorByNameAndEmail(String name, String email){
+        String selectSQL = "SELECT id FROM authors WHERE name = ? AND email = ?;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                PreparedStatement pstmt = conn.prepareStatement(selectSQL);
+                pstmt.setString(1, name);
+                pstmt.setString(2, email);
+
+                ResultSet rs = pstmt.executeQuery();
+
+                return rs.getInt("id");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return -1;
+    }
+
+    private static int insertAuthor(String name, String email){
+        String insertSQL = "INSERT INTO authors (name, email) VALUES (?, ?);";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                PreparedStatement pstmt = conn.prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS);
+                pstmt.setString(1, name);
+                pstmt.setString(2, email);
+
+                pstmt.executeUpdate();
+
+                ResultSet rs = pstmt.getGeneratedKeys();
+                if(rs.next()){
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return -1;
+    }
+
+    public static ArrayList<AuthorInfo> getAllAuthors() {
+        String selectSQL = "SELECT id, name, email FROM authors;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(selectSQL);
+
+                ArrayList<AuthorInfo> authors = new ArrayList<>();
+                while(rs.next()){
+                    authors.add(new AuthorInfo(rs.getInt("id"), rs.getString("name"),
+                            rs.getString("email"), null));
+                }
+                return authors;
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return null;
+    }
+
+    public static ArrayList<AuthorInfo> getAuthorsPerModel(String modelName) {
+        ArrayList<AuthorInfo> authorList = new ArrayList<>();
+
+        /**
+         * SELECT id, name, email, selected
+         * FROM (
+         *     SELECT a.id, a.name, a.email,
+         *            CASE WHEN (am.model_id IS NOT NULL AND m.name = ?) THEN 1 ELSE 0 END AS selected,
+         *            ROW_NUMBER() OVER (PARTITION BY a.id ORDER BY CASE WHEN (am.model_id IS NOT NULL AND m.name = 'Default') THEN 1 ELSE 0 END DESC) AS rn
+         *     FROM authors a
+         *     LEFT JOIN authors_models am ON a.id = am.author_id
+         *     LEFT JOIN models m ON am.model_id = m.id
+         * ) AS subquery
+         * WHERE rn = 1;
+         */
+
+        String selectSQL = "SELECT id, name, email, selected\n" +
+                "FROM (\n" +
+                "    SELECT a.id, a.name, a.email, \n" +
+                "           CASE WHEN (am.model_id IS NOT NULL AND m.name = ?) THEN 1 ELSE 0 END AS selected,\n" +
+                "           ROW_NUMBER() OVER (PARTITION BY a.id ORDER BY CASE WHEN (am.model_id IS NOT NULL AND m.name = 'Default') THEN 1 ELSE 0 END DESC) AS rn\n" +
+                "    FROM authors a \n" +
+                "    LEFT JOIN authors_models am ON a.id = am.author_id \n" +
+                "    LEFT JOIN models m ON am.model_id = m.id\n" +
+                ") AS subquery\n" +
+                "WHERE rn = 1;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                PreparedStatement pstmt = conn.prepareStatement(selectSQL);
+                pstmt.setString(1, modelName);
+
+                ResultSet rs = pstmt.executeQuery();
+
+                while(rs.next()){
+                    authorList.add(new AuthorInfo(rs.getInt("id"), rs.getString("name"),
+                            rs.getString("email"), rs.getInt("selected") == 1));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return authorList;
+    }
+
+    public static ArrayList<String> getAllModels() {
+        String selectSQL = "SELECT name FROM models;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(selectSQL);
+
+                ArrayList<String> models = new ArrayList<>();
+                while(rs.next()){
+                    models.add(rs.getString("name"));
+                }
+
+                return models;
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return null;
+    }
+
+    private static void addTestData() {
+        String authorsInsertSQL = "INSERT INTO authors (name, email) VALUES (?, ?);";
+        String modelsInsertSQL = "INSERT INTO models (name, path, selected) VALUES (?, ?, ?);";
+        String authorsModelsInsertSQL = "INSERT INTO authors_models (author_id, model_id) VALUES (?, ?);";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                PreparedStatement pstmt = conn.prepareStatement(authorsInsertSQL);
+
+                pstmt.setString(1, "Diana");
+                pstmt.setString(2, "d@g.com");
+                pstmt.executeUpdate();
+
+                pstmt.setString(1, "Luis");
+                pstmt.setString(2, "l@g.com");
+                pstmt.executeUpdate();
+
+                pstmt.setString(1, "Ana");
+                pstmt.setString(2, "a@g.com");
+                pstmt.executeUpdate();
+
+                pstmt.setString(1, "Joao");
+                pstmt.setString(2, "j@g.com");
+                pstmt.executeUpdate();
+
+                pstmt.setString(1, "Andre");
+                pstmt.setString(2, "a@g.com");
+                pstmt.executeUpdate();
+
+                pstmt = conn.prepareStatement(modelsInsertSQL);
+
+                pstmt.setString(1, "Model 1");
+                pstmt.setString(2, "models/model1.joblib");
+                pstmt.setInt(3, 1);
+                pstmt.executeUpdate();
+
+                pstmt.setString(1, "Model 2");
+                pstmt.setString(2, "models/model2.joblib");
+                pstmt.setInt(3, 0);
+                pstmt.executeUpdate();
+
+                pstmt = conn.prepareStatement(authorsModelsInsertSQL);
+
+                pstmt.setInt(1, 1);
+                pstmt.setInt(2, 1);
+                pstmt.executeUpdate();
+
+                pstmt.setInt(1, 1);
+                pstmt.setInt(2, 2);
+                pstmt.executeUpdate();
+
+                pstmt.setInt(1, 2);
+                pstmt.setInt(2, 1);
+                pstmt.executeUpdate();
+
+                pstmt.setInt(1, 3);
+                pstmt.setInt(2, 2);
+                pstmt.executeUpdate();
+
+                pstmt.setInt(1, 4);
+                pstmt.setInt(2, 3);
+                pstmt.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
+
 }

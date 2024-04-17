@@ -28,8 +28,8 @@ public class StartUp  implements StartupActivity {
 
     public void start() throws IOException {
         extractFileIfNotExists("metrics.db");
-        extractFileIfNotExists("bias_model.py");
-        extractFileIfNotExists("prediction.py");
+        extractFileIfNotExists("python/bias_model.py");
+        extractFileIfNotExists("python/prediction.py");
         extractFileIfNotExists("requirements.txt");
         extractFileIfNotExists("models/model.joblib");
 

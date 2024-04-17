@@ -11,16 +11,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Set;
 
 //TODO: Create a 'requirements.txt' folder and function that runs it with pip install
-//TODO: Add a pop-up when python path is not set
+//TODO: Handle python path not set now that it is saved in MySettings
 public class PredictionModel {
     private static final String PYTHON_PREDICTION_FILE_PATH = "tmp/prediction.py";
     private static String modelFilePath = "tmp/models/model.joblib";
     private static final String PYTHON_BIAS_FILE_PATH = "tmp/bias_model.py";
     private static final String DATA_FILE_PATH = "tmp/metrics.db";
+
     public static void main(String[] args) {
 //        ArrayList<Double> data = new ArrayList<>();
 //
@@ -99,7 +101,7 @@ public class PredictionModel {
      * @throws InterruptedException if the process is interrupted
      */
     public static void biasModel() throws IOException, InterruptedException {
-        Set<AuthorInfo> authors = Values.selectedAuthors;
+        Set<AuthorInfo> authors = (Set<AuthorInfo>) Values.selectedAuthors;
 
         String pythonPath = getPythonPath();
         if (pythonPath == null) {
@@ -214,33 +216,36 @@ public class PredictionModel {
      * @throws IOException if the python script has a problem
      * @throws InterruptedException if the process is interrupted
      */
-    public static void updateModel(MethodMetrics methodMetrics, Project project) throws IOException, InterruptedException {
-        String author = getCurrentGitAuthor();
+    public static void updateModel(MethodMetrics methodMetrics, Project project) throws IOException, InterruptedException, SQLException {
+        Pair<String, String> author = getCurrentGitAuthor();
         if (author == null) {
             Utils.popup(project,
                     "LiveRef - Git author not found",
                     "The current git author could not be found. Please make sure you have git installed and configured.",
-                    NotificationType.ERROR);
-            author = "";
+                    NotificationType.WARNING);
         }
 
-        if(Values.lastExtractMethodMetrics.size() < Values.maxExtractMethodsBefUpdate) {
-            Pair<String, MethodMetrics> pair = new Pair<>(author, methodMetrics);
-            Values.lastExtractMethodMetrics.add(pair);
-        } else {
+        Database.saveMetrics(author, methodMetrics, null);
+
+        MySettings mySettings = project.getService(MySettings.class);
+        mySettings.getState().counter++;
+
+        if(mySettings.getState().counter >= Values.maxExtractMethodsBefUpdate) {
             biasModel();
+            mySettings.getState().counter = 0;
         }
+
     }
 
     /**
      * Gets the current git author
      * @return the current git author in the format "name (email)" or null if it is not found
      */
-    private static String getCurrentGitAuthor() {
+    private static Pair<String, String> getCurrentGitAuthor() {
         try {
             String email = runCommand("git config user.email");
             String name = runCommand("git config user.name");
-            return name + " (" + email + ")";
+            return new Pair<>(name, email);
         } catch (IOException | InterruptedException e) {
             return null;
         }

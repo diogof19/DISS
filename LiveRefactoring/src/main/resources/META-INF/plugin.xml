@@ -19,6 +19,7 @@
     </extensions>-->
     <extensions defaultExtensionNs="com.intellij">
         <postStartupActivity implementation="com.datamining.StartUp"/>
+        <projectService serviceImplementation="com.datamining.MySettings"/>
     </extensions>
     <actions>
         <group id="LiveRefactoring.Start" text="Live Refactoring" description="Live refactoring menu">

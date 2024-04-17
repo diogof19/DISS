@@ -1,17 +1,16 @@
 package com.datamining;
 
-import java.io.*;
-import java.util.Objects;
-import java.util.Set;
+public class AuthorInfo implements Comparable<AuthorInfo> {
+    private final Integer id;
+    private final String authorName;
+    private final String authorEmail;
+    private final Boolean selected;
 
-public class AuthorInfo implements Serializable, Comparable<AuthorInfo> {
-    private static final long serialVersionUID = 42L;
-    private String authorName;
-    private String authorEmail;
-
-    public AuthorInfo(String authorName, String authorEmail) {
+    public AuthorInfo(Integer id, String authorName, String authorEmail, Boolean selected) {
+        this.id = id;
         this.authorName = authorName;
         this.authorEmail = authorEmail;
+        this.selected = selected;
     }
 
     @Override
@@ -20,11 +19,6 @@ public class AuthorInfo implements Serializable, Comparable<AuthorInfo> {
         if (obj == null || getClass() != obj.getClass()) return false;
         AuthorInfo other = (AuthorInfo) obj;
         return this.authorEmail.equals(other.authorEmail);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.authorEmail);
     }
 
     @Override
@@ -45,21 +39,11 @@ public class AuthorInfo implements Serializable, Comparable<AuthorInfo> {
         return authorName;
     }
 
-    public static Set<AuthorInfo> readAuthorInfoSet(String filePath) throws IOException, ClassNotFoundException {
-        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath));
-
-        Object obj = ois.readObject();
-        if (obj instanceof Set) {
-            return (Set<AuthorInfo>) obj;
-        }
-
-        return null;
+    public int getId() {
+        return id;
     }
 
-    public static void writeAuthorInfoSet(Set<AuthorInfo> authors, String filePath) throws IOException {
-        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath));
-        oos.writeObject(authors);
-        oos.close();
+    public Boolean isSelected() {
+        return selected;
     }
-
 }

@@ -14,8 +14,6 @@ import com.intellij.psi.PsiJavaFile;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 public class Utils {
     /**
@@ -94,40 +92,12 @@ public class Utils {
 
     }
 
-    /**
-     * Writes the headers for the metrics file
-     * @param writer file writer
-     * @param beforeAndAfter true if the file will contain before and after metrics
-     * @throws IOException if an I/O error occurs
-     */
-    public static void writeMetricsFileHeader(BufferedWriter writer, boolean beforeAndAfter) throws IOException {
-        writer.write(
-                "author," + "numberLinesOfCodeBef," + "numberCommentsBef," + "numberBlankLinesBef," +
-                        "totalLinesBef," + "numParametersBef," + "numStatementsBef," + "halsteadLengthBef," +
-                        "halsteadVocabularyBef," + "halsteadVolumeBef," + "halsteadDifficultyBef," +
-                        "halsteadEffortBef," + "halsteadLevelBef," + "halsteadTimeBef," + "halsteadBugsDeliveredBef,"
-                        + "halsteadMaintainabilityBef," + "cyclomaticComplexityBef," + "cognitiveComplexityBef," +
-                        "lackOfCohesionInMethodBef"
-        );
-
-        if(beforeAndAfter){
-            writer.write("numberLinesOfCodeAft," + "numberCommentsAft," + "numberBlankLinesAft," + "totalLinesAft,"
-                    + "numParametersAft," + "numStatementsAft," + "halsteadLengthAft," + "halsteadVocabularyAft," +
-                    "halsteadVolumeAft," + "halsteadDifficultyAft," + "halsteadEffortAft," + "halsteadLevelAft," +
-                    "halsteadTimeAft," + "halsteadBugsDeliveredAft," + "halsteadMaintainabilityAft," +
-                    "cyclomaticComplexityAft," + "cognitiveComplexityAft," + "lackOfCohesionInMethodAft");
-        }
-
-        writer.write("\n");
-    }
-
     //TODO: delete this after testing
     /**
      * Saves the metrics to a file (can be used to save before and after changes in the same row)
      * @param writer file writer
      * @param refactoringInfo refactoring info
      * @param isBefore true if the metrics are from the before file (or only file), false otherwise
-     * @throws IOException
      */
     public static void saveMetricsToFile(BufferedWriter writer, RefactoringInfo refactoringInfo, boolean isBefore) throws IOException {
         Pair<ClassMetrics, MethodMetrics> metrics;
@@ -171,27 +141,6 @@ public class Utils {
             writer.write("\n");
         }
 
-    }
-
-    /**
-     * Gets all the different commit authors from all the commits where metrics were extracted
-     * @return set of authors
-     * @throws IOException if there is a problem reading the authors file
-     * @throws ClassNotFoundException if the class of the object read from the file cannot be found
-     */
-    public static Set<AuthorInfo> getAuthors() throws IOException, ClassNotFoundException {
-        File tmpFolder = new File("tmp");
-        if(!tmpFolder.exists()) {
-            tmpFolder.mkdir();
-        }
-
-        File authorsFile = new File("tmp/authors.txt");
-        if(!authorsFile.exists()){
-            authorsFile.createNewFile();
-            return new HashSet<>();
-        }
-
-        return AuthorInfo.readAuthorInfoSet(authorsFile.getAbsolutePath());
     }
 
     /**
