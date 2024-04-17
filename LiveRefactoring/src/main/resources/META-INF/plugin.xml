@@ -17,6 +17,9 @@
     <!--<extensions defaultExtensionNs="com.intellij">
         <postStartupActivity implementation="com.Bot"/>
     </extensions>-->
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="com.datamining.StartUp"/>
+    </extensions>
     <actions>
         <group id="LiveRefactoring.Start" text="Live Refactoring" description="Live refactoring menu">
             <add-to-group group-id="MainMenu" anchor="last"/>

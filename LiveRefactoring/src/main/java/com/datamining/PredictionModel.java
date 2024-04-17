@@ -14,15 +14,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Set;
 
-import static com.datamining.Utils.extractFile;
-
 //TODO: Create a 'requirements.txt' folder and function that runs it with pip install
 //TODO: Add a pop-up when python path is not set
 public class PredictionModel {
-    private static String pythonPredictionFilePath;
-    private static String modelFilePath;
-    private static String pythonBiasFilePath;
-    private static String dataFilePath;
+    private static final String PYTHON_PREDICTION_FILE_PATH = "tmp/prediction.py";
+    private static String modelFilePath = "tmp/models/model.joblib";
+    private static final String PYTHON_BIAS_FILE_PATH = "tmp/bias_model.py";
+    private static final String DATA_FILE_PATH = "tmp/metrics.db";
     public static void main(String[] args) {
 //        ArrayList<Double> data = new ArrayList<>();
 //
@@ -38,6 +36,10 @@ public class PredictionModel {
 //        }
 
         System.out.println(getCurrentGitAuthor());
+    }
+
+    public static void setModelFilePath(String modelFilePath) {
+        PredictionModel.modelFilePath = modelFilePath;
     }
 
     /**
@@ -66,12 +68,6 @@ public class PredictionModel {
      * @throws InterruptedException if the process is interrupted
      */
     private static boolean predictPython(ArrayList<Double> data) throws IOException, InterruptedException {
-        if(pythonPredictionFilePath == null || pythonPredictionFilePath.isEmpty())
-            pythonPredictionFilePath = extractFile("prediction.py");
-
-        if(modelFilePath == null || modelFilePath.isEmpty())
-            modelFilePath = extractFile("model.joblib");
-
         String pythonPath = getPythonPath();
         if (pythonPath == null) {
             Utils.popup(Values.event.getProject(),
@@ -83,7 +79,7 @@ public class PredictionModel {
 
         ArrayList<String> command = new ArrayList<>();
         command.add(pythonPath);
-        command.add(pythonPredictionFilePath);
+        command.add(PYTHON_PREDICTION_FILE_PATH);
         command.add(modelFilePath);
         for (Double value : data) {
             command.add(value.toString());
@@ -103,17 +99,6 @@ public class PredictionModel {
      * @throws InterruptedException if the process is interrupted
      */
     public static void biasModel() throws IOException, InterruptedException {
-        //TODO: Test better
-
-        if(pythonBiasFilePath == null || pythonBiasFilePath.isEmpty())
-            pythonBiasFilePath = extractFile("bias.py");
-
-        if(modelFilePath == null || modelFilePath.isEmpty())
-            modelFilePath = extractFile("model.joblib");
-
-        if(dataFilePath == null || dataFilePath.isEmpty())
-            dataFilePath = extractFile("extracted_metrics.csv");
-
         Set<AuthorInfo> authors = Values.selectedAuthors;
 
         String pythonPath = getPythonPath();
@@ -127,9 +112,9 @@ public class PredictionModel {
 
         ArrayList<String> command = new ArrayList<>();
         command.add(pythonPath);
-        command.add(pythonBiasFilePath);
+        command.add(PYTHON_BIAS_FILE_PATH);
         command.add(modelFilePath);
-        command.add(dataFilePath);
+        command.add(DATA_FILE_PATH);
 
         for (AuthorInfo author : authors) {
             command.add(author.toString());
@@ -331,8 +316,6 @@ public class PredictionModel {
                     NotificationType.ERROR);
             return;
         }
-
-        extractFile("requirements.txt");
 
         runCommand(pythonPath + " -m pip install -r tmp/requirements.txt");
     }

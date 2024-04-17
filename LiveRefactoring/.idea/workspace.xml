@@ -10,14 +10,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
-      <change beforePath="$PROJECT_DIR$/../Classification Model/Model Prep.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/Model Prep.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractMethod.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractMethod.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/utils/importantValues/Values.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/utils/importantValues/Values.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/bias_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/bias_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/extracted_metrics.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/metrics.db" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/metrics.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/model.joblib" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/models/model.joblib" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,13 +96,6 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Gradle.LiveRefactoring [:Database.main()].executor": "Run",
-    "git-widget-placeholder": "main",
-    "node.js.selected.package.tslint": "(autodetect)"
-  }
-}]]></component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="com.analysis.refactorings" />
@@ -116,6 +110,7 @@
       <recent name="$PROJECT_DIR$/src/main/resources" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\dluis\Documents\Docs\Universidade\M 2 ano\Thesis\DISS\LiveRefactoring\src\main\resources\models" />
       <recent name="C:\Users\dluis\Documents\Docs\Universidade\M 2 ano\Thesis\DISS\LiveRefactoring\src\main\resources" />
       <recent name="$PROJECT_DIR$/src/main/java/com/utils/Halstead" />
       <recent name="$PROJECT_DIR$/src/main/resources" />
@@ -129,7 +124,7 @@
       <recent name="com.ui.icons" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Database">
+  <component name="RunManager" selected="Gradle.LiveRefactoring">
     <configuration name="DataCollection" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.datamining.DataCollection" />
       <module name="LiveRefactoring.main" />
@@ -637,7 +632,9 @@
       <workItem from="1712133681961" duration="1014000" />
       <workItem from="1712141293048" duration="594000" />
       <workItem from="1712221879046" duration="979000" />
-      <workItem from="1713166990866" duration="7892000" />
+      <workItem from="1713166990866" duration="9116000" />
+      <workItem from="1713260534587" duration="946000" />
+      <workItem from="1713342170806" duration="6112000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>

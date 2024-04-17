@@ -4,19 +4,17 @@ import com.analysis.metrics.ClassMetrics;
 import com.analysis.metrics.MethodMetrics;
 import com.core.Pair;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.*;
 
-import static com.datamining.Utils.extractFile;
 import static com.datamining.Utils.getMethodMetricsFromFile;
 
 public class Database {
-    private static String DATABASE_FILE_PATH;
-    private static String DATABASE_URL;
+    //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\resources\\metrics.db";
+    private static final String DATABASE_FILE_PATH = "tmp/metrics.db";
+    private static final String DATABASE_URL = "jdbc:sqlite:" + DATABASE_FILE_PATH;
 
     public static void main(String[] args) throws SQLException {
-
+        createDatabase();
     }
 
     private static Connection connect() {
@@ -48,6 +46,11 @@ public class Database {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+
+        createMetricsTable();
+        createAuthorsTable();
+        createModelsTable();
+        createAuthorsModelsTable();
     }
 
     /**
@@ -103,32 +106,105 @@ public class Database {
                 conn.createStatement().executeUpdate(deleteTableSQL);
                 conn.createStatement().executeUpdate(createTableSQL);
                 conn.createStatement().executeUpdate(createIndexSQL);
-                System.out.println("Table created");
             }
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println("Create metrics table: " + e.getMessage());
         }
     }
 
-    private static void databaseExtraction() throws IOException {
-        String tempDatabasePath = "tmp/metrics.db";
+    /**
+     * Create the authors table
+     */
+    public static void createAuthorsTable() {
+        String deleteTableSQL = "DROP TABLE IF EXISTS authors;";
 
-        File database = new File(tempDatabasePath);
-        if (database.exists()) {
-            DATABASE_FILE_PATH = tempDatabasePath;
-            DATABASE_URL = "jdbc:sqlite:" + DATABASE_FILE_PATH;
-            return;
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS authors (\n" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+                "name TEXT,\n" +
+                "email TEXT,\n" +
+                "UNIQUE (name, email)\n" +
+                ");";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                conn.createStatement().executeUpdate(deleteTableSQL);
+                conn.createStatement().executeUpdate(createTableSQL);
+            }
+        } catch (SQLException e) {
+            System.out.println("Create authors table: " + e.getMessage());
         }
-
-        DATABASE_FILE_PATH = extractFile("metrics.db");
-        DATABASE_URL = "jdbc:sqlite:" + DATABASE_FILE_PATH;
     }
 
-    public static void saveMetrics(RefactoringInfo beforeInfo, RefactoringInfo afterInfo) throws SQLException, IOException {
-        if (DATABASE_URL == null) {
-            databaseExtraction();
-        }
+    /**
+     * Create the models table
+     */
+    public static void createModelsTable() {
+        String deleteTableSQL = "DROP TABLE IF EXISTS models;";
 
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS models (\n" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+                "name TEXT,\n" +
+                "path TEXT NOT NULL,\n" +
+                "selected INTEGER NOT NULL,\n" +
+                "UNIQUE (path)\n" +
+                ");";
+
+        String updateTriggerSQL = "CREATE TRIGGER IF NOT EXISTS update_others_to_false \n" +
+                "AFTER UPDATE OF selected ON models \n" +
+                "BEGIN \n" +
+                "    UPDATE models \n" +
+                "    SET selected = CASE \n" +
+                "                    WHEN NEW.selected = 1 THEN 0 \n" +
+                "                    ELSE 0 \n" +
+                "                  END \n" +
+                "    WHERE id != NEW.id; \n" +
+                "END;";
+
+        String addDefaultModelSQL = "INSERT INTO models (name, path, selected) VALUES ('Default', 'models/model.joblib', 1);";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                conn.createStatement().executeUpdate(deleteTableSQL);
+                conn.createStatement().executeUpdate(createTableSQL);
+                conn.createStatement().executeUpdate(updateTriggerSQL);
+                conn.createStatement().executeUpdate(addDefaultModelSQL);
+            }
+        } catch (SQLException e) {
+            System.out.println("Create models table: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Create the authors_models table which connects authors to models to understand the bias
+     */
+    public static void createAuthorsModelsTable() {
+        String deleteTableSQL = "DROP TABLE IF EXISTS authors_models;";
+
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS authors_models (\n" +
+                "author_id INTEGER,\n" +
+                "model_id INTEGER,\n" +
+                "FOREIGN KEY (author_id) REFERENCES authors(id),\n" +
+                "FOREIGN KEY (model_id) REFERENCES models(id),\n" +
+                "PRIMARY KEY (author_id, model_id)\n" +
+                ");";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                conn.createStatement().executeUpdate(deleteTableSQL);
+                conn.createStatement().executeUpdate(createTableSQL);
+            }
+        } catch (SQLException e) {
+            System.out.println("Create authors_models table: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save the metrics of a refactoring
+     * @param beforeInfo The information before the change
+     * @param afterInfo The information after the change
+     * @throws SQLException If there is an error with the database
+     */
+    public static void saveMetrics(RefactoringInfo beforeInfo, RefactoringInfo afterInfo) throws SQLException {
         Pair<ClassMetrics, MethodMetrics> beforeMetrics = getMethodMetricsFromFile(beforeInfo.getBeforeFile(),
                 beforeInfo.getMethodName(), beforeInfo.getClassName());
 
@@ -143,6 +219,13 @@ public class Database {
         saveMetrics(author, beforeMethodMetrics, afterMethodMetrics);
     }
 
+    /**
+     * Save the metrics of a refactoring
+     * @param author The author of the refactoring
+     * @param beforeMethodMetrics The metrics before the refactoring
+     * @param afterMethodMetrics The metrics after the refactoring
+     * @throws SQLException If there is an error with the database
+     */
     public static void saveMetrics(String author, MethodMetrics beforeMethodMetrics, MethodMetrics afterMethodMetrics) throws SQLException {
         int beforeTotalLines = beforeMethodMetrics.numberLinesOfCode + beforeMethodMetrics.numberComments +
                 beforeMethodMetrics.numberBlankLines;
@@ -226,5 +309,22 @@ public class Database {
             pstmt.executeUpdate();
 
         }
+    }
+
+    public static String getSelectedModelFilePath() {
+        String selectSQL = "SELECT path FROM models WHERE selected = 1;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(selectSQL);
+
+                return rs.getString("path");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return null;
     }
 }

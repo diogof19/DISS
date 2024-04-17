@@ -33,8 +33,6 @@ public class DataCollection extends AnAction {
     private static final String CONNECTION_STRING = "mongodb://localhost:27017";
     private static final String DATABASE_NAME = "smartshark_2_2";
     private static final String COLLECTION_NAME = "refactoring";
-    private static final String EXTRACTED_METRICS_FILE_PATH =
-            "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\java\\com\\datamining\\data\\extracted_metrics.csv";
     private MongoClient mongoClient;
     private Project project;
 
