@@ -1,8 +1,11 @@
 package com.ui;
 
+import com.core.Pair;
 import com.core.Refactorings;
 import com.datamining.AuthorInfo;
 import com.datamining.Database;
+import com.datamining.MySettings;
+import com.datamining.PredictionModel;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -11,6 +14,8 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.JBMenuItem;
+import com.intellij.openapi.ui.JBPopupMenu;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
@@ -117,8 +122,17 @@ public class ConfigureTool extends AnAction {
             }
 
             if (!wrapper.textField_pythonPath.getText().isEmpty()) {
-                Values.pythonPath = wrapper.textField_pythonPath.getText();
-                System.out.println("Python path: " + Values.pythonPath);
+                MySettings mySettings = e.getProject().getService(MySettings.class);
+
+                if(!mySettings.getState().pythonPath.equals(wrapper.textField_pythonPath.getText())) {
+                    mySettings.getState().pythonPath = wrapper.textField_pythonPath.getText();
+                    System.out.println("Python path: " + mySettings.getState().pythonPath);
+                    try {
+                        PredictionModel.checkPipRequirements(e.getProject());
+                    } catch (IOException | InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
             }
 
             if (wrapper.textField_seconds.getText().length() > 0) {
@@ -202,10 +216,12 @@ public class ConfigureTool extends AnAction {
         }
     }
 
-    private void applySelectedAuthors(Map<String, Box> profileBoxes) throws IOException, ClassNotFoundException, InterruptedException {
-        for (Map.Entry<String, Box> entry : profileBoxes.entrySet()) {
+    private void applySelectedAuthors(Map<String, Pair<Box, JButton>> profileBoxes) throws IOException, ClassNotFoundException, InterruptedException {
+        for (Map.Entry<String, Pair<Box, JButton>> entry : profileBoxes.entrySet()) {
             String profileName = entry.getKey();
-            Box authorsBox = entry.getValue();
+            if(profileName.equals("add"))
+                continue;
+            Box authorsBox = entry.getValue().getFirst();
             Set<AuthorInfo> checkedAuthors = new HashSet<>();
 
             for (Component component : authorsBox.getComponents()) {
@@ -223,6 +239,8 @@ public class ConfigureTool extends AnAction {
             Set<AuthorInfo> oldAuthors = Database.getSelectedAuthorsPerModel(profileName);
 
             if (checkedAuthors.size() != oldAuthors.size() || !checkedAuthors.containsAll(oldAuthors)) {
+                System.out.println("Updating authors for model " + profileName + "\n"
+                 + "Old authors: " + oldAuthors + "\n" + "New authors: " + checkedAuthors);
                 Database.updateAuthorsPerModel(profileName, checkedAuthors);
                 //TODO: REMOVE THE COMMENT TO TEST
                 //PredictionModel.biasModel();
@@ -290,7 +308,7 @@ public class ConfigureTool extends AnAction {
         private JLabel label_minValParameters = new JLabel("Min. Num. Parameters");
         private final JLabel warning = new JLabel("");
         private final JLabel label_pythonPath = new JLabel("Python Path");
-        private JBTextField textField_pythonPath = new JBTextField(Values.pythonPath);
+        private JBTextField textField_pythonPath = new JBTextField();
         public final JRadioButton selectExtractMethod = new JRadioButton();
         public final JRadioButton selectExtractVariable = new JRadioButton();
         public final JRadioButton selectExtractClass = new JRadioButton();
@@ -308,7 +326,7 @@ public class ConfigureTool extends AnAction {
         public HashMap<String,Boolean>selections = new HashMap<>();
 
         public Project project;
-        public Map<String, Box> profileBoxes = new HashMap<>();
+        public Map<String, Pair<Box, JButton>> profileBoxes = new HashMap<>();
         public JBTextField textField_profileName = new JBTextField();
 
         public MyDialogWrapper(Project project) {
@@ -316,6 +334,7 @@ public class ConfigureTool extends AnAction {
             this.project = project;
             init();
             setTitle("Configure Tool");
+            textField_pythonPath.setText(project.getService(MySettings.class).getState().pythonPath);
         }
 
         @Nullable
@@ -958,7 +977,25 @@ public class ConfigureTool extends AnAction {
             overallBox.setPreferredSize(new Dimension(100, 100));
             Box authorBox = Box.createVerticalBox();
 
+            JPanel buttonsPannel = new JPanel(new GridLayout(1, 2));
+            buttonsPannel.setPreferredSize(new Dimension(100, 30));
             JButton selectAllAuthors = getSelectAllButton(authorBox);
+
+            JButton deleteProfile = new JButton("Delete Profile");
+            deleteProfile.addActionListener(e -> {
+                //Open pop-up to confirm deletion
+                JBPopupMenu popupMenu = new JBPopupMenu();
+                JBMenuItem menuItem = new JBMenuItem("Are you sure you want to delete this profile?");
+                popupMenu.add(menuItem);
+                popupMenu.show(deleteProfile, 0, 0);
+
+
+                //Database.deleteModel(modelName);
+                //profilePanel.setVisible(false);
+            });
+
+            buttonsPannel.add(selectAllAuthors, BorderLayout.WEST);
+            buttonsPannel.add(deleteProfile, BorderLayout.EAST);
 
             ArrayList<AuthorInfo> authors = Database.getAuthorsPerModel(modelName);
 
@@ -967,12 +1004,12 @@ public class ConfigureTool extends AnAction {
             ArrayList<JCheckBox> checkBoxes = getAuthorCheckboxes(authors);
             checkBoxes.forEach(authorBox::add);
 
-            this.profileBoxes.put(modelName, authorBox);
+            this.profileBoxes.put(modelName, new Pair<>(authorBox, deleteProfile));
 
             JBScrollPane pane = new JBScrollPane(authorBox, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                     ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-            overallBox.add(selectAllAuthors);
+            overallBox.add(buttonsPannel);
             overallBox.add(pane);
 
             profilePanel.add(overallBox, BorderLayout.CENTER);
@@ -1001,6 +1038,7 @@ public class ConfigureTool extends AnAction {
             Box authorBox = Box.createVerticalBox();
 
             JButton selectAllAuthors = getSelectAllButton(authorBox);
+            JButton createProfile = new JButton("Create Profile");
 
             ArrayList<AuthorInfo> authors = Database.getAllAuthors();
             authors.forEach(author -> author.setSelected(false));
@@ -1010,7 +1048,7 @@ public class ConfigureTool extends AnAction {
             ArrayList<JCheckBox> checkBoxes = getAuthorCheckboxes(authors);
             checkBoxes.forEach(authorBox::add);
 
-            this.profileBoxes.put("add", authorBox);
+            this.profileBoxes.put("add", new Pair<>(authorBox, createProfile));
 
             JBScrollPane pane = new JBScrollPane(authorBox, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                     ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -1064,7 +1102,7 @@ public class ConfigureTool extends AnAction {
                 JCheckBox checkBox = new JCheckBox(author.toString());
                 checkBox.setPreferredSize(new Dimension(100, 30));
 
-                checkBox.setSelected(false);
+                checkBox.setSelected(author.isSelected());
 
                 checkBoxes.add(checkBox);
             }

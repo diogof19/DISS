@@ -35,9 +35,10 @@ Future work:
 - More data - script that uses high computing resources
 - Incremental training (for the thesis future work section as it is very hard)
 - Synchronize profiles between different machines (again, thesis future work section)
+- Try and find a place to publish a paper - find events in the next few months
 
 - Today:
   - Select all button working - DONE
-  - Add profile button (new tab with a plus sign)
+  - Add profile button (new tab with a plus sign) - In Progress
   - Switch between profiles
   - Check if the model bias is working correctly

@@ -55,7 +55,7 @@ public class ExtractMethod{
         for (MethodMetrics metrics : Values.before.methodMetrics) {
             if(!sourceFile.getName().contains(metrics.methodName)) {
                 if(metrics.method.getBody() != null) {
-                    if(PredictionModel.predict(metrics)) {
+                    if(PredictionModel.predict(metrics, this.editor.getProject())) {
                         PsiStatement[] statements = metrics.method.getBody().getStatements();
                         for (PsiStatement statement : statements) {
                             if (!(statement instanceof PsiReturnStatement) && !refactorUtils.containsBreakOrContinueOrReturn(statement)) {

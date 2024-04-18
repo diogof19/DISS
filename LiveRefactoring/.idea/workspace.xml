@@ -10,9 +10,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/datamining/ConfirmationPopulDialogWrapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/AuthorInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/AuthorInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractMethod.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractMethod.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/RMEDialogWrapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/RMEDialogWrapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/TODO.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/ui/ConfigureTool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ui/ConfigureTool.java" afterDir="false" />
     </list>
@@ -191,7 +194,6 @@
       <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
     <configuration name="LiveRefactoring" type="GradleRunConfiguration" factoryName="Gradle" nameIsGenerated="true">
@@ -211,7 +213,6 @@
       <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>false</RunAsTest>
       <method v="2">
         <option name="BuildArtifacts" enabled="true">
           <artifact name="images" />
@@ -632,7 +633,7 @@
       <workItem from="1713260534587" duration="946000" />
       <workItem from="1713342170806" duration="6112000" />
       <workItem from="1713427711230" duration="1079000" />
-      <workItem from="1713428809934" duration="7434000" />
+      <workItem from="1713428809934" duration="13489000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>

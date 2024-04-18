@@ -25,20 +25,12 @@ public class Database {
         for(AuthorInfo author : authors){
             System.out.println(author + " - " + author.isSelected());
         }
-
-//        System.out.println("\n");
-//
-//        AuthorInfo author1 = new AuthorInfo(1, "Diana", "d@g.com", null);
-//        Set<AuthorInfo> authorSet = new HashSet<>();
-//        authorSet.add(author1);
-//
-//        updateAuthorsPerModel("Default", authorSet);
-//        authors = getAuthorsPerModel("Default");
-//        for(AuthorInfo author : authors){
-//            System.out.println(author + " - " + author.isSelected());
-//        }
     }
 
+    /**
+     * Connects to the sqlite database
+     * @return The connection
+     */
     private static Connection connect() {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -225,6 +217,9 @@ public class Database {
         }
     }
 
+    /**
+     * Add test data to the database
+     */
     private static void addTestData() {
         String authorsInsertSQL = "INSERT INTO authors (name, email) VALUES (?, ?);";
         String modelsInsertSQL = "INSERT INTO models (name, path, selected) VALUES (?, ?, ?);";
@@ -425,6 +420,10 @@ public class Database {
         }
     }
 
+    /**
+     * Gets the file path of the current model in use
+     * @return The file path of the model
+     */
     public static String getSelectedModelFilePath() {
         String selectSQL = "SELECT path FROM models WHERE selected = 1;";
 
@@ -442,6 +441,33 @@ public class Database {
         return null;
     }
 
+    /**
+     * Gets the name of the current model in use
+     * @return The name of the model
+     */
+    public static String getSelectedModel() {
+        String selectSQL = "SELECT name FROM models WHERE selected = 1;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(selectSQL);
+
+                return rs.getString("name");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Finds the author via the name and email (unique)
+     * @param name The name of the author
+     * @param email The email of the author
+     * @return The id of the author
+     */
     private static int findAuthorByNameAndEmail(String name, String email){
         String selectSQL = "SELECT id FROM authors WHERE name = ? AND email = ?;";
 
@@ -462,6 +488,12 @@ public class Database {
         return -1;
     }
 
+    /**
+     * Inserts an author into the database
+     * @param name The name of the author
+     * @param email The email of the author
+     * @return The id of the author
+     */
     private static int insertAuthor(String name, String email){
         String insertSQL = "INSERT INTO authors (name, email) VALUES (?, ?);";
 
@@ -485,6 +517,10 @@ public class Database {
         return -1;
     }
 
+    /**
+     * Gets all the authors in the database
+     * @return The list of authors
+     */
     public static ArrayList<AuthorInfo> getAllAuthors() {
         String selectSQL = "SELECT id, name, email FROM authors;";
 
@@ -546,6 +582,11 @@ public class Database {
         return authorList;
     }
 
+    /**
+     * Gets the selected authors for a model
+     * @param modelName The name of the model
+     * @return The set of authors
+     */
     public static Set<AuthorInfo> getSelectedAuthorsPerModel(String modelName){
         Set<AuthorInfo> authors = new HashSet<>();
 
@@ -575,6 +616,11 @@ public class Database {
         return authors;
     }
 
+    /**
+     * Updates the authors for a model
+     * @param modelName The name of the model
+     * @param authors The set of authors
+     */
     public static void updateAuthorsPerModel(String modelName, Set<AuthorInfo> authors) {
         String deleteSQL = "DELETE FROM authors_models WHERE model_id = (SELECT id FROM models WHERE name = ?);";
 
@@ -602,6 +648,10 @@ public class Database {
         }
     }
 
+    /**
+     * Gets all the model names
+     * @return The list of model names
+     */
     public static ArrayList<String> getAllModels() {
         String selectSQL = "SELECT name FROM models;";
 
@@ -624,23 +674,26 @@ public class Database {
         return null;
     }
 
-    public static String getSelectedModel() {
-        String selectSQL = "SELECT name FROM models WHERE selected = 1;";
+    /**
+     * Deletes the model from the database
+     * @param modelName The name of the model
+     */
+    public static void deleteModel(String modelName) {
+        String deleteAuthorsModelsSQL = "DELETE FROM authors_models WHERE model_id = (SELECT id FROM models WHERE name = ?);";
+        String deleteModelSQL = "DELETE FROM models WHERE name = ?;";
 
         try (Connection conn = connect()) {
             if (conn != null) {
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(selectSQL);
+                PreparedStatement pstmt = conn.prepareStatement(deleteAuthorsModelsSQL);
+                pstmt.setString(1, modelName);
+                pstmt.executeUpdate();
 
-                return rs.getString("name");
+                pstmt = conn.prepareStatement(deleteModelSQL);
+                pstmt.setString(1, modelName);
+                pstmt.executeUpdate();
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-
-        return null;
     }
-
-
-
 }

@@ -14,6 +14,7 @@ public class RMEDialogWrapper extends DialogWrapper {
     private JBTextField branchTextField = new JBTextField("main");
     private final JLabel warningLabel =
             new JLabel("Warning: Depending on the number of commits, this may take a while to complete.");
+
     protected RMEDialogWrapper() {
         super(true);
         init();

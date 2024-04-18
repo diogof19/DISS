@@ -49,12 +49,12 @@ public class PredictionModel {
      * @param methodMetrics the metrics of the method
      * @return true if the method is an inlier, false if it is an outlier
      */
-    public static boolean predict(MethodMetrics methodMetrics){
+    public static boolean predict(MethodMetrics methodMetrics, Project project){
         ArrayList<Double> data = getMetrics(methodMetrics);
 
         try {
             System.out.println("Starting Prediction");
-            boolean prediction = predictPython(data);
+            boolean prediction = predictPython(data, project);
             System.out.println("Prediction done: " + prediction);
             return prediction;
         } catch (IOException | InterruptedException e) {
@@ -69,8 +69,8 @@ public class PredictionModel {
      * @throws IOException if the python script has a problem
      * @throws InterruptedException if the process is interrupted
      */
-    private static boolean predictPython(ArrayList<Double> data) throws IOException, InterruptedException {
-        String pythonPath = getPythonPath();
+    private static boolean predictPython(ArrayList<Double> data, Project project) throws IOException, InterruptedException {
+        String pythonPath = getPythonPath(project);
         if (pythonPath == null) {
             Utils.popup(Values.event.getProject(),
                     "LiveRef - Python path not set",
@@ -100,10 +100,10 @@ public class PredictionModel {
      * @throws IOException if the python script has a problem
      * @throws InterruptedException if the process is interrupted
      */
-    public static void biasModel() throws IOException, InterruptedException {
+    public static void biasModel(Project project) throws IOException, InterruptedException {
         Set<AuthorInfo> authors = (Set<AuthorInfo>) Values.selectedAuthors;
 
-        String pythonPath = getPythonPath();
+        String pythonPath = getPythonPath(project);
         if (pythonPath == null) {
             Utils.popup(Values.event.getProject(),
                     "LiveRef - Python path not set",
@@ -138,8 +138,9 @@ public class PredictionModel {
      * Gets the python path from the settings
      * @return the python path or null if it is not set
      */
-    private static String getPythonPath() {
-        String pythonPath = Values.pythonPath;
+    private static String getPythonPath(Project project) {
+        MySettings mySettings = project.getService(MySettings.class);
+        String pythonPath = mySettings.getState().pythonPath;
 
         if (pythonPath.isEmpty()) {
             //TODO: Removed this after testing
@@ -231,7 +232,7 @@ public class PredictionModel {
         mySettings.getState().counter++;
 
         if(mySettings.getState().counter >= Values.maxExtractMethodsBefUpdate) {
-            biasModel();
+            biasModel(project);
             mySettings.getState().counter = 0;
         }
 
@@ -281,14 +282,15 @@ public class PredictionModel {
         return output.toString();
     }
 
-    public static boolean checkPipRequirements() throws IOException, InterruptedException {
-        String pythonPath = getPythonPath();
+    //TODO: Finish/Change this function - check requirements, if not installed, install them - call this function in the ConfigureTool once someone changes the python path
+    public static void checkPipRequirements(Project project) throws IOException, InterruptedException {
+        String pythonPath = getPythonPath(project);
         if (pythonPath == null) {
             Utils.popup(Values.event.getProject(),
                     "LiveRef - Python path not set",
                     "Cannot check pip requirements without python path. Please set the python path by opening the 'Configure Tool' window and going to the 'Advanced Extract Method' tab.",
                     NotificationType.ERROR);
-            return false;
+            return;
         }
 
         URL url = PredictionModel.class.getResource("/requirements.txt");
@@ -297,10 +299,9 @@ public class PredictionModel {
         String line;
         while ((line = reader.readLine()) != null) {
             if(!isPythonPackagedInstalled(pythonPath, line))
-                return false;
+                return;
         }
 
-        return true;
     }
 
     private static boolean isPythonPackagedInstalled(String pythonPath, String packageName) throws IOException, InterruptedException {
@@ -312,8 +313,8 @@ public class PredictionModel {
         return exitCode == 0;
     }
 
-    public static void installPipRequirements() throws IOException, InterruptedException {
-        String pythonPath = getPythonPath();
+    public static void installPipRequirements(Project project) throws IOException, InterruptedException {
+        String pythonPath = getPythonPath(project);
         if (pythonPath == null) {
             Utils.popup(Values.event.getProject(),
                     "LiveRef - Python path not set",
