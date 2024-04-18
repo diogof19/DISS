@@ -1,10 +1,12 @@
 package com.datamining;
 
+import java.util.Objects;
+
 public class AuthorInfo implements Comparable<AuthorInfo> {
     private final Integer id;
     private final String authorName;
     private final String authorEmail;
-    private final Boolean selected;
+    private Boolean selected;
 
     public AuthorInfo(Integer id, String authorName, String authorEmail, Boolean selected) {
         this.id = id;
@@ -18,7 +20,12 @@ public class AuthorInfo implements Comparable<AuthorInfo> {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         AuthorInfo other = (AuthorInfo) obj;
-        return this.authorEmail.equals(other.authorEmail);
+        return this.authorEmail.equals(other.authorEmail) && this.authorName.equals(other.authorName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(authorEmail, authorName);
     }
 
     @Override
@@ -45,5 +52,9 @@ public class AuthorInfo implements Comparable<AuthorInfo> {
 
     public Boolean isSelected() {
         return selected;
+    }
+
+    public void setSelected(Boolean selected) {
+        this.selected = selected;
     }
 }

@@ -10,23 +10,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/datamining/MySettings.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractMethod.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractMethod.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/AuthorInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/AuthorInfo.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/StartUp.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/StartUp.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/data/extracted_metrics.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/data/repo_extracted_metrics.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/TODO.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/ui/ConfigureTool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ui/ConfigureTool.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/utils/importantValues/Values.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/utils/importantValues/Values.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/bias_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/python/bias_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/metrics.db" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/metrics.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/prediction.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/python/prediction.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -643,6 +631,8 @@
       <workItem from="1713166990866" duration="9116000" />
       <workItem from="1713260534587" duration="946000" />
       <workItem from="1713342170806" duration="6112000" />
+      <workItem from="1713427711230" duration="1079000" />
+      <workItem from="1713428809934" duration="7434000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>

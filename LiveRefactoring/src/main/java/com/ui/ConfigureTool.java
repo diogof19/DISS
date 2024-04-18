@@ -3,7 +3,7 @@ package com.ui;
 import com.core.Refactorings;
 import com.datamining.AuthorInfo;
 import com.datamining.Database;
-import com.datamining.PredictionModel;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.markup.RangeHighlighter;
@@ -195,42 +195,38 @@ public class ConfigureTool extends AnAction {
             }
 
             try {
-                applySelectedAuthors(wrapper.authorsBox);
+                applySelectedAuthors(wrapper.profileBoxes);
             } catch (IOException | ClassNotFoundException | InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
         }
     }
 
-    /**
-     * Checks if there were any changes to the checkboxes for the authors and, if so, adds the bias to the model
-     * @param authorsBox the box containing the checkboxes for the authors
-     * @throws IOException if there is an error reading the authors file
-     * @throws ClassNotFoundException if there is an error reading the authors file due to not finding the correct class
-     * @throws InterruptedException if there is an interruption during the bias model application
-     */
-    private void applySelectedAuthors(Box authorsBox) throws IOException, ClassNotFoundException, InterruptedException {
-        Set<String> checkedAuthors = new HashSet<>();
-        for (Component component : authorsBox.getComponents()) {
-            if (component instanceof JCheckBox) {
-                JCheckBox checkBox = (JCheckBox) component;
-                if (checkBox.isSelected()) {
-                    checkedAuthors.add(checkBox.getText());
+    private void applySelectedAuthors(Map<String, Box> profileBoxes) throws IOException, ClassNotFoundException, InterruptedException {
+        for (Map.Entry<String, Box> entry : profileBoxes.entrySet()) {
+            String profileName = entry.getKey();
+            Box authorsBox = entry.getValue();
+            Set<AuthorInfo> checkedAuthors = new HashSet<>();
+
+            for (Component component : authorsBox.getComponents()) {
+                if (component instanceof JCheckBox) {
+                    JCheckBox checkBox = (JCheckBox) component;
+                    if (checkBox.isSelected()) {
+                        String text = checkBox.getText();
+                        String authorName = text.substring(0, text.indexOf(" ("));
+                        String authorEmail = text.substring(text.indexOf("(") + 1, text.indexOf(")"));
+                        checkedAuthors.add(new AuthorInfo(null, authorName, authorEmail, true));
+                    }
                 }
             }
-        }
 
-        ArrayList<AuthorInfo> allAuthors = Database.getAllAuthors();
-        ArrayList<AuthorInfo> authors = new ArrayList<>();
-        for (AuthorInfo author : allAuthors) {
-            if (checkedAuthors.contains(author)) {
-                authors.add(author);
+            Set<AuthorInfo> oldAuthors = Database.getSelectedAuthorsPerModel(profileName);
+
+            if (checkedAuthors.size() != oldAuthors.size() || !checkedAuthors.containsAll(oldAuthors)) {
+                Database.updateAuthorsPerModel(profileName, checkedAuthors);
+                //TODO: REMOVE THE COMMENT TO TEST
+                //PredictionModel.biasModel();
             }
-        }
-
-        if(!authors.equals(Values.selectedAuthors)){
-            Values.selectedAuthors = authors;
-            PredictionModel.biasModel();
         }
 
     }
@@ -312,7 +308,8 @@ public class ConfigureTool extends AnAction {
         public HashMap<String,Boolean>selections = new HashMap<>();
 
         public Project project;
-        public Box authorsBox;
+        public Map<String, Box> profileBoxes = new HashMap<>();
+        public JBTextField textField_profileName = new JBTextField();
 
         public MyDialogWrapper(Project project) {
             super(false);
@@ -914,7 +911,6 @@ public class ConfigureTool extends AnAction {
             return pythonPanel;
         }
 
-
         private JPanel getAuthorBiasPanel() {
             JPanel authorPanel = new JPanel(new BorderLayout());
             authorPanel.setBorder(BorderFactory.createTitledBorder(
@@ -924,9 +920,23 @@ public class ConfigureTool extends AnAction {
 
             JBTabsImpl tabbedPane = new JBTabsImpl(this.project);
 
+            String selectedModel = Database.getSelectedModel();
             for (String model: models) {
                 TabInfo tabInfo = new TabInfo(getBiasProfilePanel(model));
+
+                if (model.equals(selectedModel)) {
+                    tabbedPane.select(tabInfo, true);
+                }
                 tabInfo.setText(model);
+
+                tabbedPane.addTab(tabInfo);
+            }
+
+            if(models.size() < 5) {
+                TabInfo tabInfo = new TabInfo(getNewBiasProfilePanel());
+
+                tabInfo.setIcon(AllIcons.General.Add);
+
                 tabbedPane.addTab(tabInfo);
             }
 
@@ -946,42 +956,20 @@ public class ConfigureTool extends AnAction {
 
             Box overallBox = Box.createVerticalBox();
             overallBox.setPreferredSize(new Dimension(100, 100));
+            Box authorBox = Box.createVerticalBox();
 
-            JButton selectAllAuthors = new JButton("Select All");
-            selectAllAuthors.setMaximumSize(new Dimension(70, 30));
-
-            this.authorsBox = Box.createVerticalBox();
-
-            selectAllAuthors.addActionListener(e -> {
-                boolean allSelected = true;
-                for (Component component: this.authorsBox.getComponents()) {
-                    JCheckBox checkBox = (JCheckBox) component;
-                    if (!checkBox.isSelected()) {
-                        allSelected = false;
-                        break;
-                    }
-                }
-
-                for (Component component: this.authorsBox.getComponents()) {
-                    JCheckBox checkBox = (JCheckBox) component;
-                    checkBox.setSelected(!allSelected);
-                }
-            });
+            JButton selectAllAuthors = getSelectAllButton(authorBox);
 
             ArrayList<AuthorInfo> authors = Database.getAuthorsPerModel(modelName);
 
             authors.sort(AuthorInfo::compareTo);
 
-            for (AuthorInfo author: authors) {
-                JCheckBox checkBox = new JCheckBox(author.toString());
-                checkBox.setPreferredSize(new Dimension(100, 30));
+            ArrayList<JCheckBox> checkBoxes = getAuthorCheckboxes(authors);
+            checkBoxes.forEach(authorBox::add);
 
-                checkBox.setSelected(author.isSelected());
+            this.profileBoxes.put(modelName, authorBox);
 
-                this.authorsBox.add(checkBox);
-            }
-
-            JBScrollPane pane = new JBScrollPane(this.authorsBox, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+            JBScrollPane pane = new JBScrollPane(authorBox, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                     ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
             overallBox.add(selectAllAuthors);
@@ -990,6 +978,97 @@ public class ConfigureTool extends AnAction {
             profilePanel.add(overallBox, BorderLayout.CENTER);
 
             return profilePanel;
+        }
+
+        private JPanel getNewBiasProfilePanel() {
+            JPanel profilePanel = new JPanel(new BorderLayout());
+
+            Box overallBox = Box.createVerticalBox();
+            overallBox.setPreferredSize(new Dimension(100, 70));
+
+            Box nameBox = Box.createHorizontalBox();
+            nameBox.setPreferredSize(new Dimension(100, 10));
+
+            JPanel panel = new JPanel(new GridLayout(1, 2));
+            panel.setPreferredSize(new Dimension(100, 10));
+
+            JLabel label_profileName = new JLabel("Profile Name");
+            panel.add(label_profileName, BorderLayout.WEST);
+            panel.add(textField_profileName, BorderLayout.EAST);
+
+            nameBox.add(panel);
+
+            Box authorBox = Box.createVerticalBox();
+
+            JButton selectAllAuthors = getSelectAllButton(authorBox);
+
+            ArrayList<AuthorInfo> authors = Database.getAllAuthors();
+            authors.forEach(author -> author.setSelected(false));
+
+            authors.sort(AuthorInfo::compareTo);
+
+            ArrayList<JCheckBox> checkBoxes = getAuthorCheckboxes(authors);
+            checkBoxes.forEach(authorBox::add);
+
+            this.profileBoxes.put("add", authorBox);
+
+            JBScrollPane pane = new JBScrollPane(authorBox, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+            overallBox.add(nameBox);
+            overallBox.add(selectAllAuthors, BorderLayout.WEST);
+            overallBox.add(pane);
+
+
+            profilePanel.add(overallBox, BorderLayout.CENTER);
+
+            return profilePanel;
+        }
+
+        /**
+         * Creates the 'Select All' button for the author bias panel.
+         * @param authorBox The box where the authors are displayed
+         * @return The 'Select All' button
+         */
+        private JButton getSelectAllButton(Box authorBox){
+            JButton selectAllAuthors = new JButton("Select All");
+            selectAllAuthors.setMaximumSize(new Dimension(70, 30));
+
+            selectAllAuthors.addActionListener(e -> {
+                boolean allSelected = true;
+                for (Component component: authorBox.getComponents()) {
+                    JCheckBox checkBox = (JCheckBox) component;
+                    if (!checkBox.isSelected()) {
+                        allSelected = false;
+                        break;
+                    }
+                }
+
+                for (Component component: authorBox.getComponents()) {
+                    JCheckBox checkBox = (JCheckBox) component;
+                    checkBox.setSelected(!allSelected);
+                }
+            });
+
+            return selectAllAuthors;
+        }
+
+        /**
+         * Creates the checkboxes for the authors in the author bias panel.
+         * @param authors The authors to create checkboxes for
+         * @return The checkboxes for the authors
+         */
+        private ArrayList<JCheckBox> getAuthorCheckboxes(ArrayList<AuthorInfo> authors){
+            ArrayList<JCheckBox> checkBoxes = new ArrayList<>();
+            for (AuthorInfo author: authors) {
+                JCheckBox checkBox = new JCheckBox(author.toString());
+                checkBox.setPreferredSize(new Dimension(100, 30));
+
+                checkBox.setSelected(false);
+
+                checkBoxes.add(checkBox);
+            }
+            return checkBoxes;
         }
     }
 

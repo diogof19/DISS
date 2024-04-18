@@ -6,22 +6,37 @@ import com.core.Pair;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.datamining.Utils.getMethodMetricsFromFile;
 
 public class Database {
     //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\resources\\metrics.db";
+    //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\.gradle\\caches\\modules-2\\files-2.1\\com.jetbrains.intellij.idea\\ideaIC\\2021.1.1\\e051d885e757b286781f50305504d7b8db3e1dba\\ideaIC-2021.1.1\\bin\\tmp\\metrics.db";
     private static final String DATABASE_FILE_PATH = "tmp/metrics.db";
     private static final String DATABASE_URL = "jdbc:sqlite:" + DATABASE_FILE_PATH;
 
-    public static void main(String[] args) throws SQLException {
-        createDatabase();
-        addTestData();
+    public static void main(String[] args) {
+        //createDatabase();
+        //addTestData();
 
-        ArrayList<AuthorInfo> authors = getAuthorsPerModel("Default");
+        ArrayList<AuthorInfo> authors = getAuthorsPerModel("Model 1");
         for(AuthorInfo author : authors){
             System.out.println(author + " - " + author.isSelected());
         }
+
+//        System.out.println("\n");
+//
+//        AuthorInfo author1 = new AuthorInfo(1, "Diana", "d@g.com", null);
+//        Set<AuthorInfo> authorSet = new HashSet<>();
+//        authorSet.add(author1);
+//
+//        updateAuthorsPerModel("Default", authorSet);
+//        authors = getAuthorsPerModel("Default");
+//        for(AuthorInfo author : authors){
+//            System.out.println(author + " - " + author.isSelected());
+//        }
     }
 
     private static Connection connect() {
@@ -208,6 +223,76 @@ public class Database {
         } catch (SQLException e) {
             System.out.println("Create authors_models table: " + e.getMessage());
         }
+    }
+
+    private static void addTestData() {
+        String authorsInsertSQL = "INSERT INTO authors (name, email) VALUES (?, ?);";
+        String modelsInsertSQL = "INSERT INTO models (name, path, selected) VALUES (?, ?, ?);";
+        String authorsModelsInsertSQL = "INSERT INTO authors_models (author_id, model_id) VALUES (?, ?);";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                PreparedStatement pstmt = conn.prepareStatement(authorsInsertSQL);
+
+                pstmt.setString(1, "Diana");
+                pstmt.setString(2, "d@g.com");
+                pstmt.executeUpdate();
+
+                pstmt.setString(1, "Luis");
+                pstmt.setString(2, "l@g.com");
+                pstmt.executeUpdate();
+
+                pstmt.setString(1, "Ana");
+                pstmt.setString(2, "a@g.com");
+                pstmt.executeUpdate();
+
+                pstmt.setString(1, "Joao");
+                pstmt.setString(2, "j@g.com");
+                pstmt.executeUpdate();
+
+                pstmt.setString(1, "Andre");
+                pstmt.setString(2, "a@g.com");
+                pstmt.executeUpdate();
+
+                pstmt = conn.prepareStatement(modelsInsertSQL);
+
+                pstmt.setString(1, "Model 1");
+                pstmt.setString(2, "models/model1.joblib");
+                pstmt.setInt(3, 1);
+                pstmt.executeUpdate();
+
+                pstmt.setString(1, "Model 2");
+                pstmt.setString(2, "models/model2.joblib");
+                pstmt.setInt(3, 0);
+                pstmt.executeUpdate();
+
+                pstmt = conn.prepareStatement(authorsModelsInsertSQL);
+
+                pstmt.setInt(1, 1);
+                pstmt.setInt(2, 1);
+                pstmt.executeUpdate();
+
+                pstmt.setInt(1, 1);
+                pstmt.setInt(2, 2);
+                pstmt.executeUpdate();
+
+                pstmt.setInt(1, 2);
+                pstmt.setInt(2, 1);
+                pstmt.executeUpdate();
+
+                pstmt.setInt(1, 3);
+                pstmt.setInt(2, 2);
+                pstmt.executeUpdate();
+
+                pstmt.setInt(1, 4);
+                pstmt.setInt(2, 3);
+                pstmt.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+
     }
 
     /**
@@ -422,27 +507,19 @@ public class Database {
         return null;
     }
 
+    /**
+     * Gets all the authors per model, checking the selected boolean if the author is selected for the model
+     * @param modelName The name of the model
+     * @return The list of authors
+     */
     public static ArrayList<AuthorInfo> getAuthorsPerModel(String modelName) {
         ArrayList<AuthorInfo> authorList = new ArrayList<>();
-
-        /**
-         * SELECT id, name, email, selected
-         * FROM (
-         *     SELECT a.id, a.name, a.email,
-         *            CASE WHEN (am.model_id IS NOT NULL AND m.name = ?) THEN 1 ELSE 0 END AS selected,
-         *            ROW_NUMBER() OVER (PARTITION BY a.id ORDER BY CASE WHEN (am.model_id IS NOT NULL AND m.name = 'Default') THEN 1 ELSE 0 END DESC) AS rn
-         *     FROM authors a
-         *     LEFT JOIN authors_models am ON a.id = am.author_id
-         *     LEFT JOIN models m ON am.model_id = m.id
-         * ) AS subquery
-         * WHERE rn = 1;
-         */
 
         String selectSQL = "SELECT id, name, email, selected\n" +
                 "FROM (\n" +
                 "    SELECT a.id, a.name, a.email, \n" +
                 "           CASE WHEN (am.model_id IS NOT NULL AND m.name = ?) THEN 1 ELSE 0 END AS selected,\n" +
-                "           ROW_NUMBER() OVER (PARTITION BY a.id ORDER BY CASE WHEN (am.model_id IS NOT NULL AND m.name = 'Default') THEN 1 ELSE 0 END DESC) AS rn\n" +
+                "           ROW_NUMBER() OVER (PARTITION BY a.id ORDER BY CASE WHEN (am.model_id IS NOT NULL AND m.name = ?) THEN 1 ELSE 0 END DESC) AS rn\n" +
                 "    FROM authors a \n" +
                 "    LEFT JOIN authors_models am ON a.id = am.author_id \n" +
                 "    LEFT JOIN models m ON am.model_id = m.id\n" +
@@ -453,6 +530,7 @@ public class Database {
             if (conn != null) {
                 PreparedStatement pstmt = conn.prepareStatement(selectSQL);
                 pstmt.setString(1, modelName);
+                pstmt.setString(2, modelName);
 
                 ResultSet rs = pstmt.executeQuery();
 
@@ -466,6 +544,62 @@ public class Database {
         }
 
         return authorList;
+    }
+
+    public static Set<AuthorInfo> getSelectedAuthorsPerModel(String modelName){
+        Set<AuthorInfo> authors = new HashSet<>();
+
+        String selectSQL = "SELECT a.id, a.name, a.email\n" +
+                "FROM authors a\n" +
+                "JOIN authors_models am ON a.id = am.author_id\n" +
+                "JOIN models m ON am.model_id = m.id\n" +
+                "WHERE m.name = ? AND m.selected = 1;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                PreparedStatement pstmt = conn.prepareStatement(selectSQL);
+                pstmt.setString(1, modelName);
+
+                ResultSet rs = pstmt.executeQuery();
+
+                while(rs.next()){
+                    authors.add(new AuthorInfo(rs.getInt("id"), rs.getString("name"),
+                            rs.getString("email"), true));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+
+        }
+
+        return authors;
+    }
+
+    public static void updateAuthorsPerModel(String modelName, Set<AuthorInfo> authors) {
+        String deleteSQL = "DELETE FROM authors_models WHERE model_id = (SELECT id FROM models WHERE name = ?);";
+
+        //This is used with the checkboxes, so we don't have access to their id
+        String insertSQL = "INSERT INTO authors_models (author_id, model_id) VALUES" +
+                "((SELECT id FROM authors WHERE name = ? AND email = ?)," +
+                " (SELECT id FROM models WHERE name = ?));";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                PreparedStatement pstmt = conn.prepareStatement(deleteSQL);
+                pstmt.setString(1, modelName);
+                pstmt.executeUpdate();
+
+                pstmt = conn.prepareStatement(insertSQL);
+                for(AuthorInfo author : authors){
+                    pstmt.setString(1, author.getAuthorName());
+                    pstmt.setString(2, author.getAuthorEmail());
+                    pstmt.setString(3, modelName);
+                    pstmt.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     public static ArrayList<String> getAllModels() {
@@ -490,74 +624,23 @@ public class Database {
         return null;
     }
 
-    private static void addTestData() {
-        String authorsInsertSQL = "INSERT INTO authors (name, email) VALUES (?, ?);";
-        String modelsInsertSQL = "INSERT INTO models (name, path, selected) VALUES (?, ?, ?);";
-        String authorsModelsInsertSQL = "INSERT INTO authors_models (author_id, model_id) VALUES (?, ?);";
+    public static String getSelectedModel() {
+        String selectSQL = "SELECT name FROM models WHERE selected = 1;";
 
         try (Connection conn = connect()) {
             if (conn != null) {
-                PreparedStatement pstmt = conn.prepareStatement(authorsInsertSQL);
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(selectSQL);
 
-                pstmt.setString(1, "Diana");
-                pstmt.setString(2, "d@g.com");
-                pstmt.executeUpdate();
-
-                pstmt.setString(1, "Luis");
-                pstmt.setString(2, "l@g.com");
-                pstmt.executeUpdate();
-
-                pstmt.setString(1, "Ana");
-                pstmt.setString(2, "a@g.com");
-                pstmt.executeUpdate();
-
-                pstmt.setString(1, "Joao");
-                pstmt.setString(2, "j@g.com");
-                pstmt.executeUpdate();
-
-                pstmt.setString(1, "Andre");
-                pstmt.setString(2, "a@g.com");
-                pstmt.executeUpdate();
-
-                pstmt = conn.prepareStatement(modelsInsertSQL);
-
-                pstmt.setString(1, "Model 1");
-                pstmt.setString(2, "models/model1.joblib");
-                pstmt.setInt(3, 1);
-                pstmt.executeUpdate();
-
-                pstmt.setString(1, "Model 2");
-                pstmt.setString(2, "models/model2.joblib");
-                pstmt.setInt(3, 0);
-                pstmt.executeUpdate();
-
-                pstmt = conn.prepareStatement(authorsModelsInsertSQL);
-
-                pstmt.setInt(1, 1);
-                pstmt.setInt(2, 1);
-                pstmt.executeUpdate();
-
-                pstmt.setInt(1, 1);
-                pstmt.setInt(2, 2);
-                pstmt.executeUpdate();
-
-                pstmt.setInt(1, 2);
-                pstmt.setInt(2, 1);
-                pstmt.executeUpdate();
-
-                pstmt.setInt(1, 3);
-                pstmt.setInt(2, 2);
-                pstmt.executeUpdate();
-
-                pstmt.setInt(1, 4);
-                pstmt.setInt(2, 3);
-                pstmt.executeUpdate();
+                return rs.getString("name");
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.out.println(e.getMessage());
         }
 
-
+        return null;
     }
+
+
 
 }

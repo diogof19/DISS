@@ -27,10 +27,17 @@
   - I was thinking of getting data from before and after a refactoring to understand if the metrics are doing what they're supposed to do. - Yes
   - Also, checking the metrics on the before version to understand what threshold values are good. - Yes
 
-- Comparar com o extract method do intellij
+- Validation:
+  - Compare with intellij Extract Method Refactoring
 
-Trabalho futuro:
-- Adicionar Extract Class
-- Aumnentar número de dados - script que utilizada recursos de alta computação
-- Incremental training (future work escrito na tese pq é muito difícil)
-- Synchronize profiles between different machines
+Future work:
+- Add Extract Class
+- More data - script that uses high computing resources
+- Incremental training (for the thesis future work section as it is very hard)
+- Synchronize profiles between different machines (again, thesis future work section)
+
+- Today:
+  - Select all button working - DONE
+  - Add profile button (new tab with a plus sign)
+  - Switch between profiles
+  - Check if the model bias is working correctly
