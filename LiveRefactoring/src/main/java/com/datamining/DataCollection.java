@@ -223,6 +223,10 @@ public class DataCollection extends AnAction {
 
         PsiJavaFile file = Utils.loadFile(filePath, this.project);
 
+        if(file == null){
+            throw new RuntimeException("File not found: " + filePath);
+        }
+
         return file;
     }
 }

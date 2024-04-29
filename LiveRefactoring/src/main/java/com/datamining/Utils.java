@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.PsiStatement;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -28,7 +29,7 @@ public class Utils {
 //                .replace("private ", "").replace("protected ", "")
 //                .replace("static ", "").trim();
 
-        return description.split("from")[1].split("in class")[0].trim().split("\\(")[0]
+        return description.split("extracted from")[1].split("in class")[0].trim().split("\\(")[0]
                 .replace("public ", "").replace("private ", "")
                 .replace("protected ", "").replace("static ", "").trim();
     }
@@ -77,16 +78,38 @@ public class Utils {
             throw new RuntimeException(e);
         }
 
+        System.out.println("Class: " + className + " - " + methodName);
+
         ClassMetrics classMetrics = fileMetrics.classMetrics.stream()
                 .filter(c -> c.className.equals(className))
                 .findFirst()
                 .orElse(null);
 
         assert classMetrics != null;
+
         MethodMetrics methodMetrics = classMetrics.methodMetrics.stream()
                 .filter(m -> m.methodName.equals(methodName))
                 .findFirst()
                 .orElse(null);
+
+        if(methodMetrics == null){
+            System.out.println("Method not found: " + methodName);
+            System.out.println("Class: " + className);
+            System.out.println("Methods from class metrics: ");
+            for(MethodMetrics m : classMetrics.methodMetrics){
+                System.out.println(m.methodName);
+                for (PsiStatement statement : m.method.getBody().getStatements()) {
+                    System.out.println(statement.getText());
+                }
+            }
+            throw new RuntimeException("Method not found: " + methodName);
+        }
+        else {
+            System.out.println("Method: " + methodName);
+            for (PsiStatement statement : file.getClasses()[0].findMethodsByName(methodName, false)[0].getBody().getStatements()) {
+                System.out.println(statement.getText());
+            }
+        }
 
         return new Pair<>(classMetrics, methodMetrics);
 
