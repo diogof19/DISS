@@ -10,14 +10,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/datamining/ConfirmationPopulDialogWrapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractMethod.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractMethod.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/RMEDialogWrapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/RMEDialogWrapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/TODO.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ui/ConfigureTool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ui/ConfigureTool.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -177,6 +172,19 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="TempDataCollection" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.datamining.TempDataCollection" />
+      <module name="LiveRefactoring.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.datamining.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="BuildPlugin" type="GradleRunConfiguration" factoryName="Gradle">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -194,6 +202,7 @@
       <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
     <configuration name="LiveRefactoring" type="GradleRunConfiguration" factoryName="Gradle" nameIsGenerated="true">
@@ -213,6 +222,7 @@
       <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
       <method v="2">
         <option name="BuildArtifacts" enabled="true">
           <artifact name="images" />
@@ -220,6 +230,7 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="Application.TempDataCollection" />
       <item itemvalue="Application.Database" />
       <item itemvalue="Application.RepositoryMetricsExtraction" />
       <item itemvalue="Application.PredictionModel" />
@@ -229,6 +240,7 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.TempDataCollection" />
         <item itemvalue="Application.Database" />
         <item itemvalue="Application.RepositoryMetricsExtraction" />
         <item itemvalue="Application.PredictionModel" />
@@ -633,7 +645,9 @@
       <workItem from="1713260534587" duration="946000" />
       <workItem from="1713342170806" duration="6112000" />
       <workItem from="1713427711230" duration="1079000" />
-      <workItem from="1713428809934" duration="13489000" />
+      <workItem from="1713428809934" duration="14110000" />
+      <workItem from="1714209554883" duration="3422000" />
+      <workItem from="1714377411934" duration="7674000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>
@@ -1071,7 +1085,6 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="LOCAL_CHANGES_DETAILS_PREVIEW_SHOWN" value="false" />

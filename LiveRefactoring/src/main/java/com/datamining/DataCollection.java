@@ -1,5 +1,7 @@
 package com.datamining;
 
+import com.analysis.metrics.ClassMetrics;
+import com.analysis.metrics.MethodMetrics;
 import com.core.Pair;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -30,13 +32,30 @@ import static com.mongodb.client.model.Projections.include;
 import static java.util.Arrays.asList;
 
 public class DataCollection extends AnAction {
+//public class DataCollection {
     private static final String CONNECTION_STRING = "mongodb://localhost:27017";
     private static final String DATABASE_NAME = "smartshark_2_2";
     private static final String COLLECTION_NAME = "refactoring";
     private MongoClient mongoClient;
     private Project project;
 
-    private String repositoryPath;
+    private static final String repositoryPaths = "E:/repoClones";
+
+//    public static void main(String[] args) {
+//        DataCollection dataCollection = new DataCollection();
+//
+//        dataCollection.mongoClient = MongoClients.create(CONNECTION_STRING);
+//
+//        HashSet<Document> refactoringData = dataCollection.getRefactoringData();
+//        System.out.println("Data extracted: " + refactoringData.size());
+//
+//        try {
+//            dataCollection.extractMetrics(refactoringData);
+//        } catch (IOException | SQLException | GitAPIException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//    }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
@@ -54,7 +73,7 @@ public class DataCollection extends AnAction {
 
         try {
             extractMetrics(refactoringData);
-        } catch (IOException | SQLException e) {
+        } catch (IOException | SQLException | GitAPIException e) {
             throw new RuntimeException(e);
         }
 
@@ -71,45 +90,66 @@ public class DataCollection extends AnAction {
         List<Bson> pipeline = asList(
                 match(eq("type", "extract_method")),
                 project(fields(include("_id", "commit_id", "type", "description"))),
-                limit(5),
+                limit(100),
                 lookup("commit", "commit_id", "_id", "commit"),
                 unwind("$commit"),
                 lookup("file_action", "commit._id", "commit_id", "file_actions"),
                 unwind("$file_actions"),
                 lookup("file", "file_actions.file_id", "_id", "file"),
                 unwind("$file"),
-                group("$_id",
+                lookup("vcs_system", "commit.vcs_system_id", "_id", "vcs_system"),
+                unwind("$vcs_system"),
+                group(
+                        "$_id",
                         first("type", "$type"),
                         first("description", "$description"),
                         first("revision_hash", "$commit.revision_hash"),
                         first("parent_revision_hash", "$file_actions.parent_revision_hash"),
-                        push("files", "$file.path")
+                        push("files", "$file.path"),
+                        first("repo", "$vcs_system.url")
                 )
         );
 
         return collection.aggregate(pipeline).into(new HashSet<>());
     }
 
-    private void extractMetrics(HashSet<Document> documents) throws IOException, SQLException {
+    private void extractMetrics(HashSet<Document> documents) throws IOException, SQLException, GitAPIException {
+        //ExecutorService executor = Executors.newCachedThreadPool();
+        //Map<String, CompletableFuture<Void>> repoTaskMap = new ConcurrentHashMap<>();
+
+        int count = 0;
         for (Document document : documents) {
+            Database.countMetrics();
+
             System.out.println(document);
+            //String repo = document.getString("repo");
 
-            //TODO: Test when I have the final database
-            //RefactoringInfo refactoringInfo = getRefactoringInfo(document);
+            RefactoringInfo refactoringInfo = getRefactoringInfo(document);
 
-            PsiJavaFile file =
-                    loadFile("C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\test_files\\AbstractGraphTest.java",
-                            this.project);
-            RefactoringInfo refactoringInfo = new RefactoringInfo(null, "streamLanguageTagsCaseInsensitive",
-                    "AbstractGraphTest", "org.apache.commons.rdf.api.AbstractGraphTest",
-                    "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\test_files\\AbstractGraphTest.java",
-                    file, file, null, null);
+            Pair<ClassMetrics, MethodMetrics> beforeMetrics = getMethodMetricsFromFile(refactoringInfo.getBeforeFile(),
+                    refactoringInfo.getMethodName(), refactoringInfo.getClassName());
 
-            //TODO: Replace the 2nd argument with the correct refactoringInfo
-            Database.saveMetrics(refactoringInfo, refactoringInfo);
+            Pair<ClassMetrics, MethodMetrics> afterMetrics = getMethodMetricsFromFile(refactoringInfo.getAfterFile(),
+                    refactoringInfo.getMethodName(), refactoringInfo.getClassName());
 
-            break;
+            if (beforeMetrics.getSecond().equals(afterMetrics.getSecond())) {
+                System.out.println("Metrics are equal");
+
+            } else {
+                count++;
+                System.out.println("Before\n: " + beforeMetrics.getSecond());
+                System.out.println("After\n: " + afterMetrics.getSecond());
+                //System.out.println("Equal: " + beforeMetrics.getSecond().equals(afterMetrics.getSecond()));
+            }
+
+            Database.saveMetrics(null, beforeMetrics.getSecond(), afterMetrics.getSecond());
+
+            Database.countMetrics();
+
+            //break;
         }
+
+        System.out.println("Count: " + count);
     }
 
 
@@ -127,8 +167,10 @@ public class DataCollection extends AnAction {
         Pair<String, String> classInfo = getClassName(description);
         info.setFullClass(classInfo.getFirst());
         info.setClassName(classInfo.getSecond());
+        System.out.println("Class: " + info.getFullClass() + " - " + info.getClassName());
 
-        Git git = Git.open(new File(this.repositoryPath));
+        String repoName = document.getString("repo").split("github.com/")[1].split(".git")[0];
+        Git git = Git.open(new File(repositoryPaths + "/" + repoName));
 
         String filePath = findFilePath(git, info, document);
 
@@ -136,6 +178,10 @@ public class DataCollection extends AnAction {
             git.close();
             throw new RuntimeException("File not found: " + description);
         }
+
+        filePath = repositoryPaths + "/" + repoName + "/" + filePath;
+        System.out.println("File path: " + filePath);
+
 
         if (info.getBeforeFile() == null)
             info.setBeforeFile(getFileFromCommit(git, filePath, document.getString("parent_revision_hash")));
@@ -147,10 +193,9 @@ public class DataCollection extends AnAction {
         return info;
     }
 
-    private String findFilePath(Git git, RefactoringInfo info, Document document) throws IOException, GitAPIException {
-        //TODO: Check if there's the issue with the .java and the class name (Ex: MovableTest and Movable)
+    private String findFilePath(Git git, RefactoringInfo info, Document document) throws GitAPIException {
         for (String filePath : document.getList("files", String.class)) {
-            if (filePath.contains(info.getFullClass().replace(".", "/"))) {
+            if (filePath.contains(info.getFullClass().replace(".", "/") + ".java")) {
                 return filePath;
             }
         }

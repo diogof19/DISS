@@ -21,10 +21,12 @@ public class Database {
         //createDatabase();
         //addTestData();
 
-        ArrayList<AuthorInfo> authors = getAuthorsPerModel("Model 1");
-        for(AuthorInfo author : authors){
-            System.out.println(author + " - " + author.isSelected());
-        }
+//        ArrayList<AuthorInfo> authors = getAuthorsPerModel("Model 1");
+//        for(AuthorInfo author : authors){
+//            System.out.println(author + " - " + author.isSelected());
+//        }
+
+        countMetrics();
     }
 
     /**
@@ -696,4 +698,20 @@ public class Database {
             System.out.println(e.getMessage());
         }
     }
+
+    public static void countMetrics() {
+        String selectSQL = "SELECT COUNT(*) FROM metrics;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(selectSQL);
+
+                System.out.println("Number of metrics: " + rs.getInt(1));
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
 }
