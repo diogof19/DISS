@@ -9,12 +9,15 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiStatement;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class Utils {
     /**
@@ -29,9 +32,10 @@ public class Utils {
 //                .replace("private ", "").replace("protected ", "")
 //                .replace("static ", "").trim();
 
-        return description.split("extracted from")[1].split("in class")[0].trim().split("\\(")[0]
+        //protected checkLatest(dd DependencyDescriptor, newModuleFound ResolvedModuleRevision, data ResolveData) : ResolvedModuleRevision
+        return description.split("extracted from")[1].split("in class")[0].trim().split("\\)")[0]
                 .replace("public ", "").replace("private ", "")
-                .replace("protected ", "").replace("static ", "").trim();
+                .replace("protected ", "").replace("static ", "").trim().concat(")");
     }
 
     /**
@@ -55,7 +59,15 @@ public class Utils {
     public static PsiJavaFile loadFile(String filePath, Project project) {
         VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(filePath));
         if(vf != null){
-            return (PsiJavaFile) com.intellij.psi.util.PsiUtilBase.getPsiFile(project, vf);
+            vf.refresh(false, true);
+            PsiFile psiFile = PsiManager.getInstance(project).findFile(vf);
+            System.out.println("Virtual file: " + vf.getPath());
+            if (psiFile != null) {
+                psiFile = (PsiFile) psiFile.copy();
+                return (PsiJavaFile) psiFile;
+            }
+            //return (PsiJavaFile) PsiManager.getInstance(project).findFile(vf);
+            //(PsiJavaFile) com.intellij.psi.util.PsiUtilBase.getPsiFile(project, vf);
         } else {
             System.out.println("Virtual file not found");
         }
@@ -70,7 +82,7 @@ public class Utils {
      * @param className class name
      * @return pair with class and method metrics
      */
-    public static Pair<ClassMetrics, MethodMetrics> getMethodMetricsFromFile(PsiJavaFile file, String methodName, String className) {
+    public static Pair<ClassMetrics, MethodMetrics> getMethodMetricsFromFile(PsiJavaFile file, String method, String className) {
         FileMetrics fileMetrics;
         try {
             fileMetrics = new FileMetrics(file);
@@ -78,7 +90,7 @@ public class Utils {
             throw new RuntimeException(e);
         }
 
-        System.out.println("Class: " + className + " - " + methodName);
+        System.out.println("Class: " + className + " - " + method);
 
         ClassMetrics classMetrics = fileMetrics.classMetrics.stream()
                 .filter(c -> c.className.equals(className))
@@ -87,21 +99,39 @@ public class Utils {
 
         assert classMetrics != null;
 
+        String methodName = method.split("\\(")[0];
+        ArrayList<String> parameters = new ArrayList<>();
+        String[] parts = method.split("\\(")[1].split("\\)")[0].split(",");
+        for(String p : parts) {
+            parameters.add(p.trim());
+        }
+        System.out.println("Parameters: " + parameters);
+
         MethodMetrics methodMetrics = classMetrics.methodMetrics.stream()
                 .filter(m -> m.methodName.equals(methodName))
+                .filter(m -> m.method.getParameterList().getParameters().length == parameters.size())
+                .filter(m -> {
+                    for(int i = 0; i < parameters.size(); i++){
+                        String name = m.method.getParameterList().getParameters()[i].getName();
+                        if(!name.equals(parameters.get(i).split(" ")[1]) && !name.equals(parameters.get(i).split(" ")[0])){
+                            return false;
+                        }
+                    }
+                    return true;
+                })
                 .findFirst()
                 .orElse(null);
 
         if(methodMetrics == null){
             System.out.println("Method not found: " + methodName);
-            System.out.println("Class: " + className);
-            System.out.println("Methods from class metrics: ");
-            for(MethodMetrics m : classMetrics.methodMetrics){
-                System.out.println(m.methodName);
-                for (PsiStatement statement : m.method.getBody().getStatements()) {
-                    System.out.println(statement.getText());
-                }
-            }
+//            System.out.println("Class: " + className);
+//            System.out.println("Methods from class metrics: ");
+//            for(MethodMetrics m : classMetrics.methodMetrics){
+//                System.out.println(m.methodName);
+//                for (PsiStatement statement : m.method.getBody().getStatements()) {
+//                    System.out.println(statement.getText());
+//                }
+//            }
             throw new RuntimeException("Method not found: " + methodName);
         }
         else {

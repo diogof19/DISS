@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import static com.datamining.Utils.*;
 import static com.mongodb.client.model.Accumulators.first;
@@ -39,7 +40,7 @@ public class DataCollection extends AnAction {
     private MongoClient mongoClient;
     private Project project;
 
-    private static final String repositoryPaths = "E:/repoClones";
+    private static final String repositoryPaths = "C:\\Users\\dluis\\Documents\\repoClones";
 
 //    public static void main(String[] args) {
 //        DataCollection dataCollection = new DataCollection();
@@ -73,7 +74,7 @@ public class DataCollection extends AnAction {
 
         try {
             extractMetrics(refactoringData);
-        } catch (IOException | SQLException | GitAPIException e) {
+        } catch (IOException | SQLException | GitAPIException | ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         }
 
@@ -113,7 +114,7 @@ public class DataCollection extends AnAction {
         return collection.aggregate(pipeline).into(new HashSet<>());
     }
 
-    private void extractMetrics(HashSet<Document> documents) throws IOException, SQLException, GitAPIException {
+    private void extractMetrics(HashSet<Document> documents) throws IOException, SQLException, GitAPIException, ExecutionException, InterruptedException {
         //ExecutorService executor = Executors.newCachedThreadPool();
         //Map<String, CompletableFuture<Void>> repoTaskMap = new ConcurrentHashMap<>();
 
@@ -153,9 +154,7 @@ public class DataCollection extends AnAction {
     }
 
 
-    //TODO: Test when I have the final database
-    //Maybe add comparison between old method and new method to extract the old and new size
-    private RefactoringInfo getRefactoringInfo(Document document) throws IOException, GitAPIException {
+    private RefactoringInfo getRefactoringInfo(Document document) throws IOException, GitAPIException, ExecutionException, InterruptedException {
         RefactoringInfo info = new RefactoringInfo();
 
         info.set_id(document.getObjectId("_id"));
@@ -168,6 +167,7 @@ public class DataCollection extends AnAction {
         info.setFullClass(classInfo.getFirst());
         info.setClassName(classInfo.getSecond());
         System.out.println("Class: " + info.getFullClass() + " - " + info.getClassName());
+        System.out.println("Method: " + info.getMethodName());
 
         String repoName = document.getString("repo").split("github.com/")[1].split(".git")[0];
         Git git = Git.open(new File(repositoryPaths + "/" + repoName));
@@ -182,6 +182,27 @@ public class DataCollection extends AnAction {
         filePath = repositoryPaths + "/" + repoName + "/" + filePath;
         System.out.println("File path: " + filePath);
 
+//        String finalFilePath = filePath;
+//        if (info.getBeforeFile() == null){
+//            CompletableFuture<PsiJavaFile> futureBefore = CompletableFuture.supplyAsync(() ->
+//                    ApplicationManager.getApplication().runReadAction((Computable<PsiJavaFile>) () ->
+//                            (PsiJavaFile) getFileFromCommit(git, finalFilePath, document.getString("parent_revision_hash"))));
+//            CompletableFuture<PsiJavaFile> futureAfter = futureBefore.thenCompose(fileBefore ->
+//                    CompletableFuture.supplyAsync(() ->
+//                            ApplicationManager.getApplication().runReadAction((Computable<PsiJavaFile>) () ->
+//                                    (PsiJavaFile) getFileFromCommit(git, finalFilePath, document.getString("revision_hash")))));
+//
+//            info.setBeforeFile(futureBefore.get());
+//            info.setAfterFile(futureAfter.get());
+//
+//            System.out.println("Same: " + info.getBeforeFile().equals(info.getAfterFile()));
+//        } else {
+//            CompletableFuture<PsiJavaFile> futureAfter = CompletableFuture.supplyAsync(() ->
+//                    ApplicationManager.getApplication().runReadAction((Computable<PsiJavaFile>) () ->
+//                            (PsiJavaFile) getFileFromCommit(git, finalFilePath, document.getString("revision_hash"))));
+//
+//            info.setAfterFile(futureAfter.get());
+//        }
 
         if (info.getBeforeFile() == null)
             info.setBeforeFile(getFileFromCommit(git, filePath, document.getString("parent_revision_hash")));
@@ -213,13 +234,17 @@ public class DataCollection extends AnAction {
             }
         }
 
-        git.close();
-
         return null;
     }
 
-    private PsiJavaFile getFileFromCommit(Git git, String filePath, String commitHash) throws GitAPIException {
-        git.checkout().setName(commitHash).call();
+    private PsiJavaFile getFileFromCommit(Git git, String filePath, String commitHash) {
+        try {
+            git.checkout().setName(commitHash).call();
+        } catch (GitAPIException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("\ngetFileFromCommit - " + commitHash + "\n");
 
         PsiJavaFile file = Utils.loadFile(filePath, this.project);
 

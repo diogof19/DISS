@@ -13,7 +13,7 @@ import static com.datamining.Utils.getMethodMetricsFromFile;
 
 public class Database {
     //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\resources\\metrics.db";
-    //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\.gradle\\caches\\modules-2\\files-2.1\\com.jetbrains.intellij.idea\\ideaIC\\2021.1.1\\e051d885e757b286781f50305504d7b8db3e1dba\\ideaIC-2021.1.1\\bin\\tmp\\metrics.db";
+    //private static final String DATABASE_FILE_PATH = "C:\\sers\\dluis\\.gradle\\caches\\modules-2\\files-2.1\\com.jetbrains.intellij.idea\\ideaIC\\2021.1.1\\e051d885e757b286781f50305504d7b8db3e1dba\\ideaIC-2021.1.1\\bin\\tmp\\metrics.db";
     private static final String DATABASE_FILE_PATH = "tmp/metrics.db";
     private static final String DATABASE_URL = "jdbc:sqlite:" + DATABASE_FILE_PATH;
 
