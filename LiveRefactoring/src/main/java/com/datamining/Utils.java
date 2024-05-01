@@ -7,16 +7,17 @@ import com.core.Pair;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiStatement;
+import com.intellij.psi.util.PsiUtilBase;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 public class Utils {
@@ -57,17 +58,15 @@ public class Utils {
      * @return PsiJavaFile
      */
     public static PsiJavaFile loadFile(String filePath, Project project) {
-        VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(filePath));
+        PsiManager.getInstance(project).dropPsiCaches();
+        VirtualFileManager.getInstance().syncRefresh();
+        //VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByPath(filePath);
+        VirtualFile vf = VfsUtil.findFile(Path.of(filePath), true);
+
+        //PsiManager.getInstance(project).reloadFromDisk(vf);
+
         if(vf != null){
-            vf.refresh(false, true);
-            PsiFile psiFile = PsiManager.getInstance(project).findFile(vf);
-            System.out.println("Virtual file: " + vf.getPath());
-            if (psiFile != null) {
-                psiFile = (PsiFile) psiFile.copy();
-                return (PsiJavaFile) psiFile;
-            }
-            //return (PsiJavaFile) PsiManager.getInstance(project).findFile(vf);
-            //(PsiJavaFile) com.intellij.psi.util.PsiUtilBase.getPsiFile(project, vf);
+            return (PsiJavaFile) PsiUtilBase.getPsiFile(project, vf);
         } else {
             System.out.println("Virtual file not found");
         }
@@ -136,7 +135,7 @@ public class Utils {
         }
         else {
             System.out.println("Method: " + methodName);
-            for (PsiStatement statement : file.getClasses()[0].findMethodsByName(methodName, false)[0].getBody().getStatements()) {
+            for (PsiStatement statement : methodMetrics.method.getBody().getStatements()) {
                 System.out.println(statement.getText());
             }
         }

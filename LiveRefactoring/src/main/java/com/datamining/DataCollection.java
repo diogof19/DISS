@@ -1,6 +1,5 @@
 package com.datamining;
 
-import com.analysis.metrics.ClassMetrics;
 import com.analysis.metrics.MethodMetrics;
 import com.core.Pair;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -127,25 +126,25 @@ public class DataCollection extends AnAction {
 
             RefactoringInfo refactoringInfo = getRefactoringInfo(document);
 
-            Pair<ClassMetrics, MethodMetrics> beforeMetrics = getMethodMetricsFromFile(refactoringInfo.getBeforeFile(),
-                    refactoringInfo.getMethodName(), refactoringInfo.getClassName());
-
-            Pair<ClassMetrics, MethodMetrics> afterMetrics = getMethodMetricsFromFile(refactoringInfo.getAfterFile(),
-                    refactoringInfo.getMethodName(), refactoringInfo.getClassName());
-
-            if (beforeMetrics.getSecond().equals(afterMetrics.getSecond())) {
-                System.out.println("Metrics are equal");
-
-            } else {
-                count++;
-                System.out.println("Before\n: " + beforeMetrics.getSecond());
-                System.out.println("After\n: " + afterMetrics.getSecond());
-                //System.out.println("Equal: " + beforeMetrics.getSecond().equals(afterMetrics.getSecond()));
-            }
-
-            Database.saveMetrics(null, beforeMetrics.getSecond(), afterMetrics.getSecond());
-
-            Database.countMetrics();
+//            Pair<ClassMetrics, MethodMetrics> beforeMetrics = getMethodMetricsFromFile(refactoringInfo.getBeforeFile(),
+//                    refactoringInfo.getMethodName(), refactoringInfo.getClassName());
+//
+//            Pair<ClassMetrics, MethodMetrics> afterMetrics = getMethodMetricsFromFile(refactoringInfo.getAfterFile(),
+//                    refactoringInfo.getMethodName(), refactoringInfo.getClassName());
+//
+//            if (beforeMetrics.getSecond().equals(afterMetrics.getSecond())) {
+//                System.out.println("Metrics are equal");
+//
+//            } else {
+//                count++;
+//                System.out.println("Before\n: " + beforeMetrics.getSecond());
+//                System.out.println("After\n: " + afterMetrics.getSecond());
+//                //System.out.println("Equal: " + beforeMetrics.getSecond().equals(afterMetrics.getSecond()));
+//            }
+//
+//            Database.saveMetrics(null, beforeMetrics.getSecond(), afterMetrics.getSecond());
+//
+//            Database.countMetrics();
 
             //break;
         }
@@ -204,10 +203,20 @@ public class DataCollection extends AnAction {
 //            info.setAfterFile(futureAfter.get());
 //        }
 
-        if (info.getBeforeFile() == null)
-            info.setBeforeFile(getFileFromCommit(git, filePath, document.getString("parent_revision_hash")));
+        PsiJavaFile beforeFile;
+        if (info.getBeforeFile() == null){
+            beforeFile = getFileFromCommit(git, filePath, document.getString("parent_revision_hash"));
+        }
+        else {
+            beforeFile = info.getBeforeFile();
+        }
 
-        info.setAfterFile(getFileFromCommit(git, filePath, document.getString("revision_hash")));
+        MethodMetrics beforeMetrics = getMethodMetricsFromFile(beforeFile, info.getMethodName(), info.getClassName()).getSecond();
+        info.setBeforeMetrics(beforeMetrics);
+
+        PsiJavaFile afterFile = getFileFromCommit(git, filePath, document.getString("revision_hash"));
+        MethodMetrics afterMetrics = getMethodMetricsFromFile(afterFile, info.getMethodName(), info.getClassName()).getSecond();
+        info.setAfterMetrics(afterMetrics);
 
         git.close();
 
@@ -246,6 +255,8 @@ public class DataCollection extends AnAction {
 
         System.out.println("\ngetFileFromCommit - " + commitHash + "\n");
 
+        //VirtualFile virtualFile = VfsUtil.findFileByIoFile(new File(repositoryPaths), false);
+        //VfsUtil.markDirtyAndRefresh(false, true, true, virtualFile);
         PsiJavaFile file = Utils.loadFile(filePath, this.project);
 
         if(file == null){

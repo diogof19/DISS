@@ -1,5 +1,6 @@
 package com.datamining;
 
+import com.analysis.metrics.MethodMetrics;
 import com.intellij.psi.PsiJavaFile;
 import org.bson.types.ObjectId;
 
@@ -13,18 +14,8 @@ public class RefactoringInfo {
     private PsiJavaFile afterFile;
     private String commitId;
     private AuthorInfo author;
-
-    public RefactoringInfo(ObjectId _id ,String methodName, String className, String fullClass, String filePath, PsiJavaFile beforeFile, PsiJavaFile afterFile, String commitId, AuthorInfo author) {
-        this._id = _id;
-        this.methodName = methodName;
-        this.className = className;
-        this.fullClass = fullClass;
-        this.filePath = filePath;
-        this.beforeFile = beforeFile;
-        this.afterFile = afterFile;
-        this.commitId = commitId;
-        this.author = author;
-    }
+    private MethodMetrics beforeMetrics;
+    private MethodMetrics afterMetrics;
 
     public RefactoringInfo(){
         this._id = null;
@@ -36,6 +27,8 @@ public class RefactoringInfo {
         this.afterFile = null;
         this.commitId = null;
         this.author = null;
+        this.beforeMetrics = null;
+        this.afterMetrics = null;
     }
 
     public ObjectId get_id() {
@@ -69,6 +62,14 @@ public class RefactoringInfo {
 
     public AuthorInfo getAuthor() {return author;}
 
+    public MethodMetrics getBeforeMetrics() {
+        return beforeMetrics;
+    }
+
+    public MethodMetrics getAfterMetrics() {
+        return afterMetrics;
+    }
+
     public void set_id(ObjectId _id) {
         this._id = _id;
     }
@@ -100,4 +101,12 @@ public class RefactoringInfo {
     public void setCommitId(String commitId) {this.commitId = commitId;}
 
     public void setAuthor(AuthorInfo author) {this.author = author;}
+
+    public void setBeforeMetrics(MethodMetrics beforeMetrics) {
+        this.beforeMetrics = beforeMetrics;
+    }
+
+    public void setAfterMetrics(MethodMetrics afterMetrics) {
+        this.afterMetrics = afterMetrics;
+    }
 }
