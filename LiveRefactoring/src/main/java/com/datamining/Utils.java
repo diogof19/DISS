@@ -11,12 +11,13 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiJavaFile;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiStatement;
 import com.intellij.psi.util.PsiUtilBase;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
@@ -58,15 +59,26 @@ public class Utils {
      * @return PsiJavaFile
      */
     public static PsiJavaFile loadFile(String filePath, Project project) {
-        PsiManager.getInstance(project).dropPsiCaches();
+        File tmpDir = new File("tmp/files/");
+        if(!tmpDir.exists()){
+            tmpDir.mkdirs();
+        }
+
+        int n_files = tmpDir.listFiles().length;
+        try {
+            Files.copy(Path.of(filePath), Path.of("tmp/files/" + n_files + ".java"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         VirtualFileManager.getInstance().syncRefresh();
         //VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByPath(filePath);
-        VirtualFile vf = VfsUtil.findFile(Path.of(filePath), true);
-
-        //PsiManager.getInstance(project).reloadFromDisk(vf);
+        VirtualFile vf = VfsUtil.findFile(Path.of("tmp/files/" + n_files + ".java"), true);
 
         if(vf != null){
-            return (PsiJavaFile) PsiUtilBase.getPsiFile(project, vf);
+            PsiJavaFile file = (PsiJavaFile) PsiUtilBase.getPsiFile(project, vf);
+
+            return file;
         } else {
             System.out.println("Virtual file not found");
         }

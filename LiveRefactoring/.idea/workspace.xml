@@ -11,8 +11,7 @@
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/RefactoringInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/RefactoringInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -91,13 +90,6 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Gradle.LiveRefactoring.executor": "Run",
-    "git-widget-placeholder": "main",
-    "node.js.selected.package.tslint": "(autodetect)"
-  }
-}]]></component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="com.analysis.refactorings" />
