@@ -6,7 +6,9 @@ import com.analysis.metrics.MethodMetrics;
 import com.core.Pair;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiJavaFile;
@@ -56,19 +58,22 @@ public class Utils {
         if (!tmpDir.exists()) {
             tmpDir.mkdirs();
         }
+
         int n_files = tmpDir.listFiles().length;
 
         String newFilePath = FILE_COPIES_DIR + folder + "/" + n_files + ".java";
         try {
             Files.copy(Path.of(filePath), Path.of(newFilePath));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            return null;
         }
 
         VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByPath(newFilePath);
 
         if(vf != null){
-            return (PsiJavaFile) PsiUtilBase.getPsiFile(project, vf);
+            return ApplicationManager.getApplication().runReadAction(
+                    (Computable<PsiJavaFile>) () -> (PsiJavaFile) PsiUtilBase.getPsiFile(project, vf)
+            );
         }
 
         return null;
@@ -77,22 +82,28 @@ public class Utils {
     /**
      * Extracts the class and method metrics from a PsiJavaFile
      * @param file PsiJavaFile
-     * @param methodName method name
+     * @param method method name and arguments
      * @param className class name
      * @return pair with class and method metrics
      */
     public static Pair<ClassMetrics, MethodMetrics> getMethodMetricsFromFile(PsiJavaFile file, String method, String className) {
-        FileMetrics fileMetrics;
-        try {
-            fileMetrics = new FileMetrics(file);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        FileMetrics fileMetrics = ApplicationManager.getApplication().runReadAction((Computable<FileMetrics>) () -> {
+            try {
+                return new FileMetrics(file);
+            } catch (Exception e) {
+                return null;
+            }
+        });
 
-        ClassMetrics classMetrics = fileMetrics.classMetrics.stream()
-                .filter(c -> c.className.equals(className))
-                .findFirst()
-                .orElse(null);
+        ClassMetrics classMetrics;
+        try {
+            classMetrics = fileMetrics.classMetrics.stream()
+                    .filter(c -> c.className.equals(className))
+                    .findFirst()
+                    .orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
 
         if (classMetrics == null) {
             return null;
@@ -108,23 +119,27 @@ public class Utils {
             }
         }
 
-        MethodMetrics methodMetrics = classMetrics.methodMetrics.stream()
-                .filter(m -> m.methodName.equals(methodName))
-                .filter(m -> m.method.getParameterList().getParameters().length == parameters.size())
-                .filter(m -> {
-                    for(int i = 0; i < parameters.size(); i++){
-                        String name = m.method.getParameterList().getParameters()[i].getName();
-                        if(!name.equals(parameters.get(i).split(" ")[1]) && !name.equals(parameters.get(i).split(" ")[0])){
-                            return false;
+        MethodMetrics methodMetrics;
+        try {
+            methodMetrics = classMetrics.methodMetrics.stream()
+                    .filter(m -> m.methodName.equals(methodName))
+                    .filter(m -> m.method.getParameterList().getParameters().length == parameters.size())
+                    .filter(m -> {
+                        for (int i = 0; i < parameters.size(); i++) {
+                            String name = m.method.getParameterList().getParameters()[i].getName();
+                            if (!name.equals(parameters.get(i).split(" ")[1]) && !name.equals(parameters.get(i).split(" ")[0])) {
+                                return false;
+                            }
                         }
-                    }
-                    return true;
-                })
-                .findFirst()
-                .orElse(null);
+                        return true;
+                    })
+                    .findFirst()
+                    .orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
 
         return new Pair<>(classMetrics, methodMetrics);
-
     }
 
     /**

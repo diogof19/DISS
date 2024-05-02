@@ -26,7 +26,11 @@ public class Database {
 //            System.out.println(author + " - " + author.isSelected());
 //        }
 
-        countMetrics();
+//        countMetrics();
+//        deleteAllMetrics();
+//        countMetrics();
+//        createDatabase();
+//        countMetrics();
     }
 
     /**
@@ -708,6 +712,18 @@ public class Database {
                 ResultSet rs = stmt.executeQuery(selectSQL);
 
                 System.out.println("Number of metrics: " + rs.getInt(1));
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static void deleteAllMetrics() {
+        String deleteSQL = "DELETE FROM metrics;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                conn.createStatement().executeUpdate(deleteSQL);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());

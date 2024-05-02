@@ -5,7 +5,9 @@ import com.analysis.metrics.MethodMetrics;
 import com.core.Pair;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Computable;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiJavaFile;
 import com.mongodb.client.MongoClient;
@@ -18,12 +20,15 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.*;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.datamining.Utils.*;
 import static com.mongodb.client.model.Accumulators.first;
@@ -43,7 +48,12 @@ public class DataCollection extends AnAction {
     private Project project;
 
     private static final String repositoryPaths = "C:\\Users\\dluis\\Documents\\repoClones";
-    private final Map<String, ArrayList<Document>> repoRefactoringMap = new ConcurrentHashMap<>();
+
+    private static final int MAX_THREADS = Runtime.getRuntime().availableProcessors();;
+    private final Map<String, ArrayList<Document>> repoRefactoringMap = new HashMap<>();
+    private final Map<String, ReentrantLock> repoLocks = new HashMap<>();
+    private final ReentrantLock lock = new ReentrantLock();
+    private final ReentrantLock logLock = new ReentrantLock();
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
@@ -59,21 +69,22 @@ public class DataCollection extends AnAction {
 
         HashSet<Document> refactoringData = getRefactoringData();
 
-        long end = System.currentTimeMillis();
+        documentsToMap(refactoringData);
 
-        System.out.println("Data extracted: " + refactoringData.size());
-
-        try {
-            extractMetrics(refactoringData);
-        } catch (IOException | SQLException | GitAPIException | ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
+        for (String repo : repoRefactoringMap.keySet()) {
+            repoLocks.put(repo, new ReentrantLock());
+            System.out.println(repo + ": " + repoRefactoringMap.get(repo).size());
         }
 
+        extractMetrics();
+
+        long end = System.currentTimeMillis();
         long elapsed = end - start;
         long elapsedMinutes = (elapsed / 1000) / 60;
         long elapsedSeconds = (elapsed / 1000) % 60;
-        System.out.println("Time for mongo search: " + elapsedMinutes + "m " + elapsedSeconds + "s");
-
+        System.out.println("Elapsed Time: " + elapsedMinutes + "m " + elapsedSeconds + "s");
+        logProgress("Elapsed Time: " + elapsedMinutes + "m " + elapsedSeconds + "s\n");
+        Database.countMetrics();
     }
 
     /**
@@ -83,11 +94,11 @@ public class DataCollection extends AnAction {
     private HashSet<Document> getRefactoringData() {
         MongoCollection<Document> collection = this.mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME);
 
-        //TODO: Remove limit
         List<Bson> pipeline = asList(
                 match(eq("type", "extract_method")),
+                skip(0),
+                limit(20000),
                 project(fields(include("_id", "commit_id", "type", "description"))),
-                limit(100),
                 lookup("commit", "commit_id", "_id", "commit"),
                 unwind("$commit"),
                 lookup("file_action", "commit._id", "commit_id", "file_actions"),
@@ -111,51 +122,124 @@ public class DataCollection extends AnAction {
         return collection.aggregate(pipeline).into(new HashSet<>());
     }
 
-    private void extractMetrics(HashSet<Document> documents) throws IOException, SQLException, GitAPIException, ExecutionException, InterruptedException {
-
-        long start = System.currentTimeMillis();
+    private void documentsToMap(HashSet<Document> documents) {
+        repoRefactoringMap.clear();
 
         for (Document document : documents) {
-            Database.countMetrics();
-
-            System.out.println(document);
             String repo = document.getString("repo");
+
+            if (!repoRefactoringMap.containsKey(repo)) {
+                repoRefactoringMap.put(repo, new ArrayList<>());
+            }
+
+            repoRefactoringMap.get(repo).add(document);
+        }
+    }
+
+    private void extractMetrics() {
+        ExecutorService executor = Executors.newFixedThreadPool(MAX_THREADS);
+
+        Database.countMetrics();
+
+        try {
+            Queue<String> repos = new LinkedList<>(repoRefactoringMap.keySet());
+
+            while (!repos.isEmpty()){
+                List<Callable<Void>> tasks = new ArrayList<>();
+                for (int i = 0; i < MAX_THREADS; i++) {
+                    String repo = repos.poll();
+                    if (repo == null){
+                        break;
+                    }
+
+                    tasks.add(() -> {
+                        try {
+                            extractMetrics(repoRefactoringMap.get(repo), repo);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            throw new RuntimeException(e);
+                        }
+                        return null;
+                    });
+                }
+
+                executor.invokeAll(tasks);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            executor.shutdown();
+        }
+
+        Database.countMetrics();
+    }
+
+    private void extractMetrics(ArrayList<Document> documents, String repo) throws IOException {
+        repoLocks.get(repo).lock();
+        System.out.println("(" + Thread.currentThread().getId() + ") Extracting metrics for " + repo);
+        long start = System.currentTimeMillis();
+
+        int errors = 0;
+        int equalMetrics = 0;
+        int size = documents.size();
+        for (int i = 0; i < size; i++) {
+            Document document = documents.get(i);
+            System.out.println("(" + Thread.currentThread().getId() + ") " + repo + " - " + (i + 1) + "/" + size);
 
             RefactoringInfo refactoringInfo = getRefactoringInfo(document);
 
             //If I can't find the file path, the info will be null
             if (refactoringInfo == null){
+                errors++;
                 continue;
             }
 
             //Just in case
             if (refactoringInfo.getBeforeFile() == null || refactoringInfo.getAfterFile() == null){
+                errors++;
                 continue;
             }
 
             Pair<ClassMetrics, MethodMetrics> beforeMetrics = getMethodMetricsFromFile(refactoringInfo.getBeforeFile(),
                     refactoringInfo.getMethodName(), refactoringInfo.getClassName());
 
-            Pair<ClassMetrics, MethodMetrics> afterMetrics = getMethodMetricsFromFile(refactoringInfo.getAfterFile(),
-                    refactoringInfo.getMethodName(), refactoringInfo.getClassName());
-
-            //Sometimes methods/arguments change names, so I can't get the correct data
-            if(beforeMetrics.getFirst() == null || beforeMetrics.getSecond() == null || afterMetrics.getSecond() == null || afterMetrics.getFirst() == null) {
+            if(beforeMetrics == null || beforeMetrics.getFirst() == null || beforeMetrics.getSecond() == null){
+                errors++;
                 continue;
             }
 
-            Database.saveMetrics(null, beforeMetrics.getSecond(), afterMetrics.getSecond());
+            Pair<ClassMetrics, MethodMetrics> afterMetrics = getMethodMetricsFromFile(refactoringInfo.getAfterFile(),
+                    refactoringInfo.getMethodName(), refactoringInfo.getClassName());
+
+            if(afterMetrics == null || afterMetrics.getFirst() == null || afterMetrics.getSecond() == null){
+                errors++;
+                continue;
+            }
+
+            if(beforeMetrics.getSecond().equals(afterMetrics.getSecond())){
+                equalMetrics++;
+            }
+
+            saveMetricsSafe(beforeMetrics.getSecond(), afterMetrics.getSecond());
         }
 
         long end = System.currentTimeMillis();
         long elapsed = end - start;
         long elapsedMinutes = (elapsed / 1000) / 60;
         long elapsedSeconds = (elapsed / 1000) % 60;
-        System.out.println("Time for extract metrics: " + elapsedMinutes + "m " + elapsedSeconds + "s");
+        System.out.println("Elapsed Time for " + repo + ": " + elapsedMinutes + "m " + elapsedSeconds + "s");
+        System.out.println("Equal Metrics: " + equalMetrics + "/" + size);
+        System.out.println("Errors: " + errors + "/" + size);
+
+        logProgress("Elapsed Time for " + repo + ": " + elapsedMinutes + "m " + elapsedSeconds + "s\n");
+        logProgress("Equal Metrics: " + equalMetrics + "/" + size + "\n");
+        logProgress("Errors: " + errors + "/" + size + "\n\n");
+        repoLocks.get(repo).unlock();
     }
 
 
-    private RefactoringInfo getRefactoringInfo(Document document) throws IOException, GitAPIException {
+    private RefactoringInfo getRefactoringInfo(Document document) throws IOException {
         RefactoringInfo info = new RefactoringInfo();
 
         info.set_id(document.getObjectId("_id"));
@@ -171,7 +255,13 @@ public class DataCollection extends AnAction {
         String repoName = document.getString("repo").split("github.com/")[1].split(".git")[0];
         Git git = Git.open(new File(repositoryPaths + "/" + repoName));
 
-        String filePath = findFilePath(git, repoName, info, document);
+        String filePath;
+        try {
+            filePath = findFilePath(git, repoName, info, document);
+        } catch (GitAPIException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
 
         if (filePath == null) {
             git.close();
@@ -207,12 +297,18 @@ public class DataCollection extends AnAction {
                 continue;
             }
 
-            for (PsiClass _class : file.getClasses()){
-                if (_class.getName().equals(info.getClassName())){
-                    info.setBeforeFile(file);
-                    return filePath;
+            Boolean found = ApplicationManager.getApplication().runReadAction((Computable<Boolean>) () -> {
+                for (PsiClass _class : file.getClasses()){
+                    if (_class.getName().equals(info.getClassName())){
+                        info.setBeforeFile(file);
+                        return true;
+                    }
                 }
-            }
+                return false;
+            });
+
+            if (found)
+                return filePath;
         }
 
         return null;
@@ -222,9 +318,33 @@ public class DataCollection extends AnAction {
         try {
             git.checkout().setName(commitHash).call();
         } catch (GitAPIException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
 
-        return Utils.loadFile(filePath, repoName, this.project);
+        return loadFile(filePath, repoName, this.project);
+    }
+
+    private void saveMetricsSafe(MethodMetrics beforeMetrics, MethodMetrics afterMetrics) {
+        lock.lock();
+        try {
+            Database.saveMetrics(null, beforeMetrics, afterMetrics);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void logProgress(String message){
+        logLock.lock();
+        String path = "C:\\Users\\dluis\\Documents\\log.txt";
+        try {
+            Files.write(Paths.get(path), message.getBytes(), StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        logLock.unlock();
     }
 }
