@@ -297,7 +297,7 @@ public class RepositoryMetricsExtraction extends AnAction {
         String temp = refInfo.getFilePath().replace(".java", "").replace("\\", ".");
         String filePath = this.repositoryPath + "\\" + temp + ".java";
 
-        PsiJavaFile psiFile = Utils.loadFile(filePath, this.project);
+        PsiJavaFile psiFile = Utils.loadFile(filePath, "fileCopies", this.project);
 
         refInfo.setBeforeFile(psiFile);
 
@@ -325,7 +325,7 @@ public class RepositoryMetricsExtraction extends AnAction {
 
         //If file has multiple classes
         for(String file : filesChanged){
-            PsiJavaFile psiFile = Utils.loadFile(file, this.project);
+            PsiJavaFile psiFile = Utils.loadFile(file, "fileCopies", this.project);
             assert psiFile != null;
             for (PsiClass _class : psiFile.getClasses()){
                 if (_class.getName().equals(refactoringInfo.getClassName())){
