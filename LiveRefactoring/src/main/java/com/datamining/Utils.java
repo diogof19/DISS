@@ -15,7 +15,6 @@ import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.util.PsiUtilBase;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -87,59 +86,51 @@ public class Utils {
      * @return pair with class and method metrics
      */
     public static Pair<ClassMetrics, MethodMetrics> getMethodMetricsFromFile(PsiJavaFile file, String method, String className) {
-        FileMetrics fileMetrics = ApplicationManager.getApplication().runReadAction((Computable<FileMetrics>) () -> {
+        return ApplicationManager.getApplication().runReadAction((Computable<Pair<ClassMetrics, MethodMetrics>>) () -> {
             try {
-                return new FileMetrics(file);
+                FileMetrics fileMetrics =  new FileMetrics(file);
+
+                ClassMetrics classMetrics = fileMetrics.classMetrics.stream()
+                        .filter(c -> c.className.equals(className))
+                        .findFirst()
+                        .orElse(null);
+
+                if (classMetrics == null) {
+                    return null;
+                }
+
+                String methodName = method.split("\\(")[0];
+                ArrayList<String> parameters = new ArrayList<>();
+
+                if (!method.contains("()")) { // if the method has parameters
+                    String[] parts = method.split("\\(")[1].split("\\)")[0].split(",");
+                    for(String p : parts) {
+                        parameters.add(p.trim());
+                    }
+                }
+
+                MethodMetrics methodMetrics = classMetrics.methodMetrics.stream()
+                        .filter(m -> m.methodName.equals(methodName))
+                        .filter(m -> m.method.getParameterList().getParameters().length == parameters.size())
+                        .filter(m -> {
+                            for (int i = 0; i < parameters.size(); i++) {
+                                String name = m.method.getParameterList().getParameters()[i].getName();
+                                if (!name.equals(parameters.get(i).split(" ")[1]) && !name.equals(parameters.get(i).split(" ")[0])) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        })
+                        .findFirst()
+                        .orElse(null);
+
+                return new Pair<>(classMetrics, methodMetrics);
             } catch (Exception e) {
                 return null;
             }
         });
 
-        ClassMetrics classMetrics;
-        try {
-            classMetrics = fileMetrics.classMetrics.stream()
-                    .filter(c -> c.className.equals(className))
-                    .findFirst()
-                    .orElse(null);
-        } catch (Exception e) {
-            return null;
-        }
 
-        if (classMetrics == null) {
-            return null;
-        }
-
-        String methodName = method.split("\\(")[0];
-        ArrayList<String> parameters = new ArrayList<>();
-
-        if (!method.contains("()")) { // if the method has parameters
-            String[] parts = method.split("\\(")[1].split("\\)")[0].split(",");
-            for(String p : parts) {
-                parameters.add(p.trim());
-            }
-        }
-
-        MethodMetrics methodMetrics;
-        try {
-            methodMetrics = classMetrics.methodMetrics.stream()
-                    .filter(m -> m.methodName.equals(methodName))
-                    .filter(m -> m.method.getParameterList().getParameters().length == parameters.size())
-                    .filter(m -> {
-                        for (int i = 0; i < parameters.size(); i++) {
-                            String name = m.method.getParameterList().getParameters()[i].getName();
-                            if (!name.equals(parameters.get(i).split(" ")[1]) && !name.equals(parameters.get(i).split(" ")[0])) {
-                                return false;
-                            }
-                        }
-                        return true;
-                    })
-                    .findFirst()
-                    .orElse(null);
-        } catch (Exception e) {
-            return null;
-        }
-
-        return new Pair<>(classMetrics, methodMetrics);
     }
 
     /**

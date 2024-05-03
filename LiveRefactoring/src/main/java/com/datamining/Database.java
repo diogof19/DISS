@@ -26,11 +26,11 @@ public class Database {
 //            System.out.println(author + " - " + author.isSelected());
 //        }
 
-//        countMetrics();
-//        deleteAllMetrics();
-//        countMetrics();
-//        createDatabase();
-//        countMetrics();
+        countMetrics();
+        //deleteAllMetrics();
+        //countMetrics();
+        //createDatabase();
+        //countMetrics();
     }
 
     /**

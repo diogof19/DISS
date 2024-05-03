@@ -16,7 +16,6 @@ import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,13 +28,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import static com.datamining.Utils.*;
 import static com.mongodb.client.model.Accumulators.first;
 import static com.mongodb.client.model.Accumulators.push;
 import static com.mongodb.client.model.Aggregates.*;
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.ne;
+import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Projections.fields;
 import static com.mongodb.client.model.Projections.include;
 import static java.util.Arrays.asList;
@@ -49,7 +48,7 @@ public class DataCollection extends AnAction {
 
     private static final String repositoryPaths = "C:\\Users\\dluis\\Documents\\repoClones";
 
-    private static final int MAX_THREADS = Runtime.getRuntime().availableProcessors();;
+    private static final int MAX_THREADS = Runtime.getRuntime().availableProcessors() - 2;
     private final Map<String, ArrayList<Document>> repoRefactoringMap = new HashMap<>();
     private final Map<String, ReentrantLock> repoLocks = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
@@ -94,20 +93,62 @@ public class DataCollection extends AnAction {
     private HashSet<Document> getRefactoringData() {
         MongoCollection<Document> collection = this.mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME);
 
+        List<String> urlsToExclude = Arrays.asList(
+                "https://github.com/apache/commons-rdf.git",
+                "https://github.com/apache/bigtop.git",
+                "https://github.com/apache/falcon.git",
+                "https://github.com/apache/commons-bcel.git",
+                "https://github.com/apache/commons-beanutils.git",
+                "https://github.com/apache/commons-digester.git",
+                "https://github.com/apache/commons-dbcp.git",
+                "https://github.com/apache/eagle.git",
+                "https://github.com/apache/commons-codec.git",
+                "https://github.com/apache/commons-vfs.git",
+                "https://github.com/apache/commons-validator.git",
+                "https://github.com/apache/gora.git",
+                "https://github.com/apache/commons-net.git",
+                "https://github.com/apache/commons-io.git",
+                "https://github.com/apache/deltaspike.git",
+                "https://github.com/apache/opennlp.git",
+                "https://github.com/apache/knox.git",
+                "https://github.com/apache/commons-compress.git",
+                "https://github.com/apache/commons-jcs.git",
+                "https://github.com/apache/commons-collections.git",
+                "https://github.com/apache/giraph.git",
+                "https://github.com/apache/commons-lang.git",
+                "https://github.com/apache/struts.git",
+                "https://github.com/apache/santuario-java.git",
+                "https://github.com/apache/jspwiki.git",
+                "https://github.com/apache/tika.git",
+                "https://github.com/apache/parquet-mr.git",
+                "https://github.com/apache/commons-configuration.git",
+                "https://github.com/apache/mahout",
+                "https://github.com/apache/lens.git",
+                "https://github.com/apache/nutch.git",
+                "https://github.com/apache/manifoldcf.git",
+                "https://github.com/apache/cayenne.git",
+                "https://github.com/apache/wss4j.git",
+                "https://github.com/apache/ant-ivy",
+                "https://github.com/apache/archiva.git",
+                "https://github.com/apache/zeppelin.git"
+        );
+
+        Bson combinedFilter = match(nin("vcs_system.url", urlsToExclude));
+
         List<Bson> pipeline = asList(
                 match(eq("type", "extract_method")),
                 skip(0),
-                limit(20000),
+                limit(40000),
                 project(fields(include("_id", "commit_id", "type", "description"))),
                 lookup("commit", "commit_id", "_id", "commit"),
                 unwind("$commit"),
+                lookup("vcs_system", "commit.vcs_system_id", "_id", "vcs_system"),
+                unwind("$vcs_system"),
+                combinedFilter,
                 lookup("file_action", "commit._id", "commit_id", "file_actions"),
                 unwind("$file_actions"),
                 lookup("file", "file_actions.file_id", "_id", "file"),
                 unwind("$file"),
-                lookup("vcs_system", "commit.vcs_system_id", "_id", "vcs_system"),
-                unwind("$vcs_system"),
-                match(ne("vcs_system.url", "https://github.com/apache/wss4j.git")), //don't have the data for this repo
                 group(
                         "$_id",
                         first("type", "$type"),
@@ -142,7 +183,9 @@ public class DataCollection extends AnAction {
         Database.countMetrics();
 
         try {
+
             Queue<String> repos = new LinkedList<>(repoRefactoringMap.keySet());
+            repos = repos.stream().sorted(Comparator.comparingInt(o -> repoRefactoringMap.get(o).size())).collect(Collectors.toCollection(LinkedList::new));
 
             while (!repos.isEmpty()){
                 List<Callable<Void>> tasks = new ArrayList<>();
@@ -157,7 +200,6 @@ public class DataCollection extends AnAction {
                             extractMetrics(repoRefactoringMap.get(repo), repo);
                         } catch (Exception e) {
                             e.printStackTrace();
-                            throw new RuntimeException(e);
                         }
                         return null;
                     });
@@ -167,7 +209,6 @@ public class DataCollection extends AnAction {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException(e);
         } finally {
             executor.shutdown();
         }
@@ -256,12 +297,7 @@ public class DataCollection extends AnAction {
         Git git = Git.open(new File(repositoryPaths + "/" + repoName));
 
         String filePath;
-        try {
-            filePath = findFilePath(git, repoName, info, document);
-        } catch (GitAPIException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
+        filePath = findFilePath(git, repoName, info, document);
 
         if (filePath == null) {
             git.close();
@@ -281,14 +317,18 @@ public class DataCollection extends AnAction {
         return info;
     }
 
-    private String findFilePath(Git git, String repoName, RefactoringInfo info, Document document) throws GitAPIException {
+    private String findFilePath(Git git, String repoName, RefactoringInfo info, Document document) {
         for (String filePath : document.getList("files", String.class)) {
             if (filePath.contains(info.getFullClass().replace(".", "/") + ".java")) {
                 return filePath;
             }
         }
 
-        git.checkout().setName(document.getString("parent_revision_hash")).call();
+        try {
+            git.checkout().setName(document.getString("parent_revision_hash")).call();
+        } catch (Exception e) {
+            return null; //Found a commit that doesn't exist
+        }
 
         for (String filePath : document.getList("files", String.class)) {
             String fullFilePath = repositoryPaths + "/" + repoName + "/" + filePath;
@@ -317,9 +357,8 @@ public class DataCollection extends AnAction {
     private PsiJavaFile getFileFromCommit(Git git, String filePath, String repoName, String commitHash) {
         try {
             git.checkout().setName(commitHash).call();
-        } catch (GitAPIException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            return null; //Found a commit that doesn't exist
         }
 
         return loadFile(filePath, repoName, this.project);
@@ -331,7 +370,6 @@ public class DataCollection extends AnAction {
             Database.saveMetrics(null, beforeMetrics, afterMetrics);
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException(e);
         } finally {
             lock.unlock();
         }
