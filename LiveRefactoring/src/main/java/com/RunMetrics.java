@@ -29,18 +29,14 @@ public class RunMetrics extends AnAction {
 
             for(int j=1; j<=numGroups[i]; j++){
                 String groupNumber = "";
-                if (j < 10) groupNumber = "0"+ j;
-                else groupNumber = Integer.toString(j);
+                groupNumber = actionPerformed((@NotNull AnActionEvent) j);
 
                 String projectName = "project-l"+classNumber+"gr"+groupNumber;
                 URLProject = URL + "/" + projectName;
                 System.out.println(URLProject);
 
                 File f = new File(URLProject + "/metrics.txt");
-                if (f.exists())
-                    System.out.println("Metrics already measured");
-                else
-                    listFilesForFolder(new File(URLProject));
+                actionPerformed(f);
 
                 String fileLogs = URLProject + "/logs-cleaned.txt";
                 File myObj = new File(fileLogs);
@@ -59,15 +55,19 @@ public class RunMetrics extends AnAction {
                         URLProject = URLCopy + "-" + commitToken;
                         System.out.println(URLProject);
                         File f2 = new File(URLProject + "/metrics.txt");
-                        if (f2.exists())
-                            System.out.println("Metrics already measured");
-                        else
-                            listFilesForFolder(new File(URLProject));
+                        actionPerformed(f2);
                     }
                 }
                 myReader.close();
             }
         }
+    }
+
+    private void actionPerformed(File f) {
+        if (f.exists())
+            System.out.println("Metrics already measured");
+        else
+            listFilesForFolder(new File(URLProject));
     }
 
     public void listFilesForFolder(final File folder) {

@@ -6,7 +6,6 @@ import com.analysis.metrics.FileMetrics;
 import com.analysis.metrics.MethodMetrics;
 import com.core.LastRefactoring;
 import com.core.Severity;
-import com.datamining.AuthorInfo;
 import com.google.firebase.database.DatabaseReference;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.Editor;
@@ -66,9 +65,7 @@ public class Values {
     public static int numSeconds = 5;
     public static String projectName = "unknown";
 
-    public static String pythonPath = "";
-    public static ArrayList<AuthorInfo> selectedAuthors = new ArrayList<>();
-    public static int maxExtractMethodsBefUpdate = 10;
+    public static int maxExtractMethodsBefUpdate = 1;
 
 
     public void setLastRefactoring(LastRefactoring refactoring) {

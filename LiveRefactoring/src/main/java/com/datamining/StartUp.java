@@ -30,6 +30,7 @@ public class StartUp  implements StartupActivity {
         extractFileIfNotExists("metrics.db");
         extractFileIfNotExists("python/bias_model.py");
         extractFileIfNotExists("python/prediction.py");
+        extractFileIfNotExists("python/scaler.pkl");
         extractFileIfNotExists("requirements.txt");
         extractFileIfNotExists("models/model.joblib");
 

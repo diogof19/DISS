@@ -8,6 +8,7 @@ import com.utils.importantValues.Values;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -18,10 +19,11 @@ import java.util.Set;
 //TODO: Create a 'requirements.txt' folder and function that runs it with pip install
 //TODO: Handle python path not set now that it is saved in MySettings
 public class PredictionModel {
-    private static final String PYTHON_PREDICTION_FILE_PATH = "tmp/prediction.py";
-    private static String modelFilePath = "tmp/models/model.joblib";
-    private static final String PYTHON_BIAS_FILE_PATH = "tmp/bias_model.py";
+    private static final String PYTHON_PREDICTION_FILE_PATH = "tmp/python/prediction.py";
+    private static String modelFilePath;
+    private static final String PYTHON_BIAS_FILE_PATH = "tmp/python/bias_model.py";
     private static final String DATA_FILE_PATH = "tmp/metrics.db";
+    private static final String SCALER_FILE_PATH = "tmp/python/scaler.pkl";
 
     public static void main(String[] args) {
 //        ArrayList<Double> data = new ArrayList<>();
@@ -79,10 +81,14 @@ public class PredictionModel {
             return false;
         }
 
+        File modelFile = new File("tmp/" + modelFilePath);
+        File scalerFile = new File(SCALER_FILE_PATH);
+
         ArrayList<String> command = new ArrayList<>();
         command.add(pythonPath);
         command.add(PYTHON_PREDICTION_FILE_PATH);
-        command.add(modelFilePath);
+        command.add(modelFile.getAbsolutePath());
+        command.add(scalerFile.getAbsolutePath());
         for (Double value : data) {
             command.add(value.toString());
         }
@@ -101,8 +107,6 @@ public class PredictionModel {
      * @throws InterruptedException if the process is interrupted
      */
     public static void biasModel(Project project) throws IOException, InterruptedException {
-        Set<AuthorInfo> authors = (Set<AuthorInfo>) Values.selectedAuthors;
-
         String pythonPath = getPythonPath(project);
         if (pythonPath == null) {
             Utils.popup(Values.event.getProject(),
@@ -112,10 +116,17 @@ public class PredictionModel {
             return;
         }
 
+        Pair<String, String> modelInfo = Database.getSelectedModel();
+        File modelFile = new File("tmp/" + modelInfo.getSecond());
+        Set<AuthorInfo> authors = Database.getSelectedAuthorsPerModel(modelInfo.getFirst());
+
+        File scalerFile = new File(SCALER_FILE_PATH);
+
         ArrayList<String> command = new ArrayList<>();
         command.add(pythonPath);
         command.add(PYTHON_BIAS_FILE_PATH);
-        command.add(modelFilePath);
+        command.add(modelFile.getAbsolutePath());
+        command.add(scalerFile.getAbsolutePath());
         command.add(DATA_FILE_PATH);
 
         for (AuthorInfo author : authors) {
@@ -232,7 +243,9 @@ public class PredictionModel {
         mySettings.getState().counter++;
 
         if(mySettings.getState().counter >= Values.maxExtractMethodsBefUpdate) {
+            System.out.println("Biasing model");
             biasModel(project);
+            System.out.println("Model biased");
             mySettings.getState().counter = 0;
         }
 

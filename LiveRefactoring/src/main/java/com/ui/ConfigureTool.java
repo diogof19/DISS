@@ -939,7 +939,7 @@ public class ConfigureTool extends AnAction {
 
             JBTabsImpl tabbedPane = new JBTabsImpl(this.project);
 
-            String selectedModel = Database.getSelectedModel();
+            String selectedModel = Database.getSelectedModelName();
             for (String model: models) {
                 TabInfo tabInfo = new TabInfo(getBiasProfilePanel(model));
 

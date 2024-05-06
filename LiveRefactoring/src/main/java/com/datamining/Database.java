@@ -451,7 +451,7 @@ public class Database {
      * Gets the name of the current model in use
      * @return The name of the model
      */
-    public static String getSelectedModel() {
+    public static String getSelectedModelName() {
         String selectSQL = "SELECT name FROM models WHERE selected = 1;";
 
         try (Connection conn = connect()) {
@@ -460,6 +460,27 @@ public class Database {
                 ResultSet rs = stmt.executeQuery(selectSQL);
 
                 return rs.getString("name");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the name and path of the selected model
+     * @return A pair with <name, path> of the selected model
+     */
+    public static Pair<String, String> getSelectedModel(){
+        String selectSQL = "SELECT name, path FROM models WHERE selected = 1;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(selectSQL);
+
+                return new Pair<>(rs.getString("name"), rs.getString("path"));
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
