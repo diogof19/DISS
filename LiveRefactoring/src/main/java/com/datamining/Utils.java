@@ -64,6 +64,7 @@ public class Utils {
         try {
             Files.copy(Path.of(filePath), Path.of(newFilePath));
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
 
@@ -126,6 +127,7 @@ public class Utils {
 
                 return new Pair<>(classMetrics, methodMetrics);
             } catch (Exception e) {
+                e.printStackTrace();
                 return null;
             }
         });
