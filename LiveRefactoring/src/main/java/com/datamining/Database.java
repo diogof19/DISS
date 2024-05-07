@@ -26,11 +26,12 @@ public class Database {
 //            System.out.println(author + " - " + author.isSelected());
 //        }
 
-        countMetrics();
-        //deleteAllMetrics();
         //countMetrics();
-        //createDatabase();
-        //countMetrics();
+        ArrayList<AuthorInfo> authors = getAllAuthors();
+        System.out.println("Authors: ");
+        for(AuthorInfo author : authors){
+            System.out.println(author);
+        }
     }
 
     /**
@@ -506,7 +507,11 @@ public class Database {
 
                 ResultSet rs = pstmt.executeQuery();
 
-                return rs.getInt("id");
+                if (rs.next()) {
+                    return rs.getInt("id");
+                } else {
+                    return -1;
+                }
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -741,6 +746,22 @@ public class Database {
 
     public static void deleteAllMetrics() {
         String deleteSQL = "DELETE FROM metrics;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                conn.createStatement().executeUpdate(deleteSQL);
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    /**
+     * Deletes the metrics with infinity values on the 'halsteadLevelBef' column
+     */
+    public static void deleteMetricsWithInfinity() {
+        //This column is created with 1/value, so it can create errors (though it's rare)
+        String deleteSQL = "DELETE FROM metrics WHERE CAST(halsteadLevelBef AS CHARACTER) ='Inf';";
 
         try (Connection conn = connect()) {
             if (conn != null) {

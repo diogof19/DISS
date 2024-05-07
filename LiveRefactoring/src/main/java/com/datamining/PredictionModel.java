@@ -121,6 +121,7 @@ public class PredictionModel {
         Set<AuthorInfo> authors = Database.getSelectedAuthorsPerModel(modelInfo.getFirst());
 
         File scalerFile = new File(SCALER_FILE_PATH);
+        MySettings mySettings = project.getService(MySettings.class);
 
         ArrayList<String> command = new ArrayList<>();
         command.add(pythonPath);
@@ -128,6 +129,7 @@ public class PredictionModel {
         command.add(modelFile.getAbsolutePath());
         command.add(scalerFile.getAbsolutePath());
         command.add(DATA_FILE_PATH);
+        command.add(String.valueOf(mySettings.getState().biasMultiplier));
 
         for (AuthorInfo author : authors) {
             command.add(author.toString());
@@ -235,22 +237,24 @@ public class PredictionModel {
                     "LiveRef - Git author not found",
                     "The current git author could not be found. Please make sure you have git installed and configured.",
                     NotificationType.WARNING);
+            author = new Pair<>("hello", "hello@g.com");
         }
 
         Database.saveMetrics(author, methodMetrics, null);
 
-        MySettings mySettings = project.getService(MySettings.class);
-        mySettings.getState().counter++;
+        MySettings.State state = project.getService(MySettings.class).getState();
+        state.counter++;
 
-        if(mySettings.getState().counter >= Values.maxExtractMethodsBefUpdate) {
+        if(state.counter >= state.maxExtractMethodsBefUpdate) {
             System.out.println("Biasing model");
             biasModel(project);
             System.out.println("Model biased");
-            mySettings.getState().counter = 0;
+            state.counter = 0;
         }
 
     }
 
+    //TODO: Test when the plugin is actually installed
     /**
      * Gets the current git author
      * @return the current git author in the format "name (email)" or null if it is not found

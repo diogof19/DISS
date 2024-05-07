@@ -25,6 +25,8 @@ public class MySettings implements PersistentStateComponent<MySettings.State> {
     public static class State {
         public int counter = 0;
         public String pythonPath = "";
+        public int maxExtractMethodsBefUpdate = 10;
+        public int biasMultiplier = 10;
     }
 
 

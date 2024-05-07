@@ -29,14 +29,18 @@ public class RunMetrics extends AnAction {
 
             for(int j=1; j<=numGroups[i]; j++){
                 String groupNumber = "";
-                groupNumber = actionPerformed((@NotNull AnActionEvent) j);
+                if (j < 10) groupNumber = "0"+ j;
+                else groupNumber = Integer.toString(j);
 
                 String projectName = "project-l"+classNumber+"gr"+groupNumber;
                 URLProject = URL + "/" + projectName;
                 System.out.println(URLProject);
 
                 File f = new File(URLProject + "/metrics.txt");
-                actionPerformed(f);
+                if (f.exists())
+                    System.out.println("Metrics already measured");
+                else
+                    listFilesForFolder(new File(URLProject));
 
                 String fileLogs = URLProject + "/logs-cleaned.txt";
                 File myObj = new File(fileLogs);
@@ -47,27 +51,27 @@ public class RunMetrics extends AnAction {
                 } catch (FileNotFoundException ex) {
                     ex.printStackTrace();
                 }
-                while (myReader.hasNextLine()) {
-                    String data = myReader.nextLine();
-                    if(!data.equals("Logs") && data.contains("-")){
-                        String commitToken = data.split("-")[0].trim();
-
-                        URLProject = URLCopy + "-" + commitToken;
-                        System.out.println(URLProject);
-                        File f2 = new File(URLProject + "/metrics.txt");
-                        actionPerformed(f2);
-                    }
-                }
+                actionPerformed(myReader, URLCopy);
                 myReader.close();
             }
         }
     }
 
-    private void actionPerformed(File f) {
-        if (f.exists())
-            System.out.println("Metrics already measured");
-        else
-            listFilesForFolder(new File(URLProject));
+    private void actionPerformed(Scanner myReader, String URLCopy) {
+        while (myReader.hasNextLine()) {
+            String data = myReader.nextLine();
+            if(!data.equals("Logs") && data.contains("-")){
+                String commitToken = data.split("-")[0].trim();
+
+                URLProject = URLCopy + "-" + commitToken;
+                System.out.println(URLProject);
+                File f2 = new File(URLProject + "/metrics.txt");
+                if (f2.exists())
+                    System.out.println("Metrics already measured");
+                else
+                    listFilesForFolder(new File(URLProject));
+            }
+        }
     }
 
     public void listFilesForFolder(final File folder) {
