@@ -145,13 +145,13 @@ public class Utils {
     public static void popup(Project project, String title, String content, NotificationType type){
         //For some reason, I need to define a groupID before creating the notification
         String groupID = "LiveRefactor";
-        Notification error = new Notification(
+        Notification notification = new Notification(
                 groupID,
                 title,
                 content,
                 type
         );
 
-        error.notify(project);
+        notification.notify(project);
     }
 }

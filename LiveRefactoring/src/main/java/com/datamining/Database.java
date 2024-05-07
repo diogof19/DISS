@@ -13,8 +13,8 @@ import static com.datamining.Utils.getMethodMetricsFromFile;
 
 public class Database {
     //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\resources\\metrics.db";
-    private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\.gradle\\caches\\modules-2\\files-2.1\\com.jetbrains.intellij.idea\\ideaIC\\2021.1.1\\e051d885e757b286781f50305504d7b8db3e1dba\\ideaIC-2021.1.1\\bin\\tmp\\metrics.db";
-    //private static final String DATABASE_FILE_PATH = "tmp/metrics.db";
+    //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\.gradle\\caches\\modules-2\\files-2.1\\com.jetbrains.intellij.idea\\ideaIC\\2021.1.1\\e051d885e757b286781f50305504d7b8db3e1dba\\ideaIC-2021.1.1\\bin\\tmp\\metrics.db";
+    private static final String DATABASE_FILE_PATH = "tmp/metrics.db";
     private static final String DATABASE_URL = "jdbc:sqlite:" + DATABASE_FILE_PATH;
 
     public static void main(String[] args) {
@@ -27,11 +27,16 @@ public class Database {
 //        }
 
         //countMetrics();
-        ArrayList<AuthorInfo> authors = getAllAuthors();
-        System.out.println("Authors: ");
-        for(AuthorInfo author : authors){
-            System.out.println(author);
-        }
+//        ArrayList<AuthorInfo> authors = getAllAuthors();
+//        System.out.println("Authors: ");
+//        for(AuthorInfo author : authors){
+//            System.out.println(author);
+//        }
+
+//        deleteModel("new");
+//        deleteModel("fafaasdfsds");
+//        deleteModel("asdasdasd");
+//        deleteModel("fg");
     }
 
     /**
@@ -72,156 +77,6 @@ public class Database {
         createAuthorsTable();
         createModelsTable();
         createAuthorsModelsTable();
-    }
-
-    /**
-     * Create the metrics table
-     */
-    public static void createMetricsTable() {
-        String deleteTableSQL = "DROP TABLE IF EXISTS metrics;";
-
-        String createTableSQL = "CREATE TABLE IF NOT EXISTS metrics (\n" +
-                "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
-                "    author INTEGER,\n" +
-                "    numberLinesOfCodeBef INTEGER,\n" +
-                "    numberCommentsBef INTEGER,\n" +
-                "    numberBlankLinesBef INTEGER,\n" +
-                "    totalLinesBef INTEGER,\n" +
-                "    numParametersBef INTEGER,\n" +
-                "    numStatementsBef INTEGER,\n" +
-                "    halsteadLengthBef REAL,\n" +
-                "    halsteadVocabularyBef REAL,\n" +
-                "    halsteadVolumeBef REAL,\n" +
-                "    halsteadDifficultyBef REAL,\n" +
-                "    halsteadEffortBef REAL,\n" +
-                "    halsteadLevelBef REAL,\n" +
-                "    halsteadTimeBef REAL,\n" +
-                "    halsteadBugsDeliveredBef REAL,\n" +
-                "    halsteadMaintainabilityBef REAL,\n" +
-                "    cyclomaticComplexityBef INTEGER,\n" +
-                "    cognitiveComplexityBef INTEGER,\n" +
-                "    lackOfCohesionInMethodBef INTEGER,\n" +
-                "    numberLinesOfCodeAft INTEGER,\n" +
-                "    numberCommentsAft INTEGER,\n" +
-                "    numberBlankLinesAft INTEGER,\n" +
-                "    totalLinesAft INTEGER,\n" +
-                "    numParametersAft INTEGER,\n" +
-                "    numStatementsAft INTEGER,\n" +
-                "    halsteadLengthAft REAL,\n" +
-                "    halsteadVocabularyAft REAL,\n" +
-                "    halsteadVolumeAft REAL,\n" +
-                "    halsteadDifficultyAft REAL,\n" +
-                "    halsteadEffortAft REAL,\n" +
-                "    halsteadLevelAft REAL,\n" +
-                "    halsteadTimeAft REAL,\n" +
-                "    halsteadBugsDeliveredAft REAL,\n" +
-                "    halsteadMaintainabilityAft REAL,\n" +
-                "    cyclomaticComplexityAft INTEGER,\n" +
-                "    cognitiveComplexityAft INTEGER,\n" +
-                "    lackOfCohesionInMethodAft REAL,\n" +
-                "    FOREIGN KEY (author) REFERENCES authors(id)\n" +
-                ");";
-
-        String createIndexSQL = "CREATE INDEX IF NOT EXISTS author_index ON metrics (author);";
-
-        try (Connection conn = connect()) {
-            if (conn != null) {
-                conn.createStatement().executeUpdate(deleteTableSQL);
-                conn.createStatement().executeUpdate(createTableSQL);
-                conn.createStatement().executeUpdate(createIndexSQL);
-            }
-        } catch (SQLException e) {
-            System.out.println("Create metrics table: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Create the authors table
-     */
-    public static void createAuthorsTable() {
-        String deleteTableSQL = "DROP TABLE IF EXISTS authors;";
-
-        String createTableSQL = "CREATE TABLE IF NOT EXISTS authors (\n" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
-                "name TEXT,\n" +
-                "email TEXT,\n" +
-                "UNIQUE (name, email)\n" +
-                ");";
-
-        String createIndexSQL = "CREATE INDEX IF NOT EXISTS authors_name_email ON authors (name, email);";
-
-        try (Connection conn = connect()) {
-            if (conn != null) {
-                conn.createStatement().executeUpdate(deleteTableSQL);
-                conn.createStatement().executeUpdate(createTableSQL);
-                conn.createStatement().executeUpdate(createIndexSQL);
-            }
-        } catch (SQLException e) {
-            System.out.println("Create authors table: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Create the models table
-     */
-    public static void createModelsTable() {
-        String deleteTableSQL = "DROP TABLE IF EXISTS models;";
-
-        String createTableSQL = "CREATE TABLE IF NOT EXISTS models (\n" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
-                "name TEXT UNIQUE,\n" +
-                "path TEXT NOT NULL,\n" +
-                "selected INTEGER NOT NULL,\n" +
-                "UNIQUE (path)\n" +
-                ");";
-
-        String updateTriggerSQL = "CREATE TRIGGER IF NOT EXISTS update_others_to_false \n" +
-                "AFTER UPDATE OF selected ON models \n" +
-                "BEGIN \n" +
-                "    UPDATE models \n" +
-                "    SET selected = CASE \n" +
-                "                    WHEN NEW.selected = 1 THEN 0 \n" +
-                "                    ELSE 0 \n" +
-                "                  END \n" +
-                "    WHERE id != NEW.id; \n" +
-                "END;";
-
-        String addDefaultModelSQL = "INSERT INTO models (name, path, selected) VALUES ('Default', 'models/model.joblib', 1);";
-
-        try (Connection conn = connect()) {
-            if (conn != null) {
-                conn.createStatement().executeUpdate(deleteTableSQL);
-                conn.createStatement().executeUpdate(createTableSQL);
-                conn.createStatement().executeUpdate(updateTriggerSQL);
-                conn.createStatement().executeUpdate(addDefaultModelSQL);
-            }
-        } catch (SQLException e) {
-            System.out.println("Create models table: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Create the authors_models table which connects authors to models to understand the bias
-     */
-    public static void createAuthorsModelsTable() {
-        String deleteTableSQL = "DROP TABLE IF EXISTS authors_models;";
-
-        String createTableSQL = "CREATE TABLE IF NOT EXISTS authors_models (\n" +
-                "author_id INTEGER,\n" +
-                "model_id INTEGER,\n" +
-                "FOREIGN KEY (author_id) REFERENCES authors(id),\n" +
-                "FOREIGN KEY (model_id) REFERENCES models(id),\n" +
-                "PRIMARY KEY (author_id, model_id)\n" +
-                ");";
-
-        try (Connection conn = connect()) {
-            if (conn != null) {
-                conn.createStatement().executeUpdate(deleteTableSQL);
-                conn.createStatement().executeUpdate(createTableSQL);
-            }
-        } catch (SQLException e) {
-            System.out.println("Create authors_models table: " + e.getMessage());
-        }
     }
 
     /**
@@ -297,6 +152,70 @@ public class Database {
 
     }
 
+
+    /* METRICS TABLE */
+
+    /**
+     * Create the metrics table
+     */
+    public static void createMetricsTable() {
+        String deleteTableSQL = "DROP TABLE IF EXISTS metrics;";
+
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS metrics (\n" +
+                "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+                "    author INTEGER,\n" +
+                "    numberLinesOfCodeBef INTEGER,\n" +
+                "    numberCommentsBef INTEGER,\n" +
+                "    numberBlankLinesBef INTEGER,\n" +
+                "    totalLinesBef INTEGER,\n" +
+                "    numParametersBef INTEGER,\n" +
+                "    numStatementsBef INTEGER,\n" +
+                "    halsteadLengthBef REAL,\n" +
+                "    halsteadVocabularyBef REAL,\n" +
+                "    halsteadVolumeBef REAL,\n" +
+                "    halsteadDifficultyBef REAL,\n" +
+                "    halsteadEffortBef REAL,\n" +
+                "    halsteadLevelBef REAL,\n" +
+                "    halsteadTimeBef REAL,\n" +
+                "    halsteadBugsDeliveredBef REAL,\n" +
+                "    halsteadMaintainabilityBef REAL,\n" +
+                "    cyclomaticComplexityBef INTEGER,\n" +
+                "    cognitiveComplexityBef INTEGER,\n" +
+                "    lackOfCohesionInMethodBef INTEGER,\n" +
+                "    numberLinesOfCodeAft INTEGER,\n" +
+                "    numberCommentsAft INTEGER,\n" +
+                "    numberBlankLinesAft INTEGER,\n" +
+                "    totalLinesAft INTEGER,\n" +
+                "    numParametersAft INTEGER,\n" +
+                "    numStatementsAft INTEGER,\n" +
+                "    halsteadLengthAft REAL,\n" +
+                "    halsteadVocabularyAft REAL,\n" +
+                "    halsteadVolumeAft REAL,\n" +
+                "    halsteadDifficultyAft REAL,\n" +
+                "    halsteadEffortAft REAL,\n" +
+                "    halsteadLevelAft REAL,\n" +
+                "    halsteadTimeAft REAL,\n" +
+                "    halsteadBugsDeliveredAft REAL,\n" +
+                "    halsteadMaintainabilityAft REAL,\n" +
+                "    cyclomaticComplexityAft INTEGER,\n" +
+                "    cognitiveComplexityAft INTEGER,\n" +
+                "    lackOfCohesionInMethodAft REAL,\n" +
+                "    FOREIGN KEY (author) REFERENCES authors(id)\n" +
+                ");";
+
+        String createIndexSQL = "CREATE INDEX IF NOT EXISTS author_index ON metrics (author);";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                conn.createStatement().executeUpdate(deleteTableSQL);
+                conn.createStatement().executeUpdate(createTableSQL);
+                conn.createStatement().executeUpdate(createIndexSQL);
+            }
+        } catch (SQLException e) {
+            System.out.println("Create metrics table: " + e.getMessage());
+        }
+    }
+
     /**
      * Save the metrics of a refactoring
      * @param beforeInfo The information before the change
@@ -350,7 +269,7 @@ public class Database {
             authorId = findAuthorByNameAndEmail(author.getFirst(), author.getSecond());
 
         try (Connection conn = connect()) {
-            PreparedStatement pstmt = conn.prepareStatement(insertSQL);
+            PreparedStatement pstmt = conn.prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS);
 
             if(authorId == -1){
                 authorId = insertAuthor(author.getFirst(), author.getSecond());
@@ -424,70 +343,98 @@ public class Database {
 
             pstmt.executeUpdate();
 
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if(rs.next()){
+                int id = rs.getInt(1);
+
+                String deleteSQL = "DELETE FROM metrics WHERE id = ? AND CAST(halsteadLevelBef AS CHARACTER) ='Inf';";
+
+                PreparedStatement deletePstmt = conn.prepareStatement(deleteSQL);
+
+                deletePstmt.setInt(1, id);
+
+                deletePstmt.executeUpdate();
+            }
+
         }
     }
 
     /**
-     * Gets the file path of the current model in use
-     * @return The file path of the model
+     * Count and print the number of metrics in the database
      */
-    public static String getSelectedModelFilePath() {
-        String selectSQL = "SELECT path FROM models WHERE selected = 1;";
+    public static void countMetrics() {
+        String selectSQL = "SELECT COUNT(*) FROM metrics;";
 
         try (Connection conn = connect()) {
             if (conn != null) {
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery(selectSQL);
 
-                return rs.getString("path");
+                System.out.println("Number of metrics: " + rs.getInt(1));
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-
-        return null;
     }
 
     /**
-     * Gets the name of the current model in use
-     * @return The name of the model
+     * Deletes all the metrics in the database
      */
-    public static String getSelectedModelName() {
-        String selectSQL = "SELECT name FROM models WHERE selected = 1;";
+    public static void deleteAllMetrics() {
+        String deleteSQL = "DELETE FROM metrics;";
 
         try (Connection conn = connect()) {
             if (conn != null) {
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(selectSQL);
-
-                return rs.getString("name");
+                conn.createStatement().executeUpdate(deleteSQL);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-
-        return null;
     }
 
     /**
-     * Gets the name and path of the selected model
-     * @return A pair with <name, path> of the selected model
+     * Deletes the metrics with infinity values on the 'halsteadLevelBef' column
      */
-    public static Pair<String, String> getSelectedModel(){
-        String selectSQL = "SELECT name, path FROM models WHERE selected = 1;";
+    public static void deleteMetricsWithInfinity() {
+        //This column is created with 1/value, so it can create errors (though it's rare)
+        String deleteSQL = "DELETE FROM metrics WHERE CAST(halsteadLevelBef AS CHARACTER) ='Inf';";
 
         try (Connection conn = connect()) {
             if (conn != null) {
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(selectSQL);
-
-                return new Pair<>(rs.getString("name"), rs.getString("path"));
+                conn.createStatement().executeUpdate(deleteSQL);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+    }
 
-        return null;
+
+    /* AUTHORS TABLE */
+
+    /**
+     * Create the authors table
+     */
+    public static void createAuthorsTable() {
+        String deleteTableSQL = "DROP TABLE IF EXISTS authors;";
+
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS authors (\n" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+                "name TEXT,\n" +
+                "email TEXT,\n" +
+                "UNIQUE (name, email)\n" +
+                ");";
+
+        String createIndexSQL = "CREATE INDEX IF NOT EXISTS authors_name_email ON authors (name, email);";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                conn.createStatement().executeUpdate(deleteTableSQL);
+                conn.createStatement().executeUpdate(createTableSQL);
+                conn.createStatement().executeUpdate(createIndexSQL);
+            }
+        } catch (SQLException e) {
+            System.out.println("Create authors table: " + e.getMessage());
+        }
     }
 
     /**
@@ -575,6 +522,283 @@ public class Database {
         return null;
     }
 
+
+    /* MODELS TABLE */
+
+    /**
+     * Create the models table
+     */
+    public static void createModelsTable() {
+        String deleteTableSQL = "DROP TABLE IF EXISTS models;";
+
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS models (\n" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+                "name TEXT UNIQUE,\n" +
+                "path TEXT NOT NULL,\n" +
+                "selected INTEGER NOT NULL,\n" +
+                "UNIQUE (path)\n" +
+                ");";
+
+        String addDefaultModelSQL = "INSERT INTO models (name, path, selected) VALUES ('Default', 'models/model.joblib', 1);";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                conn.createStatement().executeUpdate(deleteTableSQL);
+                conn.createStatement().executeUpdate(createTableSQL);
+                conn.createStatement().executeUpdate(addDefaultModelSQL);
+            }
+        } catch (SQLException e) {
+            System.out.println("Create models table: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Gets the file path of the current model in use
+     * @return The file path of the model
+     */
+    public static String getSelectedModelFilePath() {
+        String selectSQL = "SELECT path FROM models WHERE selected = 1;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(selectSQL);
+
+                return rs.getString("path");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the name of the current model in use
+     * @return The name of the model
+     */
+    public static String getSelectedModelName() {
+        String selectSQL = "SELECT name FROM models WHERE selected = 1;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(selectSQL);
+
+                return rs.getString("name");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the name and path of the selected model
+     * @return A pair with <name, path> of the selected model
+     */
+    public static Pair<String, String> getSelectedModel(){
+        String selectSQL = "SELECT name, path FROM models WHERE selected = 1;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(selectSQL);
+
+                return new Pair<>(rs.getString("name"), rs.getString("path"));
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets all the model names
+     * @return The list of model names
+     */
+    public static ArrayList<String> getAllModels() {
+        String selectSQL = "SELECT name FROM models;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(selectSQL);
+
+                ArrayList<String> models = new ArrayList<>();
+                while(rs.next()){
+                    models.add(rs.getString("name"));
+                }
+
+                return models;
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Deletes the model from the database
+     * @param modelName The name of the model
+     */
+    public static void deleteModel(String modelName) {
+        String deleteAuthorsModelsSQL = "DELETE FROM authors_models WHERE model_id = (SELECT id FROM models WHERE name = ?);";
+        String deleteModelSQL = "DELETE FROM models WHERE name = ?;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                PreparedStatement pstmt = conn.prepareStatement(deleteAuthorsModelsSQL);
+                pstmt.setString(1, modelName);
+                pstmt.executeUpdate();
+
+                pstmt = conn.prepareStatement(deleteModelSQL);
+                pstmt.setString(1, modelName);
+                pstmt.executeUpdate();
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    /**
+     * Creates a new model
+     * @param name The name of the model
+     * @param path The path of the model
+     */
+    public static void createModel(String name, String path) {
+        String insertSQL = "INSERT INTO models (name, path, selected) VALUES (?, ?, 0);";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                PreparedStatement pstmt = conn.prepareStatement(insertSQL);
+                pstmt.setString(1, name);
+                pstmt.setString(2, path);
+
+                pstmt.executeUpdate();
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    /**
+     * Sets the selected model
+     * @param name The name of the model
+     */
+    public static void setSelectedModel(String name) {
+        String updateSQL = "UPDATE models SET selected = 0;";
+        String selectSQL = "UPDATE models SET selected = 1 WHERE name = ?;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                conn.createStatement().executeUpdate(updateSQL);
+
+                PreparedStatement pstmt = conn.prepareStatement(selectSQL);
+                pstmt.setString(1, name);
+                pstmt.executeUpdate();
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    /**
+     * Gets the path of the model by its name
+     * @param name The name of the model
+     * @return The path of the model
+     */
+    public static String getModelPathByName(String name) {
+        String selectSQL = "SELECT path FROM models WHERE name = ?;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                PreparedStatement pstmt = conn.prepareStatement(selectSQL);
+                pstmt.setString(1, name);
+
+                ResultSet rs = pstmt.executeQuery();
+
+                return rs.getString("path");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the name of any model
+     * @return The name of the model
+     */
+    public static String getAnyModelName() {
+        String selectSQL = "SELECT name FROM models LIMIT 1;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(selectSQL);
+
+                return rs.getString("name");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the number of models in the database
+     * @return The number of models
+     */
+    public static int getNumberOfModels() {
+        String selectSQL = "SELECT COUNT(*) FROM models;";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(selectSQL);
+
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return 0;
+    }
+
+
+    /* AUTHORS MODELS TABLE */
+
+    /**
+     * Create the authors_models table which connects authors to models to understand the bias
+     */
+    public static void createAuthorsModelsTable() {
+        String deleteTableSQL = "DROP TABLE IF EXISTS authors_models;";
+
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS authors_models (\n" +
+                "author_id INTEGER,\n" +
+                "model_id INTEGER,\n" +
+                "FOREIGN KEY (author_id) REFERENCES authors(id),\n" +
+                "FOREIGN KEY (model_id) REFERENCES models(id),\n" +
+                "PRIMARY KEY (author_id, model_id)\n" +
+                ");";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                conn.createStatement().executeUpdate(deleteTableSQL);
+                conn.createStatement().executeUpdate(createTableSQL);
+            }
+        } catch (SQLException e) {
+            System.out.println("Create authors_models table: " + e.getMessage());
+        }
+    }
+
     /**
      * Gets all the authors per model, checking the selected boolean if the author is selected for the model
      * @param modelName The name of the model
@@ -626,7 +850,7 @@ public class Database {
                 "FROM authors a\n" +
                 "JOIN authors_models am ON a.id = am.author_id\n" +
                 "JOIN models m ON am.model_id = m.id\n" +
-                "WHERE m.name = ? AND m.selected = 1;";
+                "WHERE m.name = ?;";
 
         try (Connection conn = connect()) {
             if (conn != null) {
@@ -679,97 +903,4 @@ public class Database {
             System.out.println(e.getMessage());
         }
     }
-
-    /**
-     * Gets all the model names
-     * @return The list of model names
-     */
-    public static ArrayList<String> getAllModels() {
-        String selectSQL = "SELECT name FROM models;";
-
-        try (Connection conn = connect()) {
-            if (conn != null) {
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(selectSQL);
-
-                ArrayList<String> models = new ArrayList<>();
-                while(rs.next()){
-                    models.add(rs.getString("name"));
-                }
-
-                return models;
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-
-        return null;
-    }
-
-    /**
-     * Deletes the model from the database
-     * @param modelName The name of the model
-     */
-    public static void deleteModel(String modelName) {
-        String deleteAuthorsModelsSQL = "DELETE FROM authors_models WHERE model_id = (SELECT id FROM models WHERE name = ?);";
-        String deleteModelSQL = "DELETE FROM models WHERE name = ?;";
-
-        try (Connection conn = connect()) {
-            if (conn != null) {
-                PreparedStatement pstmt = conn.prepareStatement(deleteAuthorsModelsSQL);
-                pstmt.setString(1, modelName);
-                pstmt.executeUpdate();
-
-                pstmt = conn.prepareStatement(deleteModelSQL);
-                pstmt.setString(1, modelName);
-                pstmt.executeUpdate();
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    public static void countMetrics() {
-        String selectSQL = "SELECT COUNT(*) FROM metrics;";
-
-        try (Connection conn = connect()) {
-            if (conn != null) {
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(selectSQL);
-
-                System.out.println("Number of metrics: " + rs.getInt(1));
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    public static void deleteAllMetrics() {
-        String deleteSQL = "DELETE FROM metrics;";
-
-        try (Connection conn = connect()) {
-            if (conn != null) {
-                conn.createStatement().executeUpdate(deleteSQL);
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    /**
-     * Deletes the metrics with infinity values on the 'halsteadLevelBef' column
-     */
-    public static void deleteMetricsWithInfinity() {
-        //This column is created with 1/value, so it can create errors (though it's rare)
-        String deleteSQL = "DELETE FROM metrics WHERE CAST(halsteadLevelBef AS CHARACTER) ='Inf';";
-
-        try (Connection conn = connect()) {
-            if (conn != null) {
-                conn.createStatement().executeUpdate(deleteSQL);
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
 }

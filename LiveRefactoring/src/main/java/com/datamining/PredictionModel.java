@@ -4,7 +4,6 @@ import com.analysis.metrics.MethodMetrics;
 import com.core.Pair;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
-import com.utils.importantValues.Values;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -20,7 +19,6 @@ import java.util.Set;
 //TODO: Handle python path not set now that it is saved in MySettings
 public class PredictionModel {
     private static final String PYTHON_PREDICTION_FILE_PATH = "tmp/python/prediction.py";
-    private static String modelFilePath;
     private static final String PYTHON_BIAS_FILE_PATH = "tmp/python/bias_model.py";
     private static final String DATA_FILE_PATH = "tmp/metrics.db";
     private static final String SCALER_FILE_PATH = "tmp/python/scaler.pkl";
@@ -42,9 +40,8 @@ public class PredictionModel {
         System.out.println(getCurrentGitAuthor());
     }
 
-    public static void setModelFilePath(String modelFilePath) {
-        PredictionModel.modelFilePath = modelFilePath;
-    }
+
+    /* PREDICTION */
 
     /**
      * Predicts if a method is an outlier or not
@@ -73,14 +70,10 @@ public class PredictionModel {
      */
     private static boolean predictPython(ArrayList<Double> data, Project project) throws IOException, InterruptedException {
         String pythonPath = getPythonPath(project);
-        if (pythonPath == null) {
-            Utils.popup(Values.event.getProject(),
-                    "LiveRef - Python path not set",
-                    "Extract Method Refactoring won't work.Please set the python path by opening the 'Configure Tool' window and going to the 'Advanced Extract Method' tab.",
-                    NotificationType.ERROR);
+        if (pythonPath == null)
             return false;
-        }
 
+        String modelFilePath = Database.getSelectedModelFilePath();
         File modelFile = new File("tmp/" + modelFilePath);
         File scalerFile = new File(SCALER_FILE_PATH);
 
@@ -102,50 +95,225 @@ public class PredictionModel {
     }
 
     /**
-     * Uses the python script to bias the model for the selected authors
-     * @throws IOException if the python script has a problem
-     * @throws InterruptedException if the process is interrupted
+     * Gets the required metrics for the prediction model from the method metrics
+     * @param methodMetrics the metrics of the method
+     * @return the metrics required for the prediction model
      */
-    public static void biasModel(Project project) throws IOException, InterruptedException {
-        String pythonPath = getPythonPath(project);
-        if (pythonPath == null) {
-            Utils.popup(Values.event.getProject(),
-                    "LiveRef - Python path not set",
-                    "Please set the python path by opening the 'Configure Tool' window and going to the 'Advanced Extract Method' tab.",
-                    NotificationType.ERROR);
-            return;
-        }
+    private static ArrayList<Double> getMetrics(MethodMetrics methodMetrics) {
+        ArrayList<Double> data = new ArrayList<>();
 
-        Pair<String, String> modelInfo = Database.getSelectedModel();
-        File modelFile = new File("tmp/" + modelInfo.getSecond());
-        Set<AuthorInfo> authors = Database.getSelectedAuthorsPerModel(modelInfo.getFirst());
+        data.add((double) methodMetrics.numberLinesOfCode);
+        data.add((double) methodMetrics.numberComments);
+        data.add((double) methodMetrics.numberBlankLines);
+        data.add((double) methodMetrics.numberLinesOfCode + methodMetrics.numberComments +
+                methodMetrics.numberBlankLines);
+        data.add((double) methodMetrics.numParameters);
+        data.add((double) methodMetrics.numberOfStatements);
+        data.add(methodMetrics.halsteadLength);
+        data.add(methodMetrics.halsteadVocabulary);
+        data.add(methodMetrics.halsteadVolume);
+        data.add(methodMetrics.halsteadDifficulty);
+        data.add(methodMetrics.halsteadEffort);
+        data.add(methodMetrics.halsteadLevel);
+        data.add(methodMetrics.halsteadTime);
+        data.add(methodMetrics.halsteadBugsDelivered);
+        data.add(methodMetrics.halsteadMaintainability);
+        data.add((double) methodMetrics.complexityOfMethod);
+        data.add((double) methodMetrics.cognitiveComplexity);
+        data.add(methodMetrics.lackOfCohesionInMethod);
+
+        return data;
+    }
+
+
+    /* BIASING/UPDATING MODEL */
+
+    /**
+     * Creates the command to bias the model for the selected authors
+     * @param project the project
+     * @param pythonPath the path of the python executable
+     * @param oldModelPath the path of the model to load settings from
+     * @param newModelPath the path to save the new model (if the same as the old model, it will be updated)
+     * @param authors the authors to bias the model with (if empty, no bias is applied)
+     * @return the command to bias the model
+     */
+    public static ArrayList<String> biasModelCommand(Project project, String pythonPath, String oldModelPath, String newModelPath, Set<AuthorInfo> authors) {
+        ArrayList<String> command = new ArrayList<>();
 
         File scalerFile = new File(SCALER_FILE_PATH);
         MySettings mySettings = project.getService(MySettings.class);
 
-        ArrayList<String> command = new ArrayList<>();
         command.add(pythonPath);
         command.add(PYTHON_BIAS_FILE_PATH);
-        command.add(modelFile.getAbsolutePath());
+        command.add(oldModelPath);
+        command.add(newModelPath);
         command.add(scalerFile.getAbsolutePath());
         command.add(DATA_FILE_PATH);
         command.add(String.valueOf(mySettings.getState().biasMultiplier));
 
-        for (AuthorInfo author : authors) {
-            command.add(author.toString());
-        }
-
-        //If there are no authors, add this string so the python script knows to add no bias
         if(authors.isEmpty())
             command.add("no_bias");
+        else {
+            for (AuthorInfo author : authors) {
+                command.add(author.toString());
+            }
+        }
+
+        return command;
+    }
+
+    /**
+     * Uses the python script to bias the model for the selected authors
+     * @throws IOException if the python script has a problem
+     * @throws InterruptedException if the process is interrupted
+     */
+    public static void biasModel(Project project, String modelName) throws IOException, InterruptedException {
+        String pythonPath = getPythonPath(project);
+        if (pythonPath == null)
+            return;
+
+        Pair<String, String> modelInfo;
+        if (modelName == null) {
+            modelInfo = Database.getSelectedModel();
+        } else {
+            String path = Database.getModelPathByName(modelName);
+            modelInfo = new Pair<>(modelName, path);
+        }
+
+        File modelFile = new File("tmp/" + modelInfo.getSecond());
+        Set<AuthorInfo> authors = Database.getSelectedAuthorsPerModel(modelInfo.getFirst());
+
+        ArrayList<String> command = biasModelCommand(project, pythonPath, modelFile.getAbsolutePath(), modelFile.getAbsolutePath(), authors);
 
         pythonScriptRun(command);
 
-        Utils.popup(Values.event.getProject(),
+        Utils.popup(project,
                 "LiveRef",
                 "Model successfully updated.",
                 NotificationType.INFORMATION);
     }
+
+    /**
+     * Creates a new model biased with the selected authors
+     * @param project the project
+     * @param path the path of the new model
+     * @param authors the authors to bias the model with (if empty, no bias is applied)
+     */
+    public static void createModel(Project project, String path, Set<AuthorInfo> authors) {
+        String pythonPath = getPythonPath(project);
+        if (pythonPath == null)
+            return;
+
+        Pair<String, String> oldModelInfo = Database.getSelectedModel();
+        File oldModelFile = new File("tmp/" + oldModelInfo.getSecond());
+
+        File newModelFile = new File("tmp/" + path);
+
+        ArrayList<String> command = biasModelCommand(project, pythonPath, oldModelFile.getAbsolutePath(), newModelFile.getAbsolutePath(), authors);
+
+        try {
+            pythonScriptRun(command);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+//        Utils.popup(project,
+//                "LiveRef",
+//                "Profile successfully created.",
+//                NotificationType.INFORMATION);
+
+    }
+
+    /**
+     * Possible updates the model with the new method metrics
+     * @param methodMetrics the metrics of the method
+     * @param project the project
+     * @throws IOException if the python script has a problem
+     * @throws InterruptedException if the process is interrupted
+     */
+    public static void updateModel(MethodMetrics methodMetrics, Project project) throws IOException, InterruptedException, SQLException {
+        Pair<String, String> author = getCurrentGitAuthor();
+        if (author == null) {
+            Utils.popup(project,
+                    "LiveRef - Git author not found",
+                    "The current git author could not be found. Please make sure you have git installed and configured.",
+                    NotificationType.WARNING);
+            author = new Pair<>("hello", "hello@g.com");
+        }
+
+        Database.saveMetrics(author, methodMetrics, null);
+
+        MySettings.State state = project.getService(MySettings.class).getState();
+        state.counter++;
+
+        if(state.counter >= state.maxExtractMethodsBefUpdate) {
+            System.out.println("Biasing model");
+            biasModel(project, null);
+            System.out.println("Model biased");
+            state.counter = 0;
+        }
+
+    }
+
+    /**
+     * Deletes the model at the given path
+     * @param model the name of the model
+     */
+    public static void deleteModel(Project project, String model) throws IOException, InterruptedException {
+        String path = Database.getModelPathByName(model);
+        File modelFile = new File("tmp/" + path);
+        modelFile.delete();
+
+        boolean wasSelected = Database.getSelectedModel().getFirst().equals(model);
+
+        Database.deleteModel(model);
+
+        if (wasSelected) {
+            String newSelected = Database.getAnyModelName();
+            Database.setSelectedModel(newSelected);
+            PredictionModel.biasModel(project, newSelected);
+        }
+    }
+
+
+    /* PIP REQUIREMENTS */
+
+    //TODO: Finish/Change this function - check requirements, if not installed, install them - call this function in the ConfigureTool once someone changes the python path
+    public static void checkPipRequirements(Project project) throws IOException, InterruptedException {
+        String pythonPath = getPythonPath(project);
+        if (pythonPath == null)
+            return;
+
+        URL url = PredictionModel.class.getResource("/requirements.txt");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if(!isPythonPackagedInstalled(pythonPath, line))
+                return;
+        }
+
+    }
+
+    private static boolean isPythonPackagedInstalled(String pythonPath, String packageName) throws IOException, InterruptedException {
+        Process process = new ProcessBuilder(pythonPath, "-c",
+                "import " + packageName).start();
+
+        int exitCode = process.waitFor();
+
+        return exitCode == 0;
+    }
+
+    public static void installPipRequirements(Project project) throws IOException, InterruptedException {
+        String pythonPath = getPythonPath(project);
+        if (pythonPath == null)
+            return;
+
+        runCommand(pythonPath + " -m pip install -r tmp/requirements.txt");
+    }
+
+
+    /* UTILS */
 
     /**
      * Gets the python path from the settings
@@ -156,6 +324,11 @@ public class PredictionModel {
         String pythonPath = mySettings.getState().pythonPath;
 
         if (pythonPath.isEmpty()) {
+            Utils.popup(project,
+                    "LiveRef - Python path not set",
+                    "Please set the python path by opening the 'Configure Tool' window and going to the 'Advanced Extract Method' tab.",
+                    NotificationType.ERROR);
+
             //TODO: Removed this after testing
             pythonPath = "C:\\Program Files\\Python310\\python.exe";
             return null;
@@ -190,68 +363,6 @@ public class PredictionModel {
         stdOutput.close();
 
         return output.toString();
-    }
-
-    /**
-     * Gets the required metrics for the prediction model from the method metrics
-     * @param methodMetrics the metrics of the method
-     * @return the metrics required for the prediction model
-     */
-    private static ArrayList<Double> getMetrics(MethodMetrics methodMetrics) {
-        ArrayList<Double> data = new ArrayList<>();
-
-        data.add((double) methodMetrics.numberLinesOfCode);
-        data.add((double) methodMetrics.numberComments);
-        data.add((double) methodMetrics.numberBlankLines);
-        data.add((double) methodMetrics.numberLinesOfCode + methodMetrics.numberComments +
-                methodMetrics.numberBlankLines);
-        data.add((double) methodMetrics.numParameters);
-        data.add((double) methodMetrics.numberOfStatements);
-        data.add(methodMetrics.halsteadLength);
-        data.add(methodMetrics.halsteadVocabulary);
-        data.add(methodMetrics.halsteadVolume);
-        data.add(methodMetrics.halsteadDifficulty);
-        data.add(methodMetrics.halsteadEffort);
-        data.add(methodMetrics.halsteadLevel);
-        data.add(methodMetrics.halsteadTime);
-        data.add(methodMetrics.halsteadBugsDelivered);
-        data.add(methodMetrics.halsteadMaintainability);
-        data.add((double) methodMetrics.complexityOfMethod);
-        data.add((double) methodMetrics.cognitiveComplexity);
-        data.add(methodMetrics.lackOfCohesionInMethod);
-
-        return data;
-    }
-
-    /**
-     * Possible updates the model with the new method metrics
-     * @param methodMetrics the metrics of the method
-     * @param project the project
-     * @throws IOException if the python script has a problem
-     * @throws InterruptedException if the process is interrupted
-     */
-    public static void updateModel(MethodMetrics methodMetrics, Project project) throws IOException, InterruptedException, SQLException {
-        Pair<String, String> author = getCurrentGitAuthor();
-        if (author == null) {
-            Utils.popup(project,
-                    "LiveRef - Git author not found",
-                    "The current git author could not be found. Please make sure you have git installed and configured.",
-                    NotificationType.WARNING);
-            author = new Pair<>("hello", "hello@g.com");
-        }
-
-        Database.saveMetrics(author, methodMetrics, null);
-
-        MySettings.State state = project.getService(MySettings.class).getState();
-        state.counter++;
-
-        if(state.counter >= state.maxExtractMethodsBefUpdate) {
-            System.out.println("Biasing model");
-            biasModel(project);
-            System.out.println("Model biased");
-            state.counter = 0;
-        }
-
     }
 
     //TODO: Test when the plugin is actually installed
@@ -297,50 +408,6 @@ public class PredictionModel {
         }
 
         return output.toString();
-    }
-
-    //TODO: Finish/Change this function - check requirements, if not installed, install them - call this function in the ConfigureTool once someone changes the python path
-    public static void checkPipRequirements(Project project) throws IOException, InterruptedException {
-        String pythonPath = getPythonPath(project);
-        if (pythonPath == null) {
-            Utils.popup(Values.event.getProject(),
-                    "LiveRef - Python path not set",
-                    "Cannot check pip requirements without python path. Please set the python path by opening the 'Configure Tool' window and going to the 'Advanced Extract Method' tab.",
-                    NotificationType.ERROR);
-            return;
-        }
-
-        URL url = PredictionModel.class.getResource("/requirements.txt");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
-
-        String line;
-        while ((line = reader.readLine()) != null) {
-            if(!isPythonPackagedInstalled(pythonPath, line))
-                return;
-        }
-
-    }
-
-    private static boolean isPythonPackagedInstalled(String pythonPath, String packageName) throws IOException, InterruptedException {
-        Process process = new ProcessBuilder(pythonPath, "-c",
-                "import " + packageName).start();
-
-        int exitCode = process.waitFor();
-
-        return exitCode == 0;
-    }
-
-    public static void installPipRequirements(Project project) throws IOException, InterruptedException {
-        String pythonPath = getPythonPath(project);
-        if (pythonPath == null) {
-            Utils.popup(Values.event.getProject(),
-                    "LiveRef - Python path not set",
-                    "Cannot install pip requirements without python path. Please set the python path by opening the 'Configure Tool' window and going to the 'Advanced Extract Method' tab.",
-                    NotificationType.ERROR);
-            return;
-        }
-
-        runCommand(pythonPath + " -m pip install -r tmp/requirements.txt");
     }
 }
 

@@ -10,17 +10,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
-      <change beforePath="$PROJECT_DIR$/../Classification Model/Data Analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/Data Analysis.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Classification Model/Model Prep.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/Model Prep.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Classification Model/data/metrics.db" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/data/metrics.db" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/RunMetrics.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/RunMetrics.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/MySettings.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/MySettings.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/utils/importantValues/Values.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/utils/importantValues/Values.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/python/bias_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/python/bias_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/python/prediction.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/python/prediction.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/StartUp.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/StartUp.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ui/ConfigureTool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ui/ConfigureTool.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -98,13 +94,6 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Gradle.LiveRefactoring [:Database.main()].executor": "Run",
-    "git-widget-placeholder": "main",
-    "node.js.selected.package.tslint": "(autodetect)"
-  }
-}]]></component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="com.analysis.refactorings" />
@@ -217,7 +206,6 @@
       <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
     <configuration name="LiveRefactoring" type="GradleRunConfiguration" factoryName="Gradle" nameIsGenerated="true">
@@ -237,7 +225,6 @@
       <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>false</RunAsTest>
       <method v="2">
         <option name="BuildArtifacts" enabled="true">
           <artifact name="images" />
@@ -674,7 +661,7 @@
       <workItem from="1714813543649" duration="11695000" />
       <workItem from="1714900141108" duration="57000" />
       <workItem from="1714982125522" duration="9963000" />
-      <workItem from="1715068660516" duration="4754000" />
+      <workItem from="1715068660516" duration="18099000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>

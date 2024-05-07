@@ -208,45 +208,86 @@ public class ConfigureTool extends AnAction {
                 }
             }
 
+            if(wrapper.selectedProfile != null && !wrapper.selectedProfile.isEmpty() && !wrapper.selectedProfile.equals(Database.getSelectedModelName())){
+                System.out.println("Changing to profile: " + wrapper.selectedProfile);
+                Database.setSelectedModel(wrapper.selectedProfile);
+                try {
+                    PredictionModel.biasModel(e.getProject(), wrapper.selectedProfile);
+                } catch (IOException | InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+
+            if(!wrapper.modelsToDelete.isEmpty()){
+                for (String model : wrapper.modelsToDelete) {
+                    wrapper.profileBoxes.remove(model);
+                    try {
+                        PredictionModel.deleteModel(e.getProject(), model);
+                    } catch (IOException | InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }
+
             try {
-                applySelectedAuthors(wrapper.profileBoxes);
+                applySelectedAuthors(wrapper.profileBoxes, wrapper);
             } catch (IOException | ClassNotFoundException | InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
         }
     }
 
-    private void applySelectedAuthors(Map<String, Pair<Box, JButton>> profileBoxes) throws IOException, ClassNotFoundException, InterruptedException {
+    private void applySelectedAuthors(Map<String, Pair<Box, JButton>> profileBoxes, ConfigureTool.MyDialogWrapper wrapper) throws IOException, ClassNotFoundException, InterruptedException {
         for (Map.Entry<String, Pair<Box, JButton>> entry : profileBoxes.entrySet()) {
             String profileName = entry.getKey();
-            if(profileName.equals("add"))
-                continue;
-            Box authorsBox = entry.getValue().getFirst();
-            Set<AuthorInfo> checkedAuthors = new HashSet<>();
 
-            for (Component component : authorsBox.getComponents()) {
-                if (component instanceof JCheckBox) {
-                    JCheckBox checkBox = (JCheckBox) component;
-                    if (checkBox.isSelected()) {
-                        String text = checkBox.getText();
-                        String authorName = text.substring(0, text.indexOf(" ("));
-                        String authorEmail = text.substring(text.indexOf("(") + 1, text.indexOf(")"));
-                        checkedAuthors.add(new AuthorInfo(null, authorName, authorEmail, true));
-                    }
+            if(profileName.equals("add")){
+                if (wrapper.createProfile) {
+                    createProfile(entry.getValue().getFirst(), wrapper.textField_profileName.getText(), wrapper.project);
+                    wrapper.createProfile = false;
                 }
+                continue;
             }
+
+            Box authorsBox = entry.getValue().getFirst();
+            Set<AuthorInfo> checkedAuthors = getCheckedAuthors(authorsBox);
 
             Set<AuthorInfo> oldAuthors = Database.getSelectedAuthorsPerModel(profileName);
 
             if (checkedAuthors.size() != oldAuthors.size() || !checkedAuthors.containsAll(oldAuthors)) {
-                System.out.println("Updating authors for model " + profileName + "\n"
-                 + "Old authors: " + oldAuthors + "\n" + "New authors: " + checkedAuthors);
                 Database.updateAuthorsPerModel(profileName, checkedAuthors);
-                //TODO: REMOVE THE COMMENT TO TEST
-                //PredictionModel.biasModel();
+                PredictionModel.biasModel(wrapper.project, profileName);
+            }
+        }
+    }
+
+    private void createProfile(Box authorsBox, String name, Project project) {
+        String path = "models/" + name + ".joblib";
+        Database.createModel(name, path);
+
+        Set<AuthorInfo> checkedAuthors = getCheckedAuthors(authorsBox);
+        if (!checkedAuthors.isEmpty())
+            Database.updateAuthorsPerModel(name, checkedAuthors);
+
+        PredictionModel.createModel(project, path, checkedAuthors);
+    }
+
+    private Set<AuthorInfo> getCheckedAuthors(Box authorsBox) {
+        Set<AuthorInfo> checkedAuthors = new HashSet<>();
+
+        for (Component component : authorsBox.getComponents()) {
+            if (component instanceof JCheckBox) {
+                JCheckBox checkBox = (JCheckBox) component;
+                if (checkBox.isSelected()) {
+                    String text = checkBox.getText();
+                    String authorName = text.substring(0, text.indexOf(" ("));
+                    String authorEmail = text.substring(text.indexOf("(") + 1, text.indexOf(")"));
+                    checkedAuthors.add(new AuthorInfo(null, authorName, authorEmail, true));
+                }
             }
         }
 
+        return checkedAuthors;
     }
 
     private String calculateHash(String name) {
@@ -328,6 +369,9 @@ public class ConfigureTool extends AnAction {
         public Project project;
         public Map<String, Pair<Box, JButton>> profileBoxes = new HashMap<>();
         public JBTextField textField_profileName = new JBTextField();
+        public boolean createProfile = false;
+        public String selectedProfile;
+        public Set<String> modelsToDelete = new HashSet<>();
 
         public MyDialogWrapper(Project project) {
             super(false);
@@ -335,6 +379,7 @@ public class ConfigureTool extends AnAction {
             init();
             setTitle("Configure Tool");
             textField_pythonPath.setText(project.getService(MySettings.class).getState().pythonPath);
+            selectedProfile = Database.getSelectedModelName();
         }
 
         @Nullable
@@ -941,12 +986,14 @@ public class ConfigureTool extends AnAction {
 
             String selectedModel = Database.getSelectedModelName();
             for (String model: models) {
-                TabInfo tabInfo = new TabInfo(getBiasProfilePanel(model));
+                Boolean selected = model.equals(selectedModel);
 
-                if (model.equals(selectedModel)) {
-                    tabbedPane.select(tabInfo, true);
-                }
-                tabInfo.setText(model);
+                TabInfo tabInfo = new TabInfo(getBiasProfilePanel(model, selected));
+
+                if (selected)
+                    tabInfo.setText("* " + model + " *");
+                else
+                    tabInfo.setText(model);
 
                 tabbedPane.addTab(tabInfo);
             }
@@ -970,7 +1017,7 @@ public class ConfigureTool extends AnAction {
             return authorPanel;
         }
 
-        private JPanel getBiasProfilePanel(String modelName) {
+        private JPanel getBiasProfilePanel(String modelName, Boolean selected) {
             JPanel profilePanel = new JPanel(new BorderLayout());
 
             Box overallBox = Box.createVerticalBox();
@@ -983,15 +1030,52 @@ public class ConfigureTool extends AnAction {
 
             JButton deleteProfile = new JButton("Delete Profile");
             deleteProfile.addActionListener(e -> {
-                //Open pop-up to confirm deletion
                 JBPopupMenu popupMenu = new JBPopupMenu();
-                JBMenuItem menuItem = new JBMenuItem("Are you sure you want to delete this profile?");
-                popupMenu.add(menuItem);
+                if((this.modelsToDelete.size() + 1) == Database.getNumberOfModels()) {
+                    JBMenuItem menuItem = new JBMenuItem("Not enough models exist to delete this profile.");
+                    menuItem.setEnabled(false);
+
+                    JBMenuItem menuItem2 = new JBMenuItem("Please create a new profile before deleting this one.");
+                    menuItem2.setEnabled(false);
+
+                    JButton confirmButton = new JButton("Confirm");
+                    confirmButton.addActionListener(a -> {
+                        popupMenu.setVisible(false);
+                    });
+
+                    popupMenu.add(menuItem);
+                    popupMenu.add(menuItem2);
+                    popupMenu.add(confirmButton);
+                } else {
+                    JBMenuItem menuItem = new JBMenuItem("Are you sure you want to delete this profile?");
+                    menuItem.setEnabled(false);
+
+                    JButton confirmButton = new JButton("Confirm");
+                    confirmButton.addActionListener(a -> {
+                        this.modelsToDelete.add(modelName);
+                        popupMenu.setVisible(false);
+                    });
+
+                    JButton cancelButton = new JButton("Cancel");
+                    cancelButton.addActionListener(a -> {
+                        popupMenu.setVisible(false);
+                    });
+
+                    JMenuBar menuBar = new JMenuBar();
+                    menuBar.add(confirmButton, BorderLayout.WEST);
+                    menuBar.add(cancelButton, BorderLayout.EAST);
+
+                    popupMenu.add(menuItem);
+                    popupMenu.add(menuBar);
+                }
                 popupMenu.show(deleteProfile, 0, 0);
+            });
 
+            JButton switchProfile = new JButton("Switch");
+            switchProfile.setEnabled(!selected);
 
-                //Database.deleteModel(modelName);
-                //profilePanel.setVisible(false);
+            switchProfile.addActionListener(e -> {
+                this.selectedProfile = modelName;
             });
 
             buttonsPannel.add(selectAllAuthors, BorderLayout.WEST);
@@ -1011,6 +1095,7 @@ public class ConfigureTool extends AnAction {
 
             overallBox.add(buttonsPannel);
             overallBox.add(pane);
+            overallBox.add(switchProfile);
 
             profilePanel.add(overallBox, BorderLayout.CENTER);
 
@@ -1040,6 +1125,10 @@ public class ConfigureTool extends AnAction {
             JButton selectAllAuthors = getSelectAllButton(authorBox);
             JButton createProfile = new JButton("Create Profile");
 
+            createProfile.addActionListener(e -> {
+                this.createProfile = true;
+            });
+
             ArrayList<AuthorInfo> authors = Database.getAllAuthors();
             authors.forEach(author -> author.setSelected(false));
 
@@ -1056,7 +1145,7 @@ public class ConfigureTool extends AnAction {
             overallBox.add(nameBox);
             overallBox.add(selectAllAuthors, BorderLayout.WEST);
             overallBox.add(pane);
-
+            overallBox.add(createProfile, BorderLayout.EAST);
 
             profilePanel.add(overallBox, BorderLayout.CENTER);
 

@@ -33,8 +33,6 @@ public class StartUp  implements StartupActivity {
         extractFileIfNotExists("python/scaler.pkl");
         extractFileIfNotExists("requirements.txt");
         extractFileIfNotExists("models/model.joblib");
-
-        PredictionModel.setModelFilePath(Database.getSelectedModelFilePath());
     }
 
     /**

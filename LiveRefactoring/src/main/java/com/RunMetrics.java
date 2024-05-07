@@ -51,25 +51,21 @@ public class RunMetrics extends AnAction {
                 } catch (FileNotFoundException ex) {
                     ex.printStackTrace();
                 }
-                actionPerformed(myReader, URLCopy);
+                while (myReader.hasNextLine()) {
+                    String data = myReader.nextLine();
+                    if(!data.equals("Logs") && data.contains("-")){
+                        String commitToken = data.split("-")[0].trim();
+
+                        URLProject = URLCopy + "-" + commitToken;
+                        System.out.println(URLProject);
+                        File f2 = new File(URLProject + "/metrics.txt");
+                        if (f2.exists())
+                            System.out.println("Metrics already measured");
+                        else
+                            listFilesForFolder(new File(URLProject));
+                    }
+                }
                 myReader.close();
-            }
-        }
-    }
-
-    private void actionPerformed(Scanner myReader, String URLCopy) {
-        while (myReader.hasNextLine()) {
-            String data = myReader.nextLine();
-            if(!data.equals("Logs") && data.contains("-")){
-                String commitToken = data.split("-")[0].trim();
-
-                URLProject = URLCopy + "-" + commitToken;
-                System.out.println(URLProject);
-                File f2 = new File(URLProject + "/metrics.txt");
-                if (f2.exists())
-                    System.out.println("Metrics already measured");
-                else
-                    listFilesForFolder(new File(URLProject));
             }
         }
     }
