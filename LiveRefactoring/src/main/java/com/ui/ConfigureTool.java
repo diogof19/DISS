@@ -19,7 +19,6 @@ import com.intellij.openapi.ui.JBPopupMenu;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
-import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.tabs.TabInfo;
@@ -208,8 +207,20 @@ public class ConfigureTool extends AnAction {
                 }
             }
 
+            MySettings mySettings = e.getProject().getService(MySettings.class);
+            if(mySettings.getState().maxExtractMethodsBefUpdate != Integer.parseInt(wrapper.textFields_maxExtractMethodsBefUpdate.getText())){
+                mySettings.getState().maxExtractMethodsBefUpdate = Integer.parseInt(wrapper.textFields_maxExtractMethodsBefUpdate.getText());
+            }
+            if(mySettings.getState().biasMultiplier != Integer.parseInt(wrapper.textFields_biasMultiplier.getText())) {
+                mySettings.getState().biasMultiplier = Integer.parseInt(wrapper.textFields_biasMultiplier.getText());
+                try {
+                    PredictionModel.biasModel(e.getProject(), null);
+                } catch (IOException | InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+
             if(wrapper.selectedProfile != null && !wrapper.selectedProfile.isEmpty() && !wrapper.selectedProfile.equals(Database.getSelectedModelName())){
-                System.out.println("Changing to profile: " + wrapper.selectedProfile);
                 Database.setSelectedModel(wrapper.selectedProfile);
                 try {
                     PredictionModel.biasModel(e.getProject(), wrapper.selectedProfile);
@@ -223,6 +234,7 @@ public class ConfigureTool extends AnAction {
                     wrapper.profileBoxes.remove(model);
                     try {
                         PredictionModel.deleteModel(e.getProject(), model);
+
                     } catch (IOException | InterruptedException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -367,6 +379,8 @@ public class ConfigureTool extends AnAction {
         public HashMap<String,Boolean>selections = new HashMap<>();
 
         public Project project;
+        public JBTextField textFields_maxExtractMethodsBefUpdate = new JBTextField();
+        public JBTextField textFields_biasMultiplier = new JBTextField();
         public Map<String, Pair<Box, JButton>> profileBoxes = new HashMap<>();
         public JBTextField textField_profileName = new JBTextField();
         public boolean createProfile = false;
@@ -376,10 +390,15 @@ public class ConfigureTool extends AnAction {
         public MyDialogWrapper(Project project) {
             super(false);
             this.project = project;
+
+            MySettings.State state = project.getService(MySettings.class).getState();
+            textField_pythonPath.setText(state.pythonPath);
+            textFields_maxExtractMethodsBefUpdate.setText(Integer.toString(state.maxExtractMethodsBefUpdate));
+            textFields_biasMultiplier.setText(Integer.toString(state.biasMultiplier));
+            selectedProfile = Database.getSelectedModelName();
+
             init();
             setTitle("Configure Tool");
-            textField_pythonPath.setText(project.getService(MySettings.class).getState().pythonPath);
-            selectedProfile = Database.getSelectedModelName();
         }
 
         @Nullable
@@ -975,11 +994,28 @@ public class ConfigureTool extends AnAction {
             return pythonPanel;
         }
 
+        /**
+         * Creates a panel with the bias model configurations
+         * @return JPanel with the bias model configurations
+         */
         private JPanel getAuthorBiasPanel() {
             JPanel authorPanel = new JPanel(new BorderLayout());
             authorPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Model Bias Configuration"));
 
+            //Value Configurations
+            JPanel valuePanel = new JPanel(new GridLayout(2, 2));
+            JLabel label_maxExtractMethodsBefUpdate = new JLabel("Max. Extract Methods Before Update");
+            valuePanel.add(label_maxExtractMethodsBefUpdate, BorderLayout.WEST);
+            valuePanel.add(textFields_maxExtractMethodsBefUpdate, BorderLayout.EAST);
+
+            JLabel label_biasMultiplier = new JLabel("Bias Multiplier");
+            valuePanel.add(label_biasMultiplier, BorderLayout.WEST);
+            valuePanel.add(textFields_biasMultiplier, BorderLayout.EAST);
+
+            authorPanel.add(valuePanel, BorderLayout.NORTH);
+
+            //Profile Tabs
             ArrayList<String> models = Database.getAllModels();
 
             JBTabsImpl tabbedPane = new JBTabsImpl(this.project);
@@ -1006,17 +1042,17 @@ public class ConfigureTool extends AnAction {
                 tabbedPane.addTab(tabInfo);
             }
 
-            JBLabel warning =
-                    new JBLabel("Warning: Retraining the model after this selection may take a long time.");
-            warning.setPreferredSize(new Dimension(100, 30));
-
-            //tabbedPane.add(warning);
-
             authorPanel.add(tabbedPane, BorderLayout.CENTER);
 
             return authorPanel;
         }
 
+        /**
+         * Creates a panel with the bias profile options for a specific model.
+         * @param modelName The name of the model
+         * @param selected Whether the model is the selected one
+         * @return JPanel with the bias profile options
+         */
         private JPanel getBiasProfilePanel(String modelName, Boolean selected) {
             JPanel profilePanel = new JPanel(new BorderLayout());
 
@@ -1102,6 +1138,10 @@ public class ConfigureTool extends AnAction {
             return profilePanel;
         }
 
+        /**
+         * Creates a panel to allow the user to create a new bias profile.
+         * @return JPanel to create a new bias profile
+         */
         private JPanel getNewBiasProfilePanel() {
             JPanel profilePanel = new JPanel(new BorderLayout());
 

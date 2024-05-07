@@ -191,6 +191,8 @@ public class PredictionModel {
                 "LiveRef",
                 "Model successfully updated.",
                 NotificationType.INFORMATION);
+
+        project.getService(MySettings.class).getState().counter = 0;
     }
 
     /**
