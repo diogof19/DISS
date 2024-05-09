@@ -13,6 +13,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.util.PsiUtilBase;
+import com.utils.importantValues.Values;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -20,7 +21,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 
 public class Utils {
-    public static final String FILE_COPIES_DIR = "C:/Users/dluis/Documents/fileCopies/";
+    public static final String FILE_COPIES_DIR = Values.dataFolder;
+    public static int counter = 0;
 
     /**
      * Extracts the method name from the refactoring description
@@ -58,9 +60,8 @@ public class Utils {
             tmpDir.mkdirs();
         }
 
-        int n_files = tmpDir.listFiles().length;
-
-        String newFilePath = FILE_COPIES_DIR + folder + "/" + n_files + ".java";
+        String newFilePath = FILE_COPIES_DIR + folder + "/" + counter + ".java";
+        counter++;
         try {
             Files.copy(Path.of(filePath), Path.of(newFilePath));
         } catch (Exception e) {

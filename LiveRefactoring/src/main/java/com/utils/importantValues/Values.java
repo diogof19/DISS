@@ -65,6 +65,7 @@ public class Values {
     public static int numSeconds = 5;
     public static String projectName = "unknown";
 
+    public static String dataFolder;
 
     public void setLastRefactoring(LastRefactoring refactoring) {
         Values.lastRefactoring = refactoring;

@@ -14,8 +14,8 @@ import static com.datamining.Utils.getMethodMetricsFromFile;
 public class Database {
     //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\resources\\metrics.db";
     //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\.gradle\\caches\\modules-2\\files-2.1\\com.jetbrains.intellij.idea\\ideaIC\\2021.1.1\\e051d885e757b286781f50305504d7b8db3e1dba\\ideaIC-2021.1.1\\bin\\tmp\\metrics.db";
-    private static final String DATABASE_FILE_PATH = "tmp/metrics.db";
-    private static final String DATABASE_URL = "jdbc:sqlite:" + DATABASE_FILE_PATH;
+    //private static final String DATABASE_URL = "jdbc:sqlite:" + Values.dataFolder + "metrics.db";
+    private static final String DATABASE_URL = "jdbc:sqlite:C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\resources\\metrics.db";
 
     public static void main(String[] args) {
         //createDatabase();
@@ -26,12 +26,10 @@ public class Database {
 //            System.out.println(author + " - " + author.isSelected());
 //        }
 
-        //countMetrics();
-//        ArrayList<AuthorInfo> authors = getAllAuthors();
-//        System.out.println("Authors: ");
-//        for(AuthorInfo author : authors){
-//            System.out.println(author);
-//        }
+        countMetrics();
+        System.out.println("Number of authors: " + getAllAuthors().size());
+        System.out.println("Number of models: " + getNumberOfModels());
+        System.out.println("Selected model: " + getSelectedModelName());
 
 //        deleteModel("new");
 //        deleteModel("fafaasdfsds");

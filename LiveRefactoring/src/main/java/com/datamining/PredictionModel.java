@@ -4,13 +4,13 @@ import com.analysis.metrics.MethodMetrics;
 import com.core.Pair;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
+import com.utils.importantValues.Values;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Set;
@@ -18,10 +18,10 @@ import java.util.Set;
 //TODO: Create a 'requirements.txt' folder and function that runs it with pip install
 //TODO: Handle python path not set now that it is saved in MySettings
 public class PredictionModel {
-    private static final String PYTHON_PREDICTION_FILE_PATH = "tmp/python/prediction.py";
-    private static final String PYTHON_BIAS_FILE_PATH = "tmp/python/bias_model.py";
-    private static final String DATA_FILE_PATH = "tmp/metrics.db";
-    private static final String SCALER_FILE_PATH = "tmp/python/scaler.pkl";
+    private static final String PYTHON_PREDICTION_FILE_PATH = Values.dataFolder + "python/prediction.py";
+    private static final String PYTHON_BIAS_FILE_PATH = Values.dataFolder + "python/bias_model.py";
+    private static final String DATA_FILE_PATH = Values.dataFolder + "metrics.db";
+    private static final String SCALER_FILE_PATH = Values.dataFolder + "python/scaler.pkl";
 
     public static void main(String[] args) {
 //        ArrayList<Double> data = new ArrayList<>();
@@ -74,7 +74,7 @@ public class PredictionModel {
             return false;
 
         String modelFilePath = Database.getSelectedModelFilePath();
-        File modelFile = new File("tmp/" + modelFilePath);
+        File modelFile = new File(Values.dataFolder + modelFilePath);
         File scalerFile = new File(SCALER_FILE_PATH);
 
         ArrayList<String> command = new ArrayList<>();
@@ -180,7 +180,7 @@ public class PredictionModel {
             modelInfo = new Pair<>(modelName, path);
         }
 
-        File modelFile = new File("tmp/" + modelInfo.getSecond());
+        File modelFile = new File(Values.dataFolder + modelInfo.getSecond());
         Set<AuthorInfo> authors = Database.getSelectedAuthorsPerModel(modelInfo.getFirst());
 
         ArrayList<String> command = biasModelCommand(project, pythonPath, modelFile.getAbsolutePath(), modelFile.getAbsolutePath(), authors);
@@ -207,9 +207,9 @@ public class PredictionModel {
             return;
 
         Pair<String, String> oldModelInfo = Database.getSelectedModel();
-        File oldModelFile = new File("tmp/" + oldModelInfo.getSecond());
+        File oldModelFile = new File(Values.dataFolder + oldModelInfo.getSecond());
 
-        File newModelFile = new File("tmp/" + path);
+        File newModelFile = new File(Values.dataFolder + path);
 
         ArrayList<String> command = biasModelCommand(project, pythonPath, oldModelFile.getAbsolutePath(), newModelFile.getAbsolutePath(), authors);
 
@@ -263,7 +263,7 @@ public class PredictionModel {
      */
     public static void deleteModel(Project project, String model) throws IOException, InterruptedException {
         String path = Database.getModelPathByName(model);
-        File modelFile = new File("tmp/" + path);
+        File modelFile = new File(Values.dataFolder + path);
         modelFile.delete();
 
         boolean wasSelected = Database.getSelectedModel().getFirst().equals(model);
@@ -280,38 +280,100 @@ public class PredictionModel {
 
     /* PIP REQUIREMENTS */
 
-    //TODO: Finish/Change this function - check requirements, if not installed, install them - call this function in the ConfigureTool once someone changes the python path
-    public static void checkPipRequirements(Project project) throws IOException, InterruptedException {
-        String pythonPath = getPythonPath(project);
-        if (pythonPath == null)
+    /**
+     * Checks if the new python path is valid and if the pip requirements are installed (if not, installs them)
+     * @param project the project
+     * @param pythonPath the new python path
+     * @throws IOException if the python script has a problem
+     * @throws InterruptedException if the process is interrupted
+     */
+    public static void checkPipRequirements(Project project, String pythonPath) throws IOException, InterruptedException {
+        if(!isPythonPathValid(pythonPath)){
+            Utils.popup(project,
+                    "LiveRef - Python path not valid",
+                    "Please check if the path to the python executable is correct.",
+                    NotificationType.ERROR);
             return;
-
-        URL url = PredictionModel.class.getResource("/requirements.txt");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
-
-        String line;
-        while ((line = reader.readLine()) != null) {
-            if(!isPythonPackagedInstalled(pythonPath, line))
-                return;
         }
 
+        File requirementsFile = new File(Values.dataFolder + "requirements.txt");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(requirementsFile.toURI().toURL().openStream()));
+
+        ArrayList<String> installedRequirements = getPipRequirements(pythonPath);
+
+        boolean requirementsInstalled = true;
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if(!installedRequirements.contains(line.split("==")[0])){
+                System.out.println("Requirement not installed: " + line.split("==")[0]);
+                requirementsInstalled = false;
+                break;
+            }
+        }
+
+
+        if (!requirementsInstalled) {
+            ArrayList<String> command = new ArrayList<>();
+            command.add("\"" + pythonPath + "\"");
+            command.add("-m");
+            command.add("pip");
+            command.add("install");
+            command.add("-r");
+            command.add(requirementsFile.getAbsolutePath());
+            pythonScriptRun(command);
+        }
+
+        Utils.popup(project,
+                "LiveRef",
+                "Python path update & all requirements are installed.",
+                NotificationType.INFORMATION);
     }
 
-    private static boolean isPythonPackagedInstalled(String pythonPath, String packageName) throws IOException, InterruptedException {
-        Process process = new ProcessBuilder(pythonPath, "-c",
-                "import " + packageName).start();
-
-        int exitCode = process.waitFor();
-
-        return exitCode == 0;
-    }
-
-    public static void installPipRequirements(Project project) throws IOException, InterruptedException {
-        String pythonPath = getPythonPath(project);
+    /**
+     * Checks if the python path is valid by running the python version command
+     * @param pythonPath the python path
+     * @return true if the python path is valid, false otherwise
+     */
+    public static boolean isPythonPathValid(String pythonPath) {
         if (pythonPath == null)
-            return;
+            return false;
 
-        runCommand(pythonPath + " -m pip install -r tmp/requirements.txt");
+        File pythonExe = new File(pythonPath);
+        if (!pythonExe.exists() || !pythonExe.isFile())
+            return false;
+
+        try {
+            Process process = Runtime.getRuntime().exec(pythonPath + " --version");
+            int exitCode = process.waitFor();
+            return exitCode == 0;
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Gets the installed pip requirements
+     * @param pythonPath the python path
+     * @return the installed pip requirements
+     */
+    private static ArrayList<String> getPipRequirements(String pythonPath) {
+        ArrayList<String> requirements = new ArrayList<>();
+        try {
+            Process process = new ProcessBuilder(pythonPath, "-m", "pip", "freeze").start();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                requirements.add(line.split("==")[0]);
+            }
+
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return requirements;
     }
 
 

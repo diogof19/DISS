@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiJavaFile;
+import com.utils.importantValues.Values;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -68,12 +69,7 @@ public class RepositoryMetricsExtraction extends AnAction {
      * @throws Exception If there is an error with the git API, the repository or the file
      */
     private void extractMetrics() throws Exception {
-        File tmpFolder = new File("tmp");
-        if(!tmpFolder.exists()) {
-            tmpFolder.mkdir();
-        }
-
-        cloneRepo(tmpFolder);
+        cloneRepo();
 
         Set<RefactoringInfo> refactoringInfos = getRefactorings();
 
@@ -93,6 +89,11 @@ public class RepositoryMetricsExtraction extends AnAction {
 
         System.out.println("Metrics extracted");
 
+        File fileCopiesDir = new File(Values.dataFolder + "fileCopies");
+        if(fileCopiesDir.exists()) {
+            FileUtils.deleteDirectory(fileCopiesDir);
+        }
+
         deleteClonedRepo();
 
         System.out.println("Cloned repo deleted");
@@ -100,13 +101,13 @@ public class RepositoryMetricsExtraction extends AnAction {
 
     /**
      * Clone the repository to a temporary folder
-     * @param file The temporary folder
      * @throws IOException If there is an error with the repository
-     * @throws GitAPIException If there is an error with the git API
      */
-    private void cloneRepo(File file) throws IOException {
+    private void cloneRepo() throws IOException {
+        String tmpRepoFolder = Values.dataFolder + "repo";
+
         //Check if there is already a cloned repo and delete if there is
-        File clonedRepo = new File("tmp/repo");
+        File clonedRepo = new File(tmpRepoFolder);
         if(clonedRepo.exists()) {
             FileUtils.deleteDirectory(clonedRepo);
         }
@@ -115,7 +116,7 @@ public class RepositoryMetricsExtraction extends AnAction {
         try {
             Git.cloneRepository()
                     .setURI("file://" + this.repositoryPath)
-                    .setDirectory(new File("tmp/repo"))
+                    .setDirectory(new File(tmpRepoFolder))
                     .setBranch(this.branch)
                     .call();
         } catch (GitAPIException e) {
@@ -126,7 +127,7 @@ public class RepositoryMetricsExtraction extends AnAction {
             System.out.println("Error cloning the repository: " + e.getMessage());
         }
 
-        this.repositoryPath = file.getAbsolutePath() + "/repo";
+        this.repositoryPath = tmpRepoFolder;
 
         System.out.println("Finished cloning the repository");
     }
@@ -136,7 +137,7 @@ public class RepositoryMetricsExtraction extends AnAction {
      * @throws IOException If there is an error deleting the repository
      */
     private void deleteClonedRepo() throws IOException {
-        File clonedRepo = new File("tmp/repo");
+        File clonedRepo = new File(Values.dataFolder + "repo");
         if(clonedRepo.exists()) {
             try {
                 FileUtils.deleteDirectory(clonedRepo);

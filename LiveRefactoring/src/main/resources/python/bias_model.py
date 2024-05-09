@@ -7,7 +7,7 @@ import warnings
 from joblib import dump, load
 from sklearn.base import clone
 
-def bias_model(authors, model_path, data_path, scaler_path, bias, bias_multiplier):
+def bias_model(authors, old_model_path, new_model_path, data_path, scaler_path, bias, bias_multiplier):
     warnings.filterwarnings("ignore", category=UserWarning)
     
     conn = sqlite3.connect(data_path)
@@ -34,7 +34,7 @@ def bias_model(authors, model_path, data_path, scaler_path, bias, bias_multiplie
         'cognitiveComplexityBef', 'lackOfCohesionInMethodBef'
     ])
 
-    old_model = load(model_path)
+    old_model = load(old_model_path)
     model = clone(old_model)
     scaler = load(scaler_path)
 
@@ -50,18 +50,19 @@ def bias_model(authors, model_path, data_path, scaler_path, bias, bias_multiplie
         X = scaler.fit_transform(X)
         model.fit(X)
 
-    dump(model, model_path)
+    dump(model, new_model_path)
     return
 
 if __name__ == "__main__":
-    model_path = sys.argv[1]
-    scaler_path = sys.argv[2]
-    data_path = sys.argv[3]
-    bias_multiplier = sys.argv[4]
+    old_model_path = sys.argv[1]
+    new_model_path = sys.argv[2]
+    scaler_path = sys.argv[3]
+    data_path = sys.argv[4]
+    bias_multiplier = sys.argv[5]
 
     bias = True
-    if(sys.argv[5] == 'no_bias'):
+    if(sys.argv[6] == 'no_bias'):
         bias = False
-    authors = sys.argv[5:]
+    authors = sys.argv[6:]
 
-    bias_model(authors, model_path, data_path, scaler_path, bias, bias_multiplier)
+    bias_model(authors, old_model_path, new_model_path, data_path, scaler_path, bias, bias_multiplier)

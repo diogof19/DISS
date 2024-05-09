@@ -2,11 +2,9 @@ package com.ui;
 
 import com.core.Pair;
 import com.core.Refactorings;
-import com.datamining.AuthorInfo;
-import com.datamining.Database;
-import com.datamining.MySettings;
-import com.datamining.PredictionModel;
+import com.datamining.*;
 import com.intellij.icons.AllIcons;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.markup.RangeHighlighter;
@@ -120,20 +118,6 @@ public class ConfigureTool extends AnAction {
                     maxNumberRefactorings = Integer.MAX_VALUE;
             }
 
-            if (!wrapper.textField_pythonPath.getText().isEmpty()) {
-                MySettings mySettings = e.getProject().getService(MySettings.class);
-
-                if(!mySettings.getState().pythonPath.equals(wrapper.textField_pythonPath.getText())) {
-                    mySettings.getState().pythonPath = wrapper.textField_pythonPath.getText();
-                    System.out.println("Python path: " + mySettings.getState().pythonPath);
-                    try {
-                        PredictionModel.checkPipRequirements(e.getProject());
-                    } catch (IOException | InterruptedException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-            }
-
             if (wrapper.textField_seconds.getText().length() > 0) {
                 seconds = Integer.parseInt(wrapper.textField_seconds.getText());
                 if(seconds == 0)
@@ -208,6 +192,20 @@ public class ConfigureTool extends AnAction {
             }
 
             MySettings mySettings = e.getProject().getService(MySettings.class);
+
+            if (!wrapper.textField_pythonPath.getText().isEmpty()) {
+                if(!mySettings.getState().pythonPath.equals(wrapper.textField_pythonPath.getText())) {
+                    String newPythonPath = wrapper.textField_pythonPath.getText();
+                    mySettings.getState().pythonPath = newPythonPath;
+                    System.out.println("New python path: " + newPythonPath);
+                    try {
+                        PredictionModel.checkPipRequirements(e.getProject(), newPythonPath);
+                    } catch (IOException | InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }
+
             if(mySettings.getState().maxExtractMethodsBefUpdate != Integer.parseInt(wrapper.textFields_maxExtractMethodsBefUpdate.getText())){
                 mySettings.getState().maxExtractMethodsBefUpdate = Integer.parseInt(wrapper.textFields_maxExtractMethodsBefUpdate.getText());
             }
@@ -215,6 +213,10 @@ public class ConfigureTool extends AnAction {
                 mySettings.getState().biasMultiplier = Integer.parseInt(wrapper.textFields_biasMultiplier.getText());
                 try {
                     PredictionModel.biasModel(e.getProject(), null);
+                    Utils.popup(e.getProject(),
+                            "LiveRef",
+                            "Model updated with new bias multiplier",
+                            NotificationType.INFORMATION);
                 } catch (IOException | InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -224,6 +226,10 @@ public class ConfigureTool extends AnAction {
                 Database.setSelectedModel(wrapper.selectedProfile);
                 try {
                     PredictionModel.biasModel(e.getProject(), wrapper.selectedProfile);
+                    Utils.popup(e.getProject(),
+                            "LiveRef",
+                            "Profile " + wrapper.selectedProfile + " selected",
+                            NotificationType.INFORMATION);
                 } catch (IOException | InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -234,7 +240,10 @@ public class ConfigureTool extends AnAction {
                     wrapper.profileBoxes.remove(model);
                     try {
                         PredictionModel.deleteModel(e.getProject(), model);
-
+                        Utils.popup(e.getProject(),
+                                "LiveRef",
+                                "Profile " + model + " deleted",
+                                NotificationType.INFORMATION);
                     } catch (IOException | InterruptedException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -242,15 +251,15 @@ public class ConfigureTool extends AnAction {
             }
 
             try {
-                applySelectedAuthors(wrapper.profileBoxes, wrapper);
+                applySelectedAuthors(wrapper);
             } catch (IOException | ClassNotFoundException | InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
         }
     }
 
-    private void applySelectedAuthors(Map<String, Pair<Box, JButton>> profileBoxes, ConfigureTool.MyDialogWrapper wrapper) throws IOException, ClassNotFoundException, InterruptedException {
-        for (Map.Entry<String, Pair<Box, JButton>> entry : profileBoxes.entrySet()) {
+    private void applySelectedAuthors(ConfigureTool.MyDialogWrapper wrapper) throws IOException, ClassNotFoundException, InterruptedException {
+        for (Map.Entry<String, Pair<Box, JButton>> entry : wrapper.profileBoxes.entrySet()) {
             String profileName = entry.getKey();
 
             if(profileName.equals("add")){
@@ -269,6 +278,10 @@ public class ConfigureTool extends AnAction {
             if (checkedAuthors.size() != oldAuthors.size() || !checkedAuthors.containsAll(oldAuthors)) {
                 Database.updateAuthorsPerModel(profileName, checkedAuthors);
                 PredictionModel.biasModel(wrapper.project, profileName);
+                Utils.popup(wrapper.project,
+                        "LiveRef",
+                        "Authors for profile " + profileName + " updated",
+                        NotificationType.INFORMATION);
             }
         }
     }
@@ -282,6 +295,10 @@ public class ConfigureTool extends AnAction {
             Database.updateAuthorsPerModel(name, checkedAuthors);
 
         PredictionModel.createModel(project, path, checkedAuthors);
+        Utils.popup(project,
+                "LiveRef",
+                "Profile " + name + " created",
+                NotificationType.INFORMATION);
     }
 
     private Set<AuthorInfo> getCheckedAuthors(Box authorsBox) {
@@ -1059,53 +1076,13 @@ public class ConfigureTool extends AnAction {
             Box overallBox = Box.createVerticalBox();
             overallBox.setPreferredSize(new Dimension(100, 100));
             Box authorBox = Box.createVerticalBox();
+            authorBox.add(new JLabel("Authors:"));
 
             JPanel buttonsPannel = new JPanel(new GridLayout(1, 2));
             buttonsPannel.setPreferredSize(new Dimension(100, 30));
             JButton selectAllAuthors = getSelectAllButton(authorBox);
 
-            JButton deleteProfile = new JButton("Delete Profile");
-            deleteProfile.addActionListener(e -> {
-                JBPopupMenu popupMenu = new JBPopupMenu();
-                if((this.modelsToDelete.size() + 1) == Database.getNumberOfModels()) {
-                    JBMenuItem menuItem = new JBMenuItem("Not enough models exist to delete this profile.");
-                    menuItem.setEnabled(false);
-
-                    JBMenuItem menuItem2 = new JBMenuItem("Please create a new profile before deleting this one.");
-                    menuItem2.setEnabled(false);
-
-                    JButton confirmButton = new JButton("Confirm");
-                    confirmButton.addActionListener(a -> {
-                        popupMenu.setVisible(false);
-                    });
-
-                    popupMenu.add(menuItem);
-                    popupMenu.add(menuItem2);
-                    popupMenu.add(confirmButton);
-                } else {
-                    JBMenuItem menuItem = new JBMenuItem("Are you sure you want to delete this profile?");
-                    menuItem.setEnabled(false);
-
-                    JButton confirmButton = new JButton("Confirm");
-                    confirmButton.addActionListener(a -> {
-                        this.modelsToDelete.add(modelName);
-                        popupMenu.setVisible(false);
-                    });
-
-                    JButton cancelButton = new JButton("Cancel");
-                    cancelButton.addActionListener(a -> {
-                        popupMenu.setVisible(false);
-                    });
-
-                    JMenuBar menuBar = new JMenuBar();
-                    menuBar.add(confirmButton, BorderLayout.WEST);
-                    menuBar.add(cancelButton, BorderLayout.EAST);
-
-                    popupMenu.add(menuItem);
-                    popupMenu.add(menuBar);
-                }
-                popupMenu.show(deleteProfile, 0, 0);
-            });
+            JButton deleteProfile = getDeleteProfileButton(modelName);
 
             JButton switchProfile = new JButton("Switch");
             switchProfile.setEnabled(!selected);
@@ -1161,6 +1138,7 @@ public class ConfigureTool extends AnAction {
             nameBox.add(panel);
 
             Box authorBox = Box.createVerticalBox();
+            authorBox.add(new JLabel("Authors:"));
 
             JButton selectAllAuthors = getSelectAllButton(authorBox);
             JButton createProfile = new JButton("Create Profile");
@@ -1236,6 +1214,53 @@ public class ConfigureTool extends AnAction {
                 checkBoxes.add(checkBox);
             }
             return checkBoxes;
+        }
+
+        private JButton getDeleteProfileButton(String modelName) {
+            JButton deleteProfile = new JButton("Delete Profile");
+            deleteProfile.addActionListener(e -> {
+                JBPopupMenu popupMenu = new JBPopupMenu();
+                if((this.modelsToDelete.size() + 1) == Database.getNumberOfModels()) {
+                    JBMenuItem menuItem = new JBMenuItem("Not enough models exist to delete this profile.");
+                    menuItem.setEnabled(false);
+
+                    JBMenuItem menuItem2 = new JBMenuItem("Please create a new profile before deleting this one.");
+                    menuItem2.setEnabled(false);
+
+                    JButton confirmButton = new JButton("Confirm");
+                    confirmButton.addActionListener(a -> {
+                        popupMenu.setVisible(false);
+                    });
+
+                    popupMenu.add(menuItem);
+                    popupMenu.add(menuItem2);
+                    popupMenu.add(confirmButton);
+                } else {
+                    JBMenuItem menuItem = new JBMenuItem("Are you sure you want to delete this profile?");
+                    menuItem.setEnabled(false);
+
+                    JButton confirmButton = new JButton("Confirm");
+                    confirmButton.addActionListener(a -> {
+                        this.modelsToDelete.add(modelName);
+                        popupMenu.setVisible(false);
+                    });
+
+                    JButton cancelButton = new JButton("Cancel");
+                    cancelButton.addActionListener(a -> {
+                        popupMenu.setVisible(false);
+                    });
+
+                    JMenuBar menuBar = new JMenuBar();
+                    menuBar.add(confirmButton, BorderLayout.WEST);
+                    menuBar.add(cancelButton, BorderLayout.EAST);
+
+                    popupMenu.add(menuItem);
+                    popupMenu.add(menuBar);
+                }
+                popupMenu.show(deleteProfile, 0, 0);
+            });
+
+            return deleteProfile;
         }
     }
 

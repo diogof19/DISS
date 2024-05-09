@@ -11,9 +11,18 @@
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/MySettings.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/MySettings.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/StartUp.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/StartUp.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/TODO.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/ui/ConfigureTool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ui/ConfigureTool.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/utils/importantValues/Values.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/utils/importantValues/Values.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/metrics.db" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/metrics.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/models/model.joblib" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/models/model.joblib" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/python/bias_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/python/bias_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -91,6 +100,14 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.BuildPlugin.executor": "Run",
+    "Gradle.LiveRefactoring [:Database.main()].executor": "Run",
+    "git-widget-placeholder": "main",
+    "node.js.selected.package.tslint": "(autodetect)"
+  }
+}]]></component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="com.analysis.refactorings" />
@@ -119,7 +136,7 @@
       <recent name="com.ui.icons" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.LiveRefactoring">
+  <component name="RunManager" selected="Application.Database">
     <configuration name="DataCollection" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.datamining.DataCollection" />
       <module name="LiveRefactoring.main" />
@@ -660,7 +677,9 @@
       <workItem from="1714813543649" duration="11695000" />
       <workItem from="1714900141108" duration="57000" />
       <workItem from="1714982125522" duration="9963000" />
-      <workItem from="1715068660516" duration="20907000" />
+      <workItem from="1715068660516" duration="21051000" />
+      <workItem from="1715155142411" duration="6591000" />
+      <workItem from="1715241222778" duration="3736000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>

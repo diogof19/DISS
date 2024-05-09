@@ -1,15 +1,23 @@
 package com.datamining;
 
+import com.intellij.notification.NotificationType;
+import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
+import com.utils.importantValues.Values;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.net.URL;
 
-public class StartUp  implements StartupActivity {
+public class StartUp implements StartupActivity {
     @Override
     public void runActivity(@NotNull Project project) {
+        Utils.popup(project,
+                "LiveRef",
+                "Starting up the plugin. This may take a few seconds.",
+                NotificationType.INFORMATION
+        );
         Thread thread = new Thread(new StartUpRunnable());
         thread.start();
     }
@@ -27,45 +35,53 @@ public class StartUp  implements StartupActivity {
     }
 
     public void start() throws IOException {
-        extractFileIfNotExists("metrics.db");
-        extractFileIfNotExists("python/bias_model.py");
-        extractFileIfNotExists("python/prediction.py");
-        extractFileIfNotExists("python/scaler.pkl");
-        extractFileIfNotExists("requirements.txt");
-        extractFileIfNotExists("models/model.joblib");
+        File folder = new File(PathManager.getConfigPath() + "/liveRefData");
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
+        Values.dataFolder = folder.getAbsolutePath() + "/";
+
+        extractFileIfNotExists(folder.getAbsolutePath(),"/metrics.db");
+        extractFileIfNotExists(folder.getAbsolutePath(),"/python/bias_model.py");
+        extractFileIfNotExists(folder.getAbsolutePath(),"/python/prediction.py");
+        extractFileIfNotExists(folder.getAbsolutePath(),"/python/scaler.pkl");
+        extractFileIfNotExists(folder.getAbsolutePath(),"/requirements.txt");
+        extractFileIfNotExists(folder.getAbsolutePath(),"/models/model.joblib");
     }
 
     /**
      * Extracts the file if it does not exist
-     * @param filePath path of the file to extract
+     * @param path path to folder where to extract the file to
+     * @param name name of the file to extract (partial path starting from resources)
      * @throws IOException if an I/O error occurs
      */
-    private void extractFileIfNotExists(String filePath) throws IOException {
-        File file = new File("tmp/" + filePath);
+    private void extractFileIfNotExists(String path, String name) throws IOException {
+        File file = new File(path + name);
 
         if (!file.exists()) {
-            extractFile(filePath);
-            System.out.println("Extracted " + filePath);
+            extractFile(path, name);
+            System.out.println("Extracted " + name);
         }
     }
 
     /**
      * Extracts a file from the jar file to the tmp folder
-     * @param fileName the name of the file to be extracted
+     * @param path path to folder where to extract the file to
+     * @param name name of the file to extract (partial path starting from resources)
      * @throws IOException if there is a problem extracting the file
      */
-    private void extractFile(String fileName) throws IOException {
-        File tmpFile = new File("tmp/" + fileName);
+    private void extractFile(String path, String name) throws IOException {
+        File tmpFile = new File(path + name);
         File parentDir = tmpFile.getParentFile();
 
         if(!parentDir.exists()){
             parentDir.mkdirs();
         }
 
-        URL url = PredictionModel.class.getResource("/" + fileName);
+        URL url = PredictionModel.class.getResource(name);
 
         InputStream inputStream = url.openStream();
-        OutputStream outputStream = new FileOutputStream("tmp/" + fileName);
+        OutputStream outputStream = new FileOutputStream(path + name);
 
         byte[] buffer = new byte[1024];
         int length;
