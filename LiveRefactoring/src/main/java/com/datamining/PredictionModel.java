@@ -243,7 +243,7 @@ public class PredictionModel {
             author = new Pair<>("hello", "hello@g.com");
         }
 
-        Database.saveMetrics(author, methodMetrics, null);
+        Database.saveMethodMetrics(author, methodMetrics, null);
 
         MySettings.State state = project.getService(MySettings.class).getState();
         state.counter++;

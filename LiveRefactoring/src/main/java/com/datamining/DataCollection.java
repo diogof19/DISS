@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -42,6 +41,7 @@ public class DataCollection extends AnAction {
     private static final String CONNECTION_STRING = "mongodb://localhost:27017";
     private static final String DATABASE_NAME = "smartshark_2_2";
     private static final String COLLECTION_NAME = "refactoring";
+    private static final String REFACTORING_TYPE = "extract_class";
     private MongoClient mongoClient;
     private Project project;
 
@@ -89,7 +89,7 @@ public class DataCollection extends AnAction {
      * Gets all the instances where an Extract Method refactoring was performed
      * @return A set of documents containing the refactoring data
      */
-    private HashSet<Document> getRefactoringData() {
+    public HashSet<Document> getRefactoringData() {
         MongoCollection<Document> collection = this.mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME);
 
         List<String> urlsToExclude = Arrays.asList(
@@ -98,10 +98,14 @@ public class DataCollection extends AnAction {
 
         Bson combinedFilter = match(nin("vcs_system.url", urlsToExclude));
 
+        /*
+        Last extract method:
+        skip(40000),
+        limit(20000),
+         */
+
         List<Bson> pipeline = asList(
-                match(eq("type", "extract_method")),
-                skip(40000),
-                limit(20000),
+                match(eq("type", REFACTORING_TYPE)),
                 project(fields(include("_id", "commit_id", "type", "description"))),
                 lookup("commit", "commit_id", "_id", "commit"),
                 unwind("$commit"),
@@ -126,7 +130,7 @@ public class DataCollection extends AnAction {
         return collection.aggregate(pipeline).into(new HashSet<>());
     }
 
-    private void documentsToMap(HashSet<Document> documents) {
+    public void documentsToMap(HashSet<Document> documents) {
         repoRefactoringMap.clear();
 
         for (Document document : documents) {
@@ -212,27 +216,49 @@ public class DataCollection extends AnAction {
                 continue;
             }
 
-            Pair<ClassMetrics, MethodMetrics> beforeMetrics = getMethodMetricsFromFile(refactoringInfo.getBeforeFile(),
-                    refactoringInfo.getMethodName(), refactoringInfo.getClassName());
+            if(REFACTORING_TYPE.equals("extract_method")){
+                MethodMetrics beforeMetrics = getMethodMetricsFromFile(refactoringInfo.getBeforeFile(),
+                        refactoringInfo.getMethodName(), refactoringInfo.getClassName());
 
-            if(beforeMetrics == null || beforeMetrics.getFirst() == null || beforeMetrics.getSecond() == null){
-                errors++;
-                continue;
+                if(beforeMetrics == null){
+                    errors++;
+                    continue;
+                }
+
+                MethodMetrics afterMetrics = getMethodMetricsFromFile(refactoringInfo.getAfterFile(),
+                        refactoringInfo.getMethodName(), refactoringInfo.getClassName());
+
+                if(afterMetrics == null){
+                    errors++;
+                    continue;
+                }
+
+                if(beforeMetrics.equals(afterMetrics)){
+                    equalMetrics++;
+                }
+
+                saveMethodMetricsSafe(beforeMetrics, afterMetrics);
+            } else if (REFACTORING_TYPE.equals("extract_class")){
+                ClassMetrics beforeMetrics = getClassMetricsFromFile(refactoringInfo.getBeforeFile(), refactoringInfo.getClassName());
+
+                if(beforeMetrics == null){
+                    errors++;
+                    continue;
+                }
+
+                ClassMetrics afterMetrics = getClassMetricsFromFile(refactoringInfo.getAfterFile(), refactoringInfo.getClassName());
+
+                if(afterMetrics == null){
+                    errors++;
+                    continue;
+                }
+
+                if(beforeMetrics.equals(afterMetrics)){
+                    equalMetrics++;
+                }
+
+                saveClassMetricsSafe(beforeMetrics, afterMetrics);
             }
-
-            Pair<ClassMetrics, MethodMetrics> afterMetrics = getMethodMetricsFromFile(refactoringInfo.getAfterFile(),
-                    refactoringInfo.getMethodName(), refactoringInfo.getClassName());
-
-            if(afterMetrics == null || afterMetrics.getFirst() == null || afterMetrics.getSecond() == null){
-                errors++;
-                continue;
-            }
-
-            if(beforeMetrics.getSecond().equals(afterMetrics.getSecond())){
-                equalMetrics++;
-            }
-
-            saveMetricsSafe(beforeMetrics.getSecond(), afterMetrics.getSecond());
         }
 
         long end = System.currentTimeMillis();
@@ -249,7 +275,6 @@ public class DataCollection extends AnAction {
         repoLocks.get(repo).unlock();
     }
 
-
     private RefactoringInfo getRefactoringInfo(Document document) throws IOException {
         RefactoringInfo info = new RefactoringInfo();
 
@@ -257,11 +282,18 @@ public class DataCollection extends AnAction {
 
         String description = document.getString("description");
 
-        info.setMethodName(getMethodName(description));
+        if(REFACTORING_TYPE.equals("extract_method")){
+            info.setMethodName(getMethodName(description));
 
-        Pair<String, String> classInfo = getClassName(description);
-        info.setFullClass(classInfo.getFirst());
-        info.setClassName(classInfo.getSecond());
+            Pair<String, String> classInfo = getClassName(description);
+            info.setFullClass(classInfo.getFirst());
+            info.setClassName(classInfo.getSecond());
+        } else if (REFACTORING_TYPE.equals("extract_class")) {
+            Pair<String, String> classInfo = getOldClass(description);
+            info.setFullClass(classInfo.getFirst());
+            info.setClassName(classInfo.getSecond());
+        }
+
 
         String repoName = document.getString("repo").split("github.com/")[1].split(".git")[0];
         Git git = Git.open(new File(repositoryPaths + "/" + repoName));
@@ -336,15 +368,20 @@ public class DataCollection extends AnAction {
         return loadFile(filePath, repoName, this.project);
     }
 
-    private void saveMetricsSafe(MethodMetrics beforeMetrics, MethodMetrics afterMetrics) {
+    private void saveMethodMetricsSafe(MethodMetrics beforeMetrics, MethodMetrics afterMetrics) {
         lock.lock();
-        try {
-            Database.saveMetrics(null, beforeMetrics, afterMetrics);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            lock.unlock();
-        }
+
+        Database.saveMethodMetrics(null, beforeMetrics, afterMetrics);
+
+        lock.unlock();
+    }
+
+    private void saveClassMetricsSafe(ClassMetrics beforeMetrics, ClassMetrics afterMetrics) {
+        lock.lock();
+
+        Database.saveClassMetrics(null, beforeMetrics, afterMetrics);
+
+        lock.unlock();
     }
 
     private void logProgress(String message){

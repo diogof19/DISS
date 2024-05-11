@@ -39,6 +39,7 @@ public class StartUp implements StartupActivity {
         if (!folder.exists()) {
             folder.mkdirs();
         }
+        System.out.println("DATA FOLDER: " + folder.getAbsolutePath());
         Values.dataFolder = folder.getAbsolutePath() + "/";
 
         extractFileIfNotExists(folder.getAbsolutePath(),"/metrics.db");

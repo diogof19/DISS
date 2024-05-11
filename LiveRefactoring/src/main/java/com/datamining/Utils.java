@@ -48,6 +48,16 @@ public class Utils {
         return new Pair<>(fullClass, className);
     }
 
+    public static Pair<String, String> getOldClass(String description){
+        //Extract Class	org.apache.ivy.core.cache.CacheManager from class org.apache.ivy.Ivy
+
+        String oldClass = description.split("from class")[1].trim();
+        String[] oldClassParts = oldClass.split("\\.");
+        String oldClassName = oldClassParts[oldClassParts.length - 1];
+
+        return new Pair<>(oldClass, oldClassName);
+    }
+
     /**
      * Loads a PsiJavaFile from a file path
      * @param filePath file path
@@ -81,22 +91,16 @@ public class Utils {
     }
 
     /**
-     * Extracts the class and method metrics from a PsiJavaFile
+     * Extracts the method metrics from a PsiJavaFile
      * @param file PsiJavaFile
      * @param method method name and arguments
      * @param className class name
-     * @return pair with class and method metrics
+     * @return method metrics
      */
-    public static Pair<ClassMetrics, MethodMetrics> getMethodMetricsFromFile(PsiJavaFile file, String method, String className) {
-        return ApplicationManager.getApplication().runReadAction((Computable<Pair<ClassMetrics, MethodMetrics>>) () -> {
+    public static MethodMetrics getMethodMetricsFromFile(PsiJavaFile file, String method, String className) {
+        return ApplicationManager.getApplication().runReadAction((Computable<MethodMetrics>) () -> {
             try {
-                FileMetrics fileMetrics =  new FileMetrics(file);
-
-                ClassMetrics classMetrics = fileMetrics.classMetrics.stream()
-                        .filter(c -> c.className.equals(className))
-                        .findFirst()
-                        .orElse(null);
-
+                ClassMetrics classMetrics = getClassMetricsFromFile(file, className);
                 if (classMetrics == null) {
                     return null;
                 }
@@ -126,14 +130,30 @@ public class Utils {
                         .findFirst()
                         .orElse(null);
 
-                return new Pair<>(classMetrics, methodMetrics);
+                return methodMetrics;
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
             }
         });
+    }
 
+    public static ClassMetrics getClassMetricsFromFile(PsiJavaFile file, String className) {
+        return ApplicationManager.getApplication().runReadAction((Computable<ClassMetrics>) () -> {
+            try {
+                FileMetrics fileMetrics =  new FileMetrics(file);
 
+                ClassMetrics classMetrics = fileMetrics.classMetrics.stream()
+                        .filter(c -> c.className.equals(className))
+                        .findFirst()
+                        .orElse(null);
+
+                return classMetrics;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        });
     }
 
     /**

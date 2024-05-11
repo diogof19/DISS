@@ -15,7 +15,8 @@ public class Database {
     //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\resources\\metrics.db";
     //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\.gradle\\caches\\modules-2\\files-2.1\\com.jetbrains.intellij.idea\\ideaIC\\2021.1.1\\e051d885e757b286781f50305504d7b8db3e1dba\\ideaIC-2021.1.1\\bin\\tmp\\metrics.db";
     //private static final String DATABASE_URL = "jdbc:sqlite:" + Values.dataFolder + "metrics.db";
-    private static final String DATABASE_URL = "jdbc:sqlite:C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\resources\\metrics.db";
+    //private static final String DATABASE_URL = "jdbc:sqlite:C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\resources\\metrics.db";
+    private static final String DATABASE_URL = "jdbc:sqlite:C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\Classification Model\\data\\metrics.db";
 
     public static void main(String[] args) {
         //createDatabase();
@@ -26,15 +27,12 @@ public class Database {
 //            System.out.println(author + " - " + author.isSelected());
 //        }
 
-        countMetrics();
-        System.out.println("Number of authors: " + getAllAuthors().size());
-        System.out.println("Number of models: " + getNumberOfModels());
-        System.out.println("Selected model: " + getSelectedModelName());
+//        countMetrics();
+//        System.out.println("Number of authors: " + getAllAuthors().size());
+//        System.out.println("Number of models: " + getNumberOfModels());
+//        System.out.println("Selected model: " + getSelectedModelName());
 
-//        deleteModel("new");
-//        deleteModel("fafaasdfsds");
-//        deleteModel("asdasdasd");
-//        deleteModel("fg");
+        countMetrics();
     }
 
     /**
@@ -71,8 +69,9 @@ public class Database {
             System.out.println(e.getMessage());
         }
 
-        createMetricsTable();
         createAuthorsTable();
+        createMethodMetricsTable();
+        createClassMetricsTable();
         createModelsTable();
         createAuthorsModelsTable();
     }
@@ -151,15 +150,15 @@ public class Database {
     }
 
 
-    /* METRICS TABLE */
+    /* METRICS TABLES */
 
     /**
-     * Create the metrics table
+     * Create the method metrics table
      */
-    public static void createMetricsTable() {
-        String deleteTableSQL = "DROP TABLE IF EXISTS metrics;";
+    public static void createMethodMetricsTable() {
+        String deleteTableSQL = "DROP TABLE IF EXISTS methodMetrics;";
 
-        String createTableSQL = "CREATE TABLE IF NOT EXISTS metrics (\n" +
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS methodMetrics (\n" +
                 "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
                 "    author INTEGER,\n" +
                 "    numberLinesOfCodeBef INTEGER,\n" +
@@ -201,7 +200,7 @@ public class Database {
                 "    FOREIGN KEY (author) REFERENCES authors(id)\n" +
                 ");";
 
-        String createIndexSQL = "CREATE INDEX IF NOT EXISTS author_index ON metrics (author);";
+        String createIndexSQL = "CREATE INDEX IF NOT EXISTS author_index ON methodMetrics (author);";
 
         try (Connection conn = connect()) {
             if (conn != null) {
@@ -210,7 +209,55 @@ public class Database {
                 conn.createStatement().executeUpdate(createIndexSQL);
             }
         } catch (SQLException e) {
-            System.out.println("Create metrics table: " + e.getMessage());
+            System.out.println("Create method metrics table: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Create the class metrics table
+     */
+    public static void createClassMetricsTable() {
+        String deleteTableSQL = "DROP TABLE IF EXISTS classMetrics;";
+
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS classMetrics (\n" +
+                "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+                "    author INTEGER,\n" +
+                "    numProperties INTEGER,\n" +
+                "    numPublicAttributes INTEGER,\n" +
+                "    numPublicMethods INTEGER,\n" +
+                "    numProtectedFields INTEGER,\n" +
+                "    numProtectedMethods INTEGER,\n" +
+                "    numLongMethods INTEGER,\n" +
+                "    numLinesCode INTEGER,\n" +
+                "    lackOfCohesion REAL,\n" +
+                "    cyclomaticComplexity REAL,\n" +
+                "    cognitiveComplexity REAL,\n" +
+                "    numMethods INTEGER,\n" +
+                "    numConstructors INTEGER,\n" +
+                "    halsteadLength REAL,\n" +
+                "    halsteadVocabulary REAL,\n" +
+                "    halsteadVolume REAL,\n" +
+                "    halsteadDifficulty REAL,\n" +
+                "    halsteadEffort REAL,\n" +
+                "    halsteadLevel REAL,\n" +
+                "    halsteadTime REAL,\n" +
+                "    halsteadBugsDelivered REAL,\n" +
+                "    halsteadMaintainability REAL,\n" +
+                "    numMethodsToExtract INTEGER,\n" +
+                "    numFieldsToExtract INTEGER,\n" +
+                "    FOREIGN KEY (author) REFERENCES authors(id)\n" +
+                ");";
+
+        String createIndexSQL = "CREATE INDEX IF NOT EXISTS author_index ON classMetrics (author);";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                conn.createStatement().executeUpdate(deleteTableSQL);
+                conn.createStatement().executeUpdate(createTableSQL);
+                conn.createStatement().executeUpdate(createIndexSQL);
+            }
+        } catch (SQLException e) {
+            System.out.println("Create class metrics table: " + e.getMessage());
         }
     }
 
@@ -218,21 +265,17 @@ public class Database {
      * Save the metrics of a refactoring
      * @param beforeInfo The information before the change
      * @param afterInfo The information after the change
-     * @throws SQLException If there is an error with the database
      */
-    public static void saveMetrics(RefactoringInfo beforeInfo, RefactoringInfo afterInfo) throws SQLException {
-        Pair<ClassMetrics, MethodMetrics> beforeMetrics = getMethodMetricsFromFile(beforeInfo.getBeforeFile(),
+    public static void saveMethodMetrics(RefactoringInfo beforeInfo, RefactoringInfo afterInfo) {
+        MethodMetrics beforeMethodMetrics = getMethodMetricsFromFile(beforeInfo.getBeforeFile(),
                 beforeInfo.getMethodName(), beforeInfo.getClassName());
 
-        Pair<ClassMetrics, MethodMetrics> afterMetrics = afterInfo != null ? getMethodMetricsFromFile(afterInfo.getAfterFile(),
+        MethodMetrics afterMethodMetrics = afterInfo != null ? getMethodMetricsFromFile(afterInfo.getAfterFile(),
                 afterInfo.getMethodName(), afterInfo.getClassName()) : null;
-
-        MethodMetrics beforeMethodMetrics = beforeMetrics.getSecond();
-        MethodMetrics afterMethodMetrics = afterMetrics != null ? afterMetrics.getSecond() : null;
 
         AuthorInfo author = beforeInfo.getAuthor();
 
-        saveMetrics(new Pair<>(author.getAuthorName(), author.getAuthorEmail()), beforeMethodMetrics, afterMethodMetrics);
+        saveMethodMetrics(new Pair<>(author.getAuthorName(), author.getAuthorEmail()), beforeMethodMetrics, afterMethodMetrics);
     }
 
     /**
@@ -240,9 +283,8 @@ public class Database {
      * @param author The author of the refactoring
      * @param beforeMethodMetrics The metrics before the refactoring
      * @param afterMethodMetrics The metrics after the refactoring
-     * @throws SQLException If there is an error with the database
      */
-    public static void saveMetrics(Pair<String, String> author, MethodMetrics beforeMethodMetrics, MethodMetrics afterMethodMetrics) throws SQLException {
+    public static void saveMethodMetrics(Pair<String, String> author, MethodMetrics beforeMethodMetrics, MethodMetrics afterMethodMetrics) {
         int beforeTotalLines = beforeMethodMetrics.numberLinesOfCode + beforeMethodMetrics.numberComments +
                 beforeMethodMetrics.numberBlankLines;
         int afterTotalLines = afterMethodMetrics != null ? afterMethodMetrics.numberLinesOfCode +
@@ -354,6 +396,70 @@ public class Database {
                 deletePstmt.executeUpdate();
             }
 
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static void saveClassMetrics(Pair<String, String> author, ClassMetrics beforeClassMetrics, ClassMetrics afterClassMetrics) {
+        int numMethodsToExtract = beforeClassMetrics.numMethods - afterClassMetrics.numMethods;
+        int numFieldsToExtract = beforeClassMetrics.numProperties - afterClassMetrics.numProperties;
+
+        String insertSQL = "INSERT INTO classMetrics (author, numProperties, numPublicAttributes, numPublicMethods, " +
+                "numProtectedFields, numProtectedMethods, numLongMethods, numLinesCode, lackOfCohesion, " +
+                "cyclomaticComplexity, cognitiveComplexity, numMethods, numConstructors, halsteadLength, " +
+                "halsteadVocabulary, halsteadVolume, halsteadDifficulty, halsteadEffort, halsteadLevel, " +
+                "halsteadTime, halsteadBugsDelivered, halsteadMaintainability, numMethodsToExtract, " +
+                "numFieldsToExtract) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+
+        int authorId;
+        if(author == null)
+            authorId = -2;
+        else
+            authorId = findAuthorByNameAndEmail(author.getFirst(), author.getSecond());
+
+        try (Connection conn = connect()) {
+            PreparedStatement pstmt = conn.prepareStatement(insertSQL);
+
+            if(authorId == -1){
+                authorId = insertAuthor(author.getFirst(), author.getSecond());
+            }
+
+            if (authorId == -2) {
+                pstmt.setNull(1, Types.INTEGER);
+            } else {
+                pstmt.setInt(1, authorId);
+            }
+
+            pstmt.setInt(1, authorId);
+            pstmt.setInt(2, beforeClassMetrics.numProperties);
+            pstmt.setInt(3, beforeClassMetrics.numPublicAttributes);
+            pstmt.setInt(4, beforeClassMetrics.numPublicMethods);
+            pstmt.setInt(5, beforeClassMetrics.numProtectedFields);
+            pstmt.setInt(6, beforeClassMetrics.numProtectedMethods);
+            pstmt.setInt(7, beforeClassMetrics.numLongMethods);
+            pstmt.setInt(8, beforeClassMetrics.numLinesCode);
+            pstmt.setDouble(9, beforeClassMetrics.lackOfCohesion);
+            pstmt.setDouble(10, beforeClassMetrics.complexity);
+            pstmt.setDouble(11, beforeClassMetrics.cognitiveComplexity);
+            pstmt.setInt(12, beforeClassMetrics.numMethods);
+            pstmt.setInt(13, beforeClassMetrics.numConstructors);
+            pstmt.setDouble(14, beforeClassMetrics.halsteadLength);
+            pstmt.setDouble(15, beforeClassMetrics.halsteadVocabulary);
+            pstmt.setDouble(16, beforeClassMetrics.halsteadVolume);
+            pstmt.setDouble(17, beforeClassMetrics.halsteadDifficulty);
+            pstmt.setDouble(18, beforeClassMetrics.halsteadEffort);
+            pstmt.setDouble(19, beforeClassMetrics.halsteadLevel);
+            pstmt.setDouble(20, beforeClassMetrics.halsteadTime);
+            pstmt.setDouble(21, beforeClassMetrics.halsteadBugsDelivered);
+            pstmt.setDouble(22, beforeClassMetrics.halsteadMaintainability);
+            pstmt.setInt(23, numMethodsToExtract);
+            pstmt.setInt(24, numFieldsToExtract);
+
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -361,14 +467,19 @@ public class Database {
      * Count and print the number of metrics in the database
      */
     public static void countMetrics() {
-        String selectSQL = "SELECT COUNT(*) FROM metrics;";
+        String countMethodMetricsSQL = "SELECT COUNT(*) FROM methodMetrics;";
+        String countClassMetricsSQL = "SELECT COUNT(*) FROM classMetrics;";
 
         try (Connection conn = connect()) {
             if (conn != null) {
                 Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(selectSQL);
+                ResultSet rs = stmt.executeQuery(countMethodMetricsSQL);
 
-                System.out.println("Number of metrics: " + rs.getInt(1));
+                System.out.println("Number of method metrics: " + rs.getInt(1));
+
+                rs = stmt.executeQuery(countClassMetricsSQL);
+
+                System.out.println("Number of class metrics: " + rs.getInt(1));
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -376,10 +487,10 @@ public class Database {
     }
 
     /**
-     * Deletes all the metrics in the database
+     * Deletes all the method metrics in the database
      */
-    public static void deleteAllMetrics() {
-        String deleteSQL = "DELETE FROM metrics;";
+    public static void deleteAllMethodMetrics() {
+        String deleteSQL = "DELETE FROM methodMetrics;";
 
         try (Connection conn = connect()) {
             if (conn != null) {
@@ -391,11 +502,11 @@ public class Database {
     }
 
     /**
-     * Deletes the metrics with infinity values on the 'halsteadLevelBef' column
+     * Deletes the method metrics with infinity values on the 'halsteadLevelBef' column
      */
-    public static void deleteMetricsWithInfinity() {
+    public static void deleteMethodMetricsWithInfinity() {
         //This column is created with 1/value, so it can create errors (though it's rare)
-        String deleteSQL = "DELETE FROM metrics WHERE CAST(halsteadLevelBef AS CHARACTER) ='Inf';";
+        String deleteSQL = "DELETE FROM methodMetrics WHERE CAST(halsteadLevelBef AS CHARACTER) ='Inf';";
 
         try (Connection conn = connect()) {
             if (conn != null) {

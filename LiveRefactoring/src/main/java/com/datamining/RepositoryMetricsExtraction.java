@@ -302,7 +302,7 @@ public class RepositoryMetricsExtraction extends AnAction {
 
         refInfo.setBeforeFile(psiFile);
 
-        Database.saveMetrics(refInfo, null);
+        Database.saveMethodMetrics(refInfo, null);
     }
 
     /**
