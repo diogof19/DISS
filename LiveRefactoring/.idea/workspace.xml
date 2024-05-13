@@ -10,14 +10,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
+      <change beforePath="$PROJECT_DIR$/../Classification Model/Model Prep.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/Model Prep.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/StartUp.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/StartUp.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/metrics.db" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/metrics.db" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,6 +83,9 @@
   <component name="ProjectCodeStyleSettingsMigration">
     <option name="version" value="2" />
   </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 0
+}]]></component>
   <component name="ProjectId" id="23pKHhfg7SI7h0w4xPP8G0zgOyD" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -100,7 +97,12 @@
     "Gradle.LiveRefactoring [:Database.main()].executor": "Run",
     "Gradle.LiveRefactoring.executor": "Run",
     "git-widget-placeholder": "main",
-    "node.js.selected.package.tslint": "(autodetect)"
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -676,6 +678,7 @@
       <workItem from="1715155142411" duration="6591000" />
       <workItem from="1715241222778" duration="3736000" />
       <workItem from="1715413041656" duration="15970000" />
+      <workItem from="1715586917338" duration="801000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>
