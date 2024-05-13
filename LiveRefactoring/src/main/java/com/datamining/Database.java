@@ -3,6 +3,7 @@ package com.datamining;
 import com.analysis.metrics.ClassMetrics;
 import com.analysis.metrics.MethodMetrics;
 import com.core.Pair;
+import com.utils.importantValues.Values;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -14,9 +15,9 @@ import static com.datamining.Utils.getMethodMetricsFromFile;
 public class Database {
     //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\resources\\metrics.db";
     //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\.gradle\\caches\\modules-2\\files-2.1\\com.jetbrains.intellij.idea\\ideaIC\\2021.1.1\\e051d885e757b286781f50305504d7b8db3e1dba\\ideaIC-2021.1.1\\bin\\tmp\\metrics.db";
-    //private static final String DATABASE_URL = "jdbc:sqlite:" + Values.dataFolder + "metrics.db";
+    private static final String DATABASE_URL = "jdbc:sqlite:" + Values.dataFolder + "metrics.db";
     //private static final String DATABASE_URL = "jdbc:sqlite:C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\resources\\metrics.db";
-    private static final String DATABASE_URL = "jdbc:sqlite:C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\Classification Model\\data\\metrics.db";
+    //private static final String DATABASE_URL = "jdbc:sqlite:C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\Classification Model\\data\\metrics.db";
 
     public static void main(String[] args) {
         //createDatabase();
@@ -33,6 +34,7 @@ public class Database {
 //        System.out.println("Selected model: " + getSelectedModelName());
 
         countMetrics();
+        createModelsTable();
     }
 
     /**
@@ -420,7 +422,7 @@ public class Database {
             authorId = findAuthorByNameAndEmail(author.getFirst(), author.getSecond());
 
         try (Connection conn = connect()) {
-            PreparedStatement pstmt = conn.prepareStatement(insertSQL);
+            PreparedStatement pstmt = conn.prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS);
 
             if(authorId == -1){
                 authorId = insertAuthor(author.getFirst(), author.getSecond());
@@ -458,6 +460,19 @@ public class Database {
             pstmt.setInt(24, numFieldsToExtract);
 
             pstmt.executeUpdate();
+
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if(rs.next()){
+                int id = rs.getInt(1);
+
+                String deleteSQL = "DELETE FROM classMetrics WHERE id = ? AND CAST(cyclomaticComplexity AS CHARACTER) ='Inf';";
+
+                PreparedStatement deletePstmt = conn.prepareStatement(deleteSQL);
+
+                deletePstmt.setInt(1, id);
+
+                deletePstmt.executeUpdate();
+            }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -642,19 +657,16 @@ public class Database {
 
         String createTableSQL = "CREATE TABLE IF NOT EXISTS models (\n" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
-                "name TEXT UNIQUE,\n" +
-                "path TEXT NOT NULL,\n" +
-                "selected INTEGER NOT NULL,\n" +
-                "UNIQUE (path)\n" +
+                "name TEXT UNIQUE NOT NULL,\n" +
+                "pathEM TEXT UNIQUE NOT NULL,\n" +
+                "pathEC TEXT UNIQUE NOT NULL,\n" +
+                "selected INTEGER NOT NULL\n" +
                 ");";
-
-        String addDefaultModelSQL = "INSERT INTO models (name, path, selected) VALUES ('Default', 'models/model.joblib', 1);";
 
         try (Connection conn = connect()) {
             if (conn != null) {
                 conn.createStatement().executeUpdate(deleteTableSQL);
                 conn.createStatement().executeUpdate(createTableSQL);
-                conn.createStatement().executeUpdate(addDefaultModelSQL);
             }
         } catch (SQLException e) {
             System.out.println("Create models table: " + e.getMessage());
@@ -662,60 +674,19 @@ public class Database {
     }
 
     /**
-     * Gets the file path of the current model in use
-     * @return The file path of the model
-     */
-    public static String getSelectedModelFilePath() {
-        String selectSQL = "SELECT path FROM models WHERE selected = 1;";
-
-        try (Connection conn = connect()) {
-            if (conn != null) {
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(selectSQL);
-
-                return rs.getString("path");
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-
-        return null;
-    }
-
-    /**
-     * Gets the name of the current model in use
-     * @return The name of the model
-     */
-    public static String getSelectedModelName() {
-        String selectSQL = "SELECT name FROM models WHERE selected = 1;";
-
-        try (Connection conn = connect()) {
-            if (conn != null) {
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(selectSQL);
-
-                return rs.getString("name");
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-
-        return null;
-    }
-
-    /**
      * Gets the name and path of the selected model
      * @return A pair with <name, path> of the selected model
      */
-    public static Pair<String, String> getSelectedModel(){
-        String selectSQL = "SELECT name, path FROM models WHERE selected = 1;";
+    public static ModelInfo getSelectedModel(){
+        String selectSQL = "SELECT name, pathEM, pathEC FROM models WHERE selected = 1;";
 
         try (Connection conn = connect()) {
             if (conn != null) {
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery(selectSQL);
 
-                return new Pair<>(rs.getString("name"), rs.getString("path"));
+                return new ModelInfo(rs.getString("name"), rs.getString("pathEM"),
+                        rs.getString("pathEC"), true);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -728,17 +699,18 @@ public class Database {
      * Gets all the model names
      * @return The list of model names
      */
-    public static ArrayList<String> getAllModels() {
-        String selectSQL = "SELECT name FROM models;";
+    public static ArrayList<ModelInfo> getAllModels() {
+        String selectSQL = "SELECT * FROM models;";
 
         try (Connection conn = connect()) {
             if (conn != null) {
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery(selectSQL);
 
-                ArrayList<String> models = new ArrayList<>();
+                ArrayList<ModelInfo> models = new ArrayList<>();
                 while(rs.next()){
-                    models.add(rs.getString("name"));
+                    models.add(new ModelInfo(rs.getString("name"), rs.getString("pathEM"),
+                            rs.getString("pathEC"), rs.getInt("selected") == 1));
                 }
 
                 return models;
@@ -775,17 +747,18 @@ public class Database {
 
     /**
      * Creates a new model
-     * @param name The name of the model
-     * @param path The path of the model
+     * @param modelInfo The information of the model
      */
-    public static void createModel(String name, String path) {
-        String insertSQL = "INSERT INTO models (name, path, selected) VALUES (?, ?, 0);";
+    public static void createModel(ModelInfo modelInfo) {
+        String insertSQL = "INSERT INTO models (name, pathEM, pathEC, selected) VALUES (?, ?, ?, ?);";
 
         try (Connection conn = connect()) {
             if (conn != null) {
                 PreparedStatement pstmt = conn.prepareStatement(insertSQL);
-                pstmt.setString(1, name);
-                pstmt.setString(2, path);
+                pstmt.setString(1, modelInfo.getName());
+                pstmt.setString(2, modelInfo.getPathEM());
+                pstmt.setString(3, modelInfo.getPathEC());
+                pstmt.setInt(4, modelInfo.isSelected() ? 1 : 0);
 
                 pstmt.executeUpdate();
             }
@@ -820,8 +793,8 @@ public class Database {
      * @param name The name of the model
      * @return The path of the model
      */
-    public static String getModelPathByName(String name) {
-        String selectSQL = "SELECT path FROM models WHERE name = ?;";
+    public static ModelInfo getModelByName(String name) {
+        String selectSQL = "SELECT pathEM, pathEC, selected FROM models WHERE name = ?;";
 
         try (Connection conn = connect()) {
             if (conn != null) {
@@ -830,7 +803,8 @@ public class Database {
 
                 ResultSet rs = pstmt.executeQuery();
 
-                return rs.getString("path");
+                return new ModelInfo(name, rs.getString("pathEM"), rs.getString("pathEC"),
+                        rs.getInt("selected") == 1);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -843,15 +817,16 @@ public class Database {
      * Gets the name of any model
      * @return The name of the model
      */
-    public static String getAnyModelName() {
-        String selectSQL = "SELECT name FROM models LIMIT 1;";
+    public static ModelInfo getAnyModel() {
+        String selectSQL = "SELECT name, pathEM, pathEC FROM models LIMIT 1;";
 
         try (Connection conn = connect()) {
             if (conn != null) {
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery(selectSQL);
 
-                return rs.getString("name");
+                return new ModelInfo(rs.getString("name"), rs.getString("pathEM"),
+                        rs.getString("pathEC"), false);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());

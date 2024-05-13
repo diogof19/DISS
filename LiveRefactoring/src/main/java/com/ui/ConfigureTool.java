@@ -222,8 +222,8 @@ public class ConfigureTool extends AnAction {
                 }
             }
 
-            if(wrapper.selectedProfile != null && !wrapper.selectedProfile.isEmpty() && !wrapper.selectedProfile.equals(Database.getSelectedModelName())){
-                Database.setSelectedModel(wrapper.selectedProfile);
+            if(wrapper.selectedProfile != null  && !wrapper.selectedProfile.equals(Database.getSelectedModel())){
+                Database.setSelectedModel(wrapper.selectedProfile.getName());
                 try {
                     PredictionModel.biasModel(e.getProject(), wrapper.selectedProfile);
                     Utils.popup(e.getProject(),
@@ -277,7 +277,7 @@ public class ConfigureTool extends AnAction {
 
             if (checkedAuthors.size() != oldAuthors.size() || !checkedAuthors.containsAll(oldAuthors)) {
                 Database.updateAuthorsPerModel(profileName, checkedAuthors);
-                PredictionModel.biasModel(wrapper.project, profileName);
+                PredictionModel.biasModel(wrapper.project, Database.getModelByName(profileName));
                 Utils.popup(wrapper.project,
                         "LiveRef",
                         "Authors for profile " + profileName + " updated",
@@ -287,14 +287,17 @@ public class ConfigureTool extends AnAction {
     }
 
     private void createProfile(Box authorsBox, String name, Project project) {
-        String path = "models/" + name + ".joblib";
-        Database.createModel(name, path);
+        ModelInfo modelInfo = new ModelInfo(name,
+                Values.dataFolder + "models/" + name + "EM.joblib",
+                Values.dataFolder + "models/" + name + "EC.joblib",
+                false);
+        Database.createModel(modelInfo);
 
         Set<AuthorInfo> checkedAuthors = getCheckedAuthors(authorsBox);
         if (!checkedAuthors.isEmpty())
             Database.updateAuthorsPerModel(name, checkedAuthors);
 
-        PredictionModel.createModel(project, path, checkedAuthors);
+        PredictionModel.createModel(project, modelInfo, checkedAuthors);
         Utils.popup(project,
                 "LiveRef",
                 "Profile " + name + " created",
@@ -401,7 +404,7 @@ public class ConfigureTool extends AnAction {
         public Map<String, Pair<Box, JButton>> profileBoxes = new HashMap<>();
         public JBTextField textField_profileName = new JBTextField();
         public boolean createProfile = false;
-        public String selectedProfile;
+        public ModelInfo selectedProfile;
         public Set<String> modelsToDelete = new HashSet<>();
 
         public MyDialogWrapper(Project project) {
@@ -412,7 +415,7 @@ public class ConfigureTool extends AnAction {
             textField_pythonPath.setText(state.pythonPath);
             textFields_maxExtractMethodsBefUpdate.setText(Integer.toString(state.maxExtractMethodsBefUpdate));
             textFields_biasMultiplier.setText(Integer.toString(state.biasMultiplier));
-            selectedProfile = Database.getSelectedModelName();
+            selectedProfile = Database.getSelectedModel();
 
             init();
             setTitle("Configure Tool");
@@ -1033,20 +1036,17 @@ public class ConfigureTool extends AnAction {
             authorPanel.add(valuePanel, BorderLayout.NORTH);
 
             //Profile Tabs
-            ArrayList<String> models = Database.getAllModels();
+            ArrayList<ModelInfo> models = Database.getAllModels();
 
             JBTabsImpl tabbedPane = new JBTabsImpl(this.project);
 
-            String selectedModel = Database.getSelectedModelName();
-            for (String model: models) {
-                Boolean selected = model.equals(selectedModel);
+            for (ModelInfo model: models) {
+                TabInfo tabInfo = new TabInfo(getBiasProfilePanel(model));
 
-                TabInfo tabInfo = new TabInfo(getBiasProfilePanel(model, selected));
-
-                if (selected)
-                    tabInfo.setText("* " + model + " *");
+                if (model.isSelected())
+                    tabInfo.setText("* " + model.getName() + " *");
                 else
-                    tabInfo.setText(model);
+                    tabInfo.setText(model.getName());
 
                 tabbedPane.addTab(tabInfo);
             }
@@ -1066,11 +1066,10 @@ public class ConfigureTool extends AnAction {
 
         /**
          * Creates a panel with the bias profile options for a specific model.
-         * @param modelName The name of the model
-         * @param selected Whether the model is the selected one
+         * @param modelInfo The model to create the bias profile options for
          * @return JPanel with the bias profile options
          */
-        private JPanel getBiasProfilePanel(String modelName, Boolean selected) {
+        private JPanel getBiasProfilePanel(ModelInfo modelInfo) {
             JPanel profilePanel = new JPanel(new BorderLayout());
 
             Box overallBox = Box.createVerticalBox();
@@ -1082,26 +1081,26 @@ public class ConfigureTool extends AnAction {
             buttonsPannel.setPreferredSize(new Dimension(100, 30));
             JButton selectAllAuthors = getSelectAllButton(authorBox);
 
-            JButton deleteProfile = getDeleteProfileButton(modelName);
+            JButton deleteProfile = getDeleteProfileButton(modelInfo.getName());
 
             JButton switchProfile = new JButton("Switch");
-            switchProfile.setEnabled(!selected);
+            switchProfile.setEnabled(!modelInfo.isSelected());
 
             switchProfile.addActionListener(e -> {
-                this.selectedProfile = modelName;
+                this.selectedProfile = modelInfo;
             });
 
             buttonsPannel.add(selectAllAuthors, BorderLayout.WEST);
             buttonsPannel.add(deleteProfile, BorderLayout.EAST);
 
-            ArrayList<AuthorInfo> authors = Database.getAuthorsPerModel(modelName);
+            ArrayList<AuthorInfo> authors = Database.getAuthorsPerModel(modelInfo.getName());
 
             authors.sort(AuthorInfo::compareTo);
 
             ArrayList<JCheckBox> checkBoxes = getAuthorCheckboxes(authors);
             checkBoxes.forEach(authorBox::add);
 
-            this.profileBoxes.put(modelName, new Pair<>(authorBox, deleteProfile));
+            this.profileBoxes.put(modelInfo.getName(), new Pair<>(authorBox, deleteProfile));
 
             JBScrollPane pane = new JBScrollPane(authorBox, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                     ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);

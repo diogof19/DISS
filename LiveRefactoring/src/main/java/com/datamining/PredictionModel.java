@@ -1,5 +1,6 @@
 package com.datamining;
 
+import com.analysis.metrics.ClassMetrics;
 import com.analysis.metrics.MethodMetrics;
 import com.core.Pair;
 import com.intellij.notification.NotificationType;
@@ -15,13 +16,19 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Set;
 
+enum ModelType {
+    EXTRACT_METHOD,
+    EXTRACT_CLASS
+}
+
 //TODO: Create a 'requirements.txt' folder and function that runs it with pip install
 //TODO: Handle python path not set now that it is saved in MySettings
 public class PredictionModel {
     private static final String PYTHON_PREDICTION_FILE_PATH = Values.dataFolder + "python/prediction.py";
     private static final String PYTHON_BIAS_FILE_PATH = Values.dataFolder + "python/bias_model.py";
     private static final String DATA_FILE_PATH = Values.dataFolder + "metrics.db";
-    private static final String SCALER_FILE_PATH = Values.dataFolder + "python/scaler.pkl";
+    private static final String EM_SCALER_FILE_PATH = Values.dataFolder + "python/scalerEM.pkl";
+    private static final String EC_SCALER_FILE_PATH = Values.dataFolder + "python/scalerEC.pkl";
 
     public static void main(String[] args) {
 //        ArrayList<Double> data = new ArrayList<>();
@@ -48,12 +55,14 @@ public class PredictionModel {
      * @param methodMetrics the metrics of the method
      * @return true if the method is an inlier, false if it is an outlier
      */
-    public static boolean predict(MethodMetrics methodMetrics, Project project){
-        ArrayList<Double> data = getMetrics(methodMetrics);
+    public static boolean predictEM(MethodMetrics methodMetrics, Project project){
+        ArrayList<Double> data = getMethodMetrics(methodMetrics);
+        if(data.contains(null))
+            return false;
 
         try {
             System.out.println("Starting Prediction");
-            boolean prediction = predictPython(data, project);
+            boolean prediction = predictPython(data, project, ModelType.EXTRACT_METHOD);
             System.out.println("Prediction done: " + prediction);
             return prediction;
         } catch (IOException | InterruptedException e) {
@@ -62,44 +71,11 @@ public class PredictionModel {
     }
 
     /**
-     * Uses the python script to predict if a method is an outlier or not
-     * @param data the data to be used for the prediction
-     * @return true if the method is an inlier, false if it is an outlier
-     * @throws IOException if the python script has a problem
-     * @throws InterruptedException if the process is interrupted
-     */
-    private static boolean predictPython(ArrayList<Double> data, Project project) throws IOException, InterruptedException {
-        String pythonPath = getPythonPath(project);
-        if (pythonPath == null)
-            return false;
-
-        String modelFilePath = Database.getSelectedModelFilePath();
-        File modelFile = new File(Values.dataFolder + modelFilePath);
-        File scalerFile = new File(SCALER_FILE_PATH);
-
-        ArrayList<String> command = new ArrayList<>();
-        command.add(pythonPath);
-        command.add(PYTHON_PREDICTION_FILE_PATH);
-        command.add(modelFile.getAbsolutePath());
-        command.add(scalerFile.getAbsolutePath());
-        for (Double value : data) {
-            command.add(value.toString());
-        }
-
-        String output = pythonScriptRun(command);
-
-        float result = Float.parseFloat(output);
-
-        // Result will be -1 for outliers or 1 for inliers
-        return result == 1;
-    }
-
-    /**
      * Gets the required metrics for the prediction model from the method metrics
      * @param methodMetrics the metrics of the method
      * @return the metrics required for the prediction model
      */
-    private static ArrayList<Double> getMetrics(MethodMetrics methodMetrics) {
+    private static ArrayList<Double> getMethodMetrics(MethodMetrics methodMetrics) {
         ArrayList<Double> data = new ArrayList<>();
 
         data.add((double) methodMetrics.numberLinesOfCode);
@@ -125,6 +101,92 @@ public class PredictionModel {
         return data;
     }
 
+    public static boolean predictEC(ClassMetrics classMetrics, Project project){
+        ArrayList<Double> data = getClassMetrics(classMetrics);
+        if (data.contains(null))
+            return false;
+
+        try {
+            System.out.println("Starting Prediction");
+            boolean prediction = predictPython(data, project, ModelType.EXTRACT_CLASS);
+            System.out.println("Prediction done: " + prediction);
+            return prediction;
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static ArrayList<Double> getClassMetrics(ClassMetrics classMetrics){
+        ArrayList<Double> data = new ArrayList<>();
+
+        data.add((double) classMetrics.numProperties);
+        data.add((double) classMetrics.numPublicAttributes);
+        data.add((double) classMetrics.numPublicMethods);
+        data.add((double) classMetrics.numProtectedFields);
+        data.add((double) classMetrics.numProtectedMethods);
+        data.add((double) classMetrics.numLongMethods);
+        data.add((double) classMetrics.numLinesCode);
+        data.add(classMetrics.lackOfCohesion);
+        data.add(classMetrics.complexity);
+        data.add(classMetrics.cognitiveComplexity);
+        data.add((double) classMetrics.numMethods);
+        data.add((double) classMetrics.numConstructors);
+        data.add(classMetrics.halsteadLength);
+        data.add(classMetrics.halsteadVocabulary);
+        data.add(classMetrics.halsteadVolume);
+        data.add(classMetrics.halsteadDifficulty);
+        data.add(classMetrics.halsteadEffort);
+        data.add(classMetrics.halsteadLevel);
+        data.add(classMetrics.halsteadTime);
+        data.add(classMetrics.halsteadBugsDelivered);
+        data.add(classMetrics.halsteadMaintainability);
+
+        return data;
+    }
+
+    /**
+     * Uses the python script to predict if a method or class is an outlier or not
+     * @param data the data to be used for the prediction
+     * @param project the project
+     * @param type the type of model to use
+     * @return true if the method is an inlier, false if it is an outlier
+     * @throws IOException if the python script has a problem
+     * @throws InterruptedException if the process is interrupted
+     */
+    private static boolean predictPython(ArrayList<Double> data, Project project, ModelType type) throws IOException, InterruptedException {
+        String pythonPath = getPythonPath(project);
+        if (pythonPath == null)
+            return false;
+
+        ModelInfo modelInfo = Database.getSelectedModel();
+        File scalerFile;
+        String modelPath;
+        if(type == ModelType.EXTRACT_METHOD) {
+            scalerFile = new File(EM_SCALER_FILE_PATH);
+            modelPath = modelInfo.getPathEM();
+        }
+        else {
+            scalerFile = new File(EC_SCALER_FILE_PATH);
+            modelPath = modelInfo.getPathEC();
+        }
+
+        ArrayList<String> command = new ArrayList<>();
+        command.add(pythonPath);
+        command.add(PYTHON_PREDICTION_FILE_PATH);
+        command.add(modelPath);
+        command.add(scalerFile.getAbsolutePath());
+        for (Double value : data) {
+            command.add(value.toString());
+        }
+
+        String output = pythonScriptRun(command);
+
+        float result = Float.parseFloat(output);
+
+        // Result will be -1 for outliers or 1 for inliers
+        return result == 1;
+    }
+
 
     /* BIASING/UPDATING MODEL */
 
@@ -132,22 +194,24 @@ public class PredictionModel {
      * Creates the command to bias the model for the selected authors
      * @param project the project
      * @param pythonPath the path of the python executable
-     * @param oldModelPath the path of the model to load settings from
-     * @param newModelPath the path to save the new model (if the same as the old model, it will be updated)
+     * @param oldModel the information of the old model
+     * @param newModel the information of the new model
      * @param authors the authors to bias the model with (if empty, no bias is applied)
      * @return the command to bias the model
      */
-    public static ArrayList<String> biasModelCommand(Project project, String pythonPath, String oldModelPath, String newModelPath, Set<AuthorInfo> authors) {
+    public static ArrayList<String> biasModelCommand(Project project, String pythonPath, ModelInfo oldModel, ModelInfo newModel, Set<AuthorInfo> authors) {
         ArrayList<String> command = new ArrayList<>();
 
-        File scalerFile = new File(SCALER_FILE_PATH);
         MySettings mySettings = project.getService(MySettings.class);
 
         command.add(pythonPath);
         command.add(PYTHON_BIAS_FILE_PATH);
-        command.add(oldModelPath);
-        command.add(newModelPath);
-        command.add(scalerFile.getAbsolutePath());
+        command.add(oldModel.getPathEM());
+        command.add(newModel.getPathEM());
+        command.add(EM_SCALER_FILE_PATH);
+        command.add(oldModel.getPathEC());
+        command.add(newModel.getPathEC());
+        command.add(EC_SCALER_FILE_PATH);
         command.add(DATA_FILE_PATH);
         command.add(String.valueOf(mySettings.getState().biasMultiplier));
 
@@ -155,7 +219,7 @@ public class PredictionModel {
             command.add("no_bias");
         else {
             for (AuthorInfo author : authors) {
-                command.add(author.toString());
+                command.add(Integer.toString(author.getId()));
             }
         }
 
@@ -164,26 +228,22 @@ public class PredictionModel {
 
     /**
      * Uses the python script to bias the model for the selected authors
+     * @param project the project
+     * @param modelInfo the information of the model
      * @throws IOException if the python script has a problem
      * @throws InterruptedException if the process is interrupted
      */
-    public static void biasModel(Project project, String modelName) throws IOException, InterruptedException {
+    public static void biasModel(Project project, ModelInfo modelInfo) throws IOException, InterruptedException {
         String pythonPath = getPythonPath(project);
         if (pythonPath == null)
             return;
 
-        Pair<String, String> modelInfo;
-        if (modelName == null) {
+        if(modelInfo == null)
             modelInfo = Database.getSelectedModel();
-        } else {
-            String path = Database.getModelPathByName(modelName);
-            modelInfo = new Pair<>(modelName, path);
-        }
 
-        File modelFile = new File(Values.dataFolder + modelInfo.getSecond());
-        Set<AuthorInfo> authors = Database.getSelectedAuthorsPerModel(modelInfo.getFirst());
+        Set<AuthorInfo> authors = Database.getSelectedAuthorsPerModel(modelInfo.getName());
 
-        ArrayList<String> command = biasModelCommand(project, pythonPath, modelFile.getAbsolutePath(), modelFile.getAbsolutePath(), authors);
+        ArrayList<String> command = biasModelCommand(project, pythonPath, modelInfo, modelInfo, authors);
 
         pythonScriptRun(command);
 
@@ -198,32 +258,23 @@ public class PredictionModel {
     /**
      * Creates a new model biased with the selected authors
      * @param project the project
-     * @param path the path of the new model
+     * @param newModelInfo the information of the new model
      * @param authors the authors to bias the model with (if empty, no bias is applied)
      */
-    public static void createModel(Project project, String path, Set<AuthorInfo> authors) {
+    public static void createModel(Project project, ModelInfo newModelInfo, Set<AuthorInfo> authors) {
         String pythonPath = getPythonPath(project);
         if (pythonPath == null)
             return;
 
-        Pair<String, String> oldModelInfo = Database.getSelectedModel();
-        File oldModelFile = new File(Values.dataFolder + oldModelInfo.getSecond());
+        ModelInfo oldModelInfo = Database.getSelectedModel();
 
-        File newModelFile = new File(Values.dataFolder + path);
-
-        ArrayList<String> command = biasModelCommand(project, pythonPath, oldModelFile.getAbsolutePath(), newModelFile.getAbsolutePath(), authors);
+        ArrayList<String> command = biasModelCommand(project, pythonPath, oldModelInfo, newModelInfo, authors);
 
         try {
             pythonScriptRun(command);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-
-//        Utils.popup(project,
-//                "LiveRef",
-//                "Profile successfully created.",
-//                NotificationType.INFORMATION);
-
     }
 
     /**
@@ -262,17 +313,19 @@ public class PredictionModel {
      * @param model the name of the model
      */
     public static void deleteModel(Project project, String model) throws IOException, InterruptedException {
-        String path = Database.getModelPathByName(model);
-        File modelFile = new File(Values.dataFolder + path);
-        modelFile.delete();
+        ModelInfo modelInfo = Database.getModelByName(model);
+        File fileEM = new File(modelInfo.getPathEM());
+        fileEM.delete();
+        File fileEC = new File(modelInfo.getPathEC());
+        fileEC.delete();
 
-        boolean wasSelected = Database.getSelectedModel().getFirst().equals(model);
+        boolean wasSelected = Database.getSelectedModel().getName().equals(model);
 
         Database.deleteModel(model);
 
         if (wasSelected) {
-            String newSelected = Database.getAnyModelName();
-            Database.setSelectedModel(newSelected);
+            ModelInfo newSelected = Database.getAnyModel();
+            Database.setSelectedModel(newSelected.getName());
             PredictionModel.biasModel(project, newSelected);
         }
     }

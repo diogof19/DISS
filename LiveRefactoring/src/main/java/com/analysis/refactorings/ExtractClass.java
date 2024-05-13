@@ -3,6 +3,7 @@ package com.analysis.refactorings;
 import com.analysis.candidates.ExtractClassCandidate;
 import com.analysis.metrics.ClassMetrics;
 import com.core.LastRefactoring;
+import com.datamining.PredictionModel;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
@@ -96,7 +97,8 @@ public class ExtractClass{
                 }
             }
 
-            if(classMetrics.numMethods >= ThresholdsCandidates.numMethodsEC && (classMetrics.lackOfCohesion < lcom || foreign)){
+            //if(classMetrics.numMethods >= ThresholdsCandidates.numMethodsEC && (classMetrics.lackOfCohesion < lcom || foreign)){
+            if (PredictionModel.predictEC(classMetrics, editor.getProject())) {
                 List<List<PsiMethod>> methodCombinations = utilitiesOverall.generateCombinations(methods);
                 ArrayList<ArrayList<String>> methodsToBeExtractedNames = new ArrayList<>();
                 ArrayList<ArrayList<PsiMethod>> methodsToBeExtracted = refactorUtils.getMethodsToBeExtracted(classMetrics.targetClass, classMetrics.weightMatrix);

@@ -45,9 +45,17 @@ public class StartUp implements StartupActivity {
         extractFileIfNotExists(folder.getAbsolutePath(),"/metrics.db");
         extractFileIfNotExists(folder.getAbsolutePath(),"/python/bias_model.py");
         extractFileIfNotExists(folder.getAbsolutePath(),"/python/prediction.py");
-        extractFileIfNotExists(folder.getAbsolutePath(),"/python/scaler.pkl");
+        extractFileIfNotExists(folder.getAbsolutePath(),"/python/scalerEM.pkl");
+        extractFileIfNotExists(folder.getAbsolutePath(),"/python/scalerEC.pkl");
         extractFileIfNotExists(folder.getAbsolutePath(),"/requirements.txt");
-        extractFileIfNotExists(folder.getAbsolutePath(),"/models/model.joblib");
+
+        if(extractFileIfNotExists(folder.getAbsolutePath(),"/models/DefaultEM.joblib") ||
+                extractFileIfNotExists(folder.getAbsolutePath(),"/models/DefaultEM.joblib")){
+            Database.createModel(new ModelInfo("Default",
+                    folder.getAbsolutePath() + "/models/DefaultEM.joblib",
+                    folder.getAbsolutePath() + "/models/DefaultEC.joblib",
+                    true));
+        }
     }
 
     /**
@@ -56,13 +64,15 @@ public class StartUp implements StartupActivity {
      * @param name name of the file to extract (partial path starting from resources)
      * @throws IOException if an I/O error occurs
      */
-    private void extractFileIfNotExists(String path, String name) throws IOException {
+    private boolean extractFileIfNotExists(String path, String name) throws IOException {
         File file = new File(path + name);
 
         if (!file.exists()) {
             extractFile(path, name);
             System.out.println("Extracted " + name);
         }
+
+        return file.exists();
     }
 
     /**
