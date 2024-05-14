@@ -11,11 +11,11 @@ public class RMEDialogWrapper extends DialogWrapper {
     private final JRadioButton localRepoButton = new JRadioButton("Local Repository");
     private final JRadioButton remoteRepoButton = new JRadioButton("Remote Repository");
     private final JLabel repositoryPathLabel = new JLabel("Repository Path");
-    private JBTextField repositoryPathTextField = new JBTextField();
+    private final JBTextField repositoryPathTextField = new JBTextField();
     private final JLabel branchLabel = new JLabel("Branch");
-    private JBTextField branchTextField = new JBTextField("main");
+    private final JBTextField branchTextField = new JBTextField("main");
     private final JLabel commitLabel = new JLabel("Starting Commit SHA (Optional)");
-    private JBTextField commitTextField = new JBTextField();
+    private final JBTextField commitTextField = new JBTextField();
     private final JLabel warningLabel =
             new JLabel("Warning: Depending on the number of commits, this may take a while to complete.");
 

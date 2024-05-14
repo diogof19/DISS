@@ -10,13 +10,24 @@
 
 
 Validation:
-  - Compare with intellij Extract Method Refactoring
-  - NEED TO FIND MORE STUFF -> maybe a collection of refactorings that already exist for testing purposes
+  - Case Study: 1 hour thing where people use liveRef Sara and liveRef Diogo and compare it
+  - Comparar com liveRef baseline:
+    - 2 grupos: 1 com liveRef Sara e outro com meu liveRef
+    - Case study com pessoas reais em projetos reais
+    
+2nd Thesis question (?The threshold way of doing refactorings is not that good for complex things?):
+- Comparar abordagem com a Sara com dados que eu tenho de projetos que já usei para criar os meus dados
+    - Usar DataCollection
+    - Take the before refactoring data and calculate and save the metrics
+    - Use Sara's tool (need to figure out script) on that data and make it use the best option it gives and then save the metrics from the results
+    - Go to the after refactoring data (the real one) and save those metrics too
+    - pattern: visitor pattern 
 
 Future work:
 - More data - script that uses high computing resources
 - Incremental training (for the thesis future work section as it is very hard)
 - Synchronize profiles between different machines (again, thesis future work section)
+- Validate the tool with real projects over time (no time now)
 
 Meeting:
   - Extract Method and Extract Class are done
@@ -28,24 +39,3 @@ Meeting:
   - How to do validation?
     - Compare with intellij Extract Method Refactoring (I don't think it has Extract Class)
     - Perform refactorings manually and extract metrics from the before and after (may take a lot of time)
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

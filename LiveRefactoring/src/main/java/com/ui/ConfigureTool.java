@@ -992,7 +992,7 @@ public class ConfigureTool extends AnAction {
              */
 
             TabInfo tabInfo = new TabInfo(tabPanel);
-            tabInfo.setText("Advanced Extract Method");
+            tabInfo.setText("Advanced Refactorings");
 
             return tabInfo;
         }
@@ -1025,7 +1025,7 @@ public class ConfigureTool extends AnAction {
 
             //Value Configurations
             JPanel valuePanel = new JPanel(new GridLayout(2, 2));
-            JLabel label_maxExtractMethodsBefUpdate = new JLabel("Max. Extract Methods Before Update");
+            JLabel label_maxExtractMethodsBefUpdate = new JLabel("Max. Refactorings Before Update");
             valuePanel.add(label_maxExtractMethodsBefUpdate, BorderLayout.WEST);
             valuePanel.add(textFields_maxExtractMethodsBefUpdate, BorderLayout.EAST);
 
