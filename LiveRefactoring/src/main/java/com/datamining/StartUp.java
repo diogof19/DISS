@@ -49,8 +49,8 @@ public class StartUp implements StartupActivity {
         extractFileIfNotExists(folder.getAbsolutePath(),"/python/scalerEC.pkl");
         extractFileIfNotExists(folder.getAbsolutePath(),"/requirements.txt");
 
-        if(extractFileIfNotExists(folder.getAbsolutePath(),"/models/DefaultEM.joblib") ||
-                extractFileIfNotExists(folder.getAbsolutePath(),"/models/DefaultEM.joblib")){
+        if(extractFileIfNotExists(folder.getAbsolutePath(),"/models/DefaultEM.joblib") &&
+                extractFileIfNotExists(folder.getAbsolutePath(),"/models/DefaultEC.joblib")){
             Database.createModel(new ModelInfo("Default",
                     folder.getAbsolutePath() + "/models/DefaultEM.joblib",
                     folder.getAbsolutePath() + "/models/DefaultEC.joblib",
@@ -67,12 +67,14 @@ public class StartUp implements StartupActivity {
     private boolean extractFileIfNotExists(String path, String name) throws IOException {
         File file = new File(path + name);
 
+        boolean extracted = false;
         if (!file.exists()) {
             extractFile(path, name);
             System.out.println("Extracted " + name);
+            extracted = true;
         }
 
-        return file.exists();
+        return extracted;
     }
 
     /**

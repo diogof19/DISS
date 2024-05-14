@@ -44,7 +44,7 @@ public class PredictionModel {
 //            throw new RuntimeException(e);
 //        }
 
-        System.out.println(getCurrentGitAuthor());
+        //System.out.println(getCurrentGitAuthor());
     }
 
 
@@ -61,9 +61,9 @@ public class PredictionModel {
             return false;
 
         try {
-            System.out.println("Starting Prediction");
+            System.out.println("Starting EM Prediction");
             boolean prediction = predictPython(data, project, ModelType.EXTRACT_METHOD);
-            System.out.println("Prediction done: " + prediction);
+            System.out.println("EM Prediction done: " + prediction);
             return prediction;
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
@@ -107,9 +107,9 @@ public class PredictionModel {
             return false;
 
         try {
-            System.out.println("Starting Prediction");
+            System.out.println("Starting EC Prediction");
             boolean prediction = predictPython(data, project, ModelType.EXTRACT_CLASS);
-            System.out.println("Prediction done: " + prediction);
+            System.out.println("EC Prediction done: " + prediction);
             return prediction;
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
@@ -179,7 +179,7 @@ public class PredictionModel {
             command.add(value.toString());
         }
 
-        String output = pythonScriptRun(command);
+        String output = pythonScriptRun(command, null);
 
         float result = Float.parseFloat(output);
 
@@ -245,7 +245,7 @@ public class PredictionModel {
 
         ArrayList<String> command = biasModelCommand(project, pythonPath, modelInfo, modelInfo, authors);
 
-        pythonScriptRun(command);
+        pythonScriptRun(command, null);
 
         Utils.popup(project,
                 "LiveRef",
@@ -271,7 +271,7 @@ public class PredictionModel {
         ArrayList<String> command = biasModelCommand(project, pythonPath, oldModelInfo, newModelInfo, authors);
 
         try {
-            pythonScriptRun(command);
+            pythonScriptRun(command, null);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -285,13 +285,12 @@ public class PredictionModel {
      * @throws InterruptedException if the process is interrupted
      */
     public static void updateModel(MethodMetrics methodMetrics, Project project) throws IOException, InterruptedException, SQLException {
-        Pair<String, String> author = getCurrentGitAuthor();
+        Pair<String, String> author = getCurrentGitAuthor(project);
         if (author == null) {
             Utils.popup(project,
                     "LiveRef - Git author not found",
                     "The current git author could not be found. Please make sure you have git installed and configured.",
                     NotificationType.WARNING);
-            author = new Pair<>("hello", "hello@g.com");
         }
 
         Database.saveMethodMetrics(author, methodMetrics, null);
@@ -373,7 +372,7 @@ public class PredictionModel {
             command.add("install");
             command.add("-r");
             command.add(requirementsFile.getAbsolutePath());
-            pythonScriptRun(command);
+            pythonScriptRun(command, null);
         }
 
         Utils.popup(project,
@@ -461,8 +460,13 @@ public class PredictionModel {
      * @throws IOException if the python script has a problem
      * @throws InterruptedException if the process is interrupted
      */
-    private static @NotNull String pythonScriptRun(ArrayList<String> command) throws IOException, InterruptedException {
-        Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
+    private static @NotNull String pythonScriptRun(ArrayList<String> command, String directory) throws IOException, InterruptedException {
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
+        if(directory != null)
+            processBuilder.directory(new File(directory));
+        processBuilder.redirectErrorStream(true);
+
+        Process process = processBuilder.start();
 
         BufferedReader stdOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
@@ -482,50 +486,27 @@ public class PredictionModel {
         return output.toString();
     }
 
-    //TODO: Test when the plugin is actually installed
     /**
      * Gets the current git author
      * @return the current git author in the format "name (email)" or null if it is not found
      */
-    private static Pair<String, String> getCurrentGitAuthor() {
+    public static Pair<String, String> getCurrentGitAuthor(Project project) {
         try {
-            String email = runCommand("git config user.email");
-            String name = runCommand("git config user.name");
+            ArrayList<String> command = new ArrayList<>();
+            command.add("git");
+            command.add("config");
+            command.add("user.email");
+            String email = pythonScriptRun(command, project.getBasePath());
+
+            command.set(2, "user.name");
+            String name = pythonScriptRun(command, project.getBasePath());
             return new Pair<>(name, email);
         } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
             return null;
         }
     }
 
-    /**
-     * Runs a command in the terminal
-     * @param command the command to run
-     * @return the output of the command
-     * @throws IOException if the command has a problem
-     * @throws InterruptedException if the process is interrupted
-     */
-    private static String runCommand(String command) throws IOException, InterruptedException {
-        ProcessBuilder processBuilder = new ProcessBuilder(command);
-        processBuilder.redirectErrorStream(true);
-
-        Process process = processBuilder.start();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String line;
-        StringBuilder output = new StringBuilder();
-
-        while ((line = reader.readLine()) != null) {
-            output.append(line);
-        }
-
-        int exitCode = process.waitFor();
-        if (exitCode == 0) {
-            return output.toString().trim();
-        } else {
-            System.err.println("Error executing command: " + command);
-        }
-
-        return output.toString();
-    }
 }
 
 

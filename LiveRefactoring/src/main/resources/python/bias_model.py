@@ -82,7 +82,8 @@ if __name__ == "__main__":
         bias = False
     
     authors = []
-    for arg in sys.argv[9:]:
-        authors.append(int(arg))
+    if bias:
+        for arg in sys.argv[9:]:
+            authors.append(int(arg))
 
     bias_model(authors, data_path, old_EM_path, new_EM_path, scaler_EM_path, old_EC_path, new_EC_path, scaler_EC_path, bias, bias_multiplier)
