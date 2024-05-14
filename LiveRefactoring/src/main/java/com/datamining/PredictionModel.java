@@ -12,14 +12,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Set;
-
-enum ModelType {
-    EXTRACT_METHOD,
-    EXTRACT_CLASS
-}
 
 //TODO: Create a 'requirements.txt' folder and function that runs it with pip install
 //TODO: Handle python path not set now that it is saved in MySettings
@@ -62,7 +56,7 @@ public class PredictionModel {
 
         try {
             System.out.println("Starting EM Prediction");
-            boolean prediction = predictPython(data, project, ModelType.EXTRACT_METHOD);
+            boolean prediction = predictPython(data, project, RefType.EXTRACT_METHOD);
             System.out.println("EM Prediction done: " + prediction);
             return prediction;
         } catch (IOException | InterruptedException e) {
@@ -108,7 +102,7 @@ public class PredictionModel {
 
         try {
             System.out.println("Starting EC Prediction");
-            boolean prediction = predictPython(data, project, ModelType.EXTRACT_CLASS);
+            boolean prediction = predictPython(data, project, RefType.EXTRACT_CLASS);
             System.out.println("EC Prediction done: " + prediction);
             return prediction;
         } catch (IOException | InterruptedException e) {
@@ -153,7 +147,7 @@ public class PredictionModel {
      * @throws IOException if the python script has a problem
      * @throws InterruptedException if the process is interrupted
      */
-    private static boolean predictPython(ArrayList<Double> data, Project project, ModelType type) throws IOException, InterruptedException {
+    private static boolean predictPython(ArrayList<Double> data, Project project, RefType type) throws IOException, InterruptedException {
         String pythonPath = getPythonPath(project);
         if (pythonPath == null)
             return false;
@@ -161,7 +155,7 @@ public class PredictionModel {
         ModelInfo modelInfo = Database.getSelectedModel();
         File scalerFile;
         String modelPath;
-        if(type == ModelType.EXTRACT_METHOD) {
+        if(type == RefType.EXTRACT_METHOD) {
             scalerFile = new File(EM_SCALER_FILE_PATH);
             modelPath = modelInfo.getPathEM();
         }
@@ -284,7 +278,7 @@ public class PredictionModel {
      * @throws IOException if the python script has a problem
      * @throws InterruptedException if the process is interrupted
      */
-    public static void updateModel(MethodMetrics methodMetrics, Project project) throws IOException, InterruptedException, SQLException {
+    public static void updateEMModel(MethodMetrics methodMetrics, Project project) throws IOException, InterruptedException {
         Pair<String, String> author = getCurrentGitAuthor(project);
         if (author == null) {
             Utils.popup(project,
@@ -298,13 +292,35 @@ public class PredictionModel {
         MySettings.State state = project.getService(MySettings.class).getState();
         state.counter++;
 
-        if(state.counter >= state.maxExtractMethodsBefUpdate) {
+        if(state.counter >= state.maxRefactoringsBefUpdate) {
             System.out.println("Biasing model");
             biasModel(project, null);
             System.out.println("Model biased");
             state.counter = 0;
         }
 
+    }
+
+    public static void updateECModel(ClassMetrics classMetrics, Project project) throws IOException, InterruptedException {
+        Pair<String, String> author = getCurrentGitAuthor(project);
+        if (author == null) {
+            Utils.popup(project,
+                    "LiveRef - Git author not found",
+                    "The current git author could not be found. Please make sure you have git installed and configured.",
+                    NotificationType.WARNING);
+        }
+
+        Database.saveClassMetrics(author, classMetrics, null);
+
+        MySettings.State state = project.getService(MySettings.class).getState();
+        state.counter++;
+
+        if(state.counter >= state.maxRefactoringsBefUpdate) {
+            System.out.println("Biasing model");
+            biasModel(project, null);
+            System.out.println("Model biased");
+            state.counter = 0;
+        }
     }
 
     /**

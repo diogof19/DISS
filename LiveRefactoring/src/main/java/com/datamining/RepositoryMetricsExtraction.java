@@ -36,6 +36,8 @@ import java.util.*;
 public class RepositoryMetricsExtraction extends AnAction {
     private String repositoryPath;
     private String branch;
+    private Boolean isLocalRepo;
+    private String startingCommit;
     private Project project;
     private Map<String, Set<String>> changedFiles = new HashMap<>();
     @Override
@@ -46,6 +48,8 @@ public class RepositoryMetricsExtraction extends AnAction {
         if(dialogWrapper.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
             this.repositoryPath = dialogWrapper.getRepositoryPath();
             this.branch = dialogWrapper.getBranch();
+            this.isLocalRepo = dialogWrapper.isLocalRepo();
+            this.startingCommit = dialogWrapper.getCommit();
             
             this.project = anActionEvent.getProject();
 
@@ -114,8 +118,13 @@ public class RepositoryMetricsExtraction extends AnAction {
 
         //Clone the repository so the original one is not affected
         try {
+            String repoPath;
+            if (isLocalRepo)
+                repoPath = "file://" + this.repositoryPath;
+            else
+                repoPath = this.repositoryPath;
             Git.cloneRepository()
-                    .setURI("file://" + this.repositoryPath)
+                    .setURI(repoPath)
                     .setDirectory(new File(tmpRepoFolder))
                     .setBranch(this.branch)
                     .call();
@@ -165,11 +174,6 @@ public class RepositoryMetricsExtraction extends AnAction {
 
         for(String commit : commits) {
             try {
-                //For testing purposes
-//                if (refactoringInfos.size() > 1) {
-//                    break;
-//                }
-
                 List<RefactoringInfo> temp = refactoringsAtCommit(miner, repo, commit);
                 refactoringInfos.addAll(temp);
 
@@ -199,7 +203,7 @@ public class RepositoryMetricsExtraction extends AnAction {
     private List<RefactoringInfo> refactoringsAtCommit(GitHistoryRefactoringMiner miner, Repository repo, String commitId) {
         List<RefactoringInfo> refactoringInfos = new ArrayList<>();
 
-        //For some reason, this method receives 2 strings, but only the second one is sued as the commit id (I tested it)
+        //For some reason, this method receives 2 strings, but only the second one is used as the commit id (I tested it)
         miner.detectAtCommit(repo, null, commitId, new RefactoringHandler() {
             @Override
             public void handle(String commitId, List<Refactoring> refactorings) {
@@ -241,19 +245,42 @@ public class RepositoryMetricsExtraction extends AnAction {
     /**
      * Get all the commits in the repository for the branch specified in the class attribute
      * @return A set with all the commit ids
-     * @throws GitAPIException If there is an error with the git API
      * @throws IOException If there is an error with the repository
      */
-    private Set<String> getCommits() throws GitAPIException, IOException {
+    private Set<String> getCommits() throws IOException {
         Repository repository = Git.open(new File(this.repositoryPath)).getRepository();
 
         Set<String> commits = new HashSet<>();
         try (Git git = new Git(repository)) {
-            Iterable<RevCommit> allCommits = git.log().add(repository.resolve(this.branch)).call();
+            Iterable<RevCommit> allCommits;
+            if(this.startingCommit != null) {
+                RevWalk revWalk = new RevWalk(repository);
+                allCommits = git.log()
+                        .add(repository.resolve(this.branch))
+                        .addRange(revWalk.parseCommit(repository.resolve(this.startingCommit)), revWalk.parseCommit(repository.resolve(branch)))
+                        .call();
+            } else {
+                allCommits = git.log()
+                        .add(repository.resolve(this.branch))
+                        .call();
+            }
 
             allCommits.forEach(commit -> commits.add(commit.getName()));
+        } catch (GitAPIException e) {
+            String content;
+            if (this.startingCommit != null) {
+                content = "Check if the branch exists and if the commit is correct.";
+            } else {
+                content = "Check if the branch exists.";
+            }
+            Utils.popup(this.project,
+                    "LiveRef - Error getting the commits",
+                    content,
+                    NotificationType.ERROR);
+            System.out.println("Error getting the commits: " + e.getMessage());
         }
 
+        System.out.println("Commits extracted: " + commits.size());
         repository.close();
         return commits;
     }

@@ -206,8 +206,8 @@ public class ConfigureTool extends AnAction {
                 }
             }
 
-            if(mySettings.getState().maxExtractMethodsBefUpdate != Integer.parseInt(wrapper.textFields_maxExtractMethodsBefUpdate.getText())){
-                mySettings.getState().maxExtractMethodsBefUpdate = Integer.parseInt(wrapper.textFields_maxExtractMethodsBefUpdate.getText());
+            if(mySettings.getState().maxRefactoringsBefUpdate != Integer.parseInt(wrapper.textFields_maxExtractMethodsBefUpdate.getText())){
+                mySettings.getState().maxRefactoringsBefUpdate = Integer.parseInt(wrapper.textFields_maxExtractMethodsBefUpdate.getText());
             }
             if(mySettings.getState().biasMultiplier != Integer.parseInt(wrapper.textFields_biasMultiplier.getText())) {
                 mySettings.getState().biasMultiplier = Integer.parseInt(wrapper.textFields_biasMultiplier.getText());
@@ -413,7 +413,7 @@ public class ConfigureTool extends AnAction {
 
             MySettings.State state = project.getService(MySettings.class).getState();
             textField_pythonPath.setText(state.pythonPath);
-            textFields_maxExtractMethodsBefUpdate.setText(Integer.toString(state.maxExtractMethodsBefUpdate));
+            textFields_maxExtractMethodsBefUpdate.setText(Integer.toString(state.maxRefactoringsBefUpdate));
             textFields_biasMultiplier.setText(Integer.toString(state.biasMultiplier));
             selectedProfile = Database.getSelectedModel();
 

@@ -20,6 +20,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
+enum RefType {
+    EXTRACT_METHOD,
+    EXTRACT_CLASS
+}
+
 public class Utils {
     public static final String FILE_COPIES_DIR = Values.dataFolder;
     public static int counter = 0;

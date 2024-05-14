@@ -19,6 +19,7 @@ import com.utils.UtilitiesOverall;
 import com.utils.importantValues.ThresholdsCandidates;
 import com.utils.importantValues.Values;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -65,6 +66,14 @@ public class ExtractClass{
                 Values.isRefactoring = true;
                 Values.allEC.add(candidate);
                 System.out.println("============ Extract Class Done!!! ============");
+
+                try {
+                    PredictionModel.updateECModel(candidate.classMetrics, editor.getProject());
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+
             }
             else Values.isRefactoring = false;
         };

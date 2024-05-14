@@ -19,7 +19,6 @@ import com.utils.importantValues.ThresholdsCandidates;
 import com.utils.importantValues.Values;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -100,13 +99,11 @@ public class ExtractMethod{
                 //Update Extract Method model with new data
                 PsiMethod method = candidate.method;
                 MethodMetrics metrics = candidate.metrics.getMethodMetrics(method);
-                PredictionModel.updateModel(metrics, editor.getProject());
+                PredictionModel.updateEMModel(metrics, editor.getProject());
 
             }else Values.isRefactoring = false;
-        } catch (PrepareFailedException e) {
+        } catch (PrepareFailedException | IOException | InterruptedException e) {
             e.printStackTrace();
-        } catch (IOException | InterruptedException | SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
