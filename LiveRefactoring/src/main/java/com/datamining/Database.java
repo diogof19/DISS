@@ -292,7 +292,7 @@ public class Database {
         int afterTotalLines = afterMethodMetrics != null ? afterMethodMetrics.numberLinesOfCode +
                 afterMethodMetrics.numberComments + afterMethodMetrics.numberBlankLines : 0;
 
-        String insertSQL = "INSERT INTO metrics (author, numberLinesOfCodeBef, numberCommentsBef, numberBlankLinesBef, " +
+        String insertSQL = "INSERT INTO methodMetrics (author, numberLinesOfCodeBef, numberCommentsBef, numberBlankLinesBef, " +
                 "totalLinesBef, numParametersBef, numStatementsBef, halsteadLengthBef, halsteadVocabularyBef, " +
                 "halsteadVolumeBef, halsteadDifficultyBef, halsteadEffortBef, halsteadLevelBef, halsteadTimeBef, " +
                 "halsteadBugsDeliveredBef, halsteadMaintainabilityBef, cyclomaticComplexityBef, cognitiveComplexityBef, " +

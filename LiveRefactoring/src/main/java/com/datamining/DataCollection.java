@@ -1,18 +1,31 @@
 package com.datamining;
 
+import com.analysis.candidates.ExtractMethodCandidate;
 import com.analysis.metrics.ClassMetrics;
+import com.analysis.metrics.FileMetrics;
 import com.analysis.metrics.MethodMetrics;
+import com.analysis.refactorings.ExtractMethod;
 import com.core.Pair;
+import com.core.Refactorings;
+import com.core.Severity;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.PsiMethod;
+import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import com.utils.UtilitiesOverall;
+import com.utils.importantValues.SelectedRefactorings;
+import com.utils.importantValues.Values;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.eclipse.jgit.api.Git;
@@ -41,7 +54,7 @@ public class DataCollection extends AnAction {
     private static final String CONNECTION_STRING = "mongodb://localhost:27017";
     private static final String DATABASE_NAME = "smartshark_2_2";
     private static final String COLLECTION_NAME = "refactoring";
-    private static final String REFACTORING_TYPE = "extract_class";
+    private static final Refactorings REFACTORING_TYPE = Refactorings.ExtractMethod;
     private MongoClient mongoClient;
     private Project project;
 
@@ -104,8 +117,14 @@ public class DataCollection extends AnAction {
         limit(20000),
          */
 
+        String refactoringType = "";
+        if (REFACTORING_TYPE.equals(Refactorings.ExtractMethod)){
+            refactoringType = "Extract Method";
+        } else if (REFACTORING_TYPE.equals(Refactorings.ExtractClass)){
+            refactoringType = "Extract Class";
+        }
         List<Bson> pipeline = asList(
-                match(eq("type", REFACTORING_TYPE)),
+                match(eq("type", refactoringType)),
                 project(fields(include("_id", "commit_id", "type", "description"))),
                 lookup("commit", "commit_id", "_id", "commit"),
                 unwind("$commit"),
@@ -216,7 +235,7 @@ public class DataCollection extends AnAction {
                 continue;
             }
 
-            if(REFACTORING_TYPE.equals("extract_method")){
+            if(REFACTORING_TYPE.equals(Refactorings.ExtractMethod)){
                 MethodMetrics beforeMetrics = getMethodMetricsFromFile(refactoringInfo.getBeforeFile(),
                         refactoringInfo.getMethodName(), refactoringInfo.getClassName());
 
@@ -237,8 +256,10 @@ public class DataCollection extends AnAction {
                     equalMetrics++;
                 }
 
+
+
                 saveMethodMetricsSafe(beforeMetrics, afterMetrics);
-            } else if (REFACTORING_TYPE.equals("extract_class")){
+            } else if (REFACTORING_TYPE.equals(Refactorings.ExtractClass)){
                 ClassMetrics beforeMetrics = getClassMetricsFromFile(refactoringInfo.getBeforeFile(), refactoringInfo.getClassName());
 
                 if(beforeMetrics == null){
@@ -282,13 +303,13 @@ public class DataCollection extends AnAction {
 
         String description = document.getString("description");
 
-        if(REFACTORING_TYPE.equals("extract_method")){
+        if(REFACTORING_TYPE.equals(Refactorings.ExtractMethod)){
             info.setMethodName(getMethodName(description));
 
             Pair<String, String> classInfo = getClassName(description);
             info.setFullClass(classInfo.getFirst());
             info.setClassName(classInfo.getSecond());
-        } else if (REFACTORING_TYPE.equals("extract_class")) {
+        } else if (REFACTORING_TYPE.equals(Refactorings.ExtractClass)) {
             Pair<String, String> classInfo = getOldClass(description);
             info.setFullClass(classInfo.getFirst());
             info.setClassName(classInfo.getSecond());
@@ -393,5 +414,40 @@ public class DataCollection extends AnAction {
             e.printStackTrace();
         }
         logLock.unlock();
+    }
+
+    private void runPluginAndSaveResult(PsiJavaFile file, PsiMethod method, String methodName, String className) throws Exception {
+        SelectedRefactorings.selectedRefactoring = Refactorings.ExtractMethod;
+        SelectedRefactorings.selectedRefactorings = new ArrayList<>();
+        SelectedRefactorings.selectedRefactorings.add(Refactorings.ExtractMethod);
+        Values.editor = ((TextEditor) FileEditorManager.getInstance(this.project).getSelectedEditor()).getEditor();
+
+        UtilitiesOverall utilitiesOverall = new UtilitiesOverall();
+        utilitiesOverall.startActions(file);
+
+        //Need to select candidates for the specific method
+        ArrayList<Severity> candidates = new ArrayList<>();
+        for (Severity severity : Values.candidates){
+            ExtractMethodCandidate candidate = (ExtractMethodCandidate) severity.candidate;
+            if (candidate.method.equals(method)){
+                candidates.add(severity);
+            }
+        }
+
+        if(candidates.isEmpty())
+            return;
+
+        candidates.sort(Comparator.comparingDouble(o -> o.severity));
+        Severity severity = candidates.get(candidates.size() - 1);
+
+        ExtractMethod extractMethod = new ExtractMethod(Values.editor);
+
+        PsiElement[] elements = extractMethod.getElements((ExtractMethodCandidate) severity.candidate);
+
+        ExtractMethodHandler.invokeOnElements(this.project, Values.editor, file, elements);
+
+        FileMetrics fileMetrics = new FileMetrics(file);
+        MethodMetrics methodMetrics = Utils.getMethodMetricsFromFile(file, methodName, className);
+
     }
 }
