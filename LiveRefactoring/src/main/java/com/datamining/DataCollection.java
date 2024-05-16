@@ -1,5 +1,6 @@
 package com.datamining;
 
+import com.analysis.Candidates;
 import com.analysis.candidates.ExtractMethodCandidate;
 import com.analysis.metrics.ClassMetrics;
 import com.analysis.metrics.FileMetrics;
@@ -12,20 +13,16 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.fileEditor.TextEditor;
+import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiJavaFile;
-import com.intellij.psi.PsiMethod;
-import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
+import com.intellij.psi.*;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
-import com.utils.UtilitiesOverall;
 import com.utils.importantValues.SelectedRefactorings;
 import com.utils.importantValues.Values;
+import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.eclipse.jgit.api.Git;
@@ -36,8 +33,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.datamining.Utils.*;
@@ -60,11 +55,12 @@ public class DataCollection extends AnAction {
 
     private static final String repositoryPaths = "C:\\Users\\dluis\\Documents\\repoClones";
 
-    private static final int MAX_THREADS = 4;
+    private static final int MAX_THREADS = 1;
     private final Map<String, ArrayList<Document>> repoRefactoringMap = new HashMap<>();
     private final Map<String, ReentrantLock> repoLocks = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
     private final ReentrantLock logLock = new ReentrantLock();
+    private final ReentrantLock afterLiveRefLock = new ReentrantLock();
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
@@ -119,12 +115,13 @@ public class DataCollection extends AnAction {
 
         String refactoringType = "";
         if (REFACTORING_TYPE.equals(Refactorings.ExtractMethod)){
-            refactoringType = "Extract Method";
+            refactoringType = "extract_method";
         } else if (REFACTORING_TYPE.equals(Refactorings.ExtractClass)){
-            refactoringType = "Extract Class";
+            refactoringType = "extract_class";
         }
         List<Bson> pipeline = asList(
                 match(eq("type", refactoringType)),
+                limit(100),
                 project(fields(include("_id", "commit_id", "type", "description"))),
                 lookup("commit", "commit_id", "_id", "commit"),
                 unwind("$commit"),
@@ -164,46 +161,68 @@ public class DataCollection extends AnAction {
     }
 
     private void extractMetrics() {
-        ThreadPoolExecutor pool = new ThreadPoolExecutor(
-                MAX_THREADS,
-                MAX_THREADS,
-                0L,
-                java.util.concurrent.TimeUnit.MILLISECONDS,
-                new java.util.concurrent.LinkedBlockingQueue<>());
-        ExecutorCompletionService<Void> completionService = new ExecutorCompletionService<>(pool);
+//        ThreadPoolExecutor pool = new ThreadPoolExecutor(
+//                MAX_THREADS,
+//                MAX_THREADS,
+//                0L,
+//                java.util.concurrent.TimeUnit.MILLISECONDS,
+//                new java.util.concurrent.LinkedBlockingQueue<>());
+//        ExecutorCompletionService<Void> completionService = new ExecutorCompletionService<>(pool);
+//
+//        Database.countMetrics();
+//
+//        try {
+//            ArrayList<String> reposList = new ArrayList<>(repoRefactoringMap.keySet());
+//            reposList.sort(Comparator.comparingInt(o -> repoRefactoringMap.get(o).size()));
+//
+//            for (int i = reposList.size()-1; i >= 0; i--) {
+//                String repo = reposList.get(i);
+//
+//                completionService.submit(() -> {
+//                    try {
+//                        extractMetrics(repoRefactoringMap.get(repo), repo);
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    } finally {
+//                        repoRefactoringMap.remove(repo);
+//                    }
+//                    return null;
+//                });
+//            }
+//
+//            for (int i = 0; i < reposList.size(); i++) {
+//                try {
+//                    completionService.take().get();
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        } finally {
+//            pool.shutdown();
+//        }
 
-        Database.countMetrics();
+        ArrayList<String> reposList = new ArrayList<>(repoRefactoringMap.keySet());
+        reposList.sort(Comparator.comparingInt(o -> repoRefactoringMap.get(o).size()));
 
+        for (int i = reposList.size()-1; i >= 0; i--) {
+            String repo = reposList.get(i);
+
+            try {
+                extractMetrics(repoRefactoringMap.get(repo), repo);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        //delete fileCopies folder
+        String fileCopiesFolder = Values.dataFolder + "fileCopies/";
+        File file = new File(fileCopiesFolder);
         try {
-            ArrayList<String> reposList = new ArrayList<>(repoRefactoringMap.keySet());
-            reposList.sort(Comparator.comparingInt(o -> repoRefactoringMap.get(o).size()));
-
-            for (int i = reposList.size()-1; i >= 0; i--) {
-                String repo = reposList.get(i);
-
-                completionService.submit(() -> {
-                    try {
-                        extractMetrics(repoRefactoringMap.get(repo), repo);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    } finally {
-                        repoRefactoringMap.remove(repo);
-                    }
-                    return null;
-                });
-            }
-
-            for (int i = 0; i < reposList.size(); i++) {
-                try {
-                    completionService.take().get();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch (Exception e) {
+            FileUtils.deleteDirectory(file);
+        } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            pool.shutdown();
         }
 
         Database.countMetrics();
@@ -256,9 +275,12 @@ public class DataCollection extends AnAction {
                     equalMetrics++;
                 }
 
+                Integer id = saveMethodMetricsSafe(beforeMetrics, afterMetrics);
 
-
-                saveMethodMetricsSafe(beforeMetrics, afterMetrics);
+                if(id != null){
+                    runPluginAndSaveResult(refactoringInfo.getBeforeFile(), beforeMetrics.method, refactoringInfo.getMethodName(), refactoringInfo.getClassName(), id, beforeMetrics.equals(afterMetrics));
+                } else
+                    System.out.println("ID is null");
             } else if (REFACTORING_TYPE.equals(Refactorings.ExtractClass)){
                 ClassMetrics beforeMetrics = getClassMetricsFromFile(refactoringInfo.getBeforeFile(), refactoringInfo.getClassName());
 
@@ -389,12 +411,14 @@ public class DataCollection extends AnAction {
         return loadFile(filePath, repoName, this.project);
     }
 
-    private void saveMethodMetricsSafe(MethodMetrics beforeMetrics, MethodMetrics afterMetrics) {
+    private Integer saveMethodMetricsSafe(MethodMetrics beforeMetrics, MethodMetrics afterMetrics) {
         lock.lock();
 
-        Database.saveMethodMetrics(null, beforeMetrics, afterMetrics);
+        Integer id = Database.saveMethodMetrics(null, beforeMetrics, afterMetrics);
 
         lock.unlock();
+
+        return id;
     }
 
     private void saveClassMetricsSafe(ClassMetrics beforeMetrics, ClassMetrics afterMetrics) {
@@ -416,14 +440,38 @@ public class DataCollection extends AnAction {
         logLock.unlock();
     }
 
-    private void runPluginAndSaveResult(PsiJavaFile file, PsiMethod method, String methodName, String className) throws Exception {
+    //TODO: CHANGE getExtractableFragments FUNCTIONS IN ExtractMethod.java TO SARA'S
+    private void runPluginAndSaveResult(PsiJavaFile file, PsiMethod method, String methodName, String className, int id, boolean same) {
+        System.out.println("Inside run plugin and save result");
         SelectedRefactorings.selectedRefactoring = Refactorings.ExtractMethod;
         SelectedRefactorings.selectedRefactorings = new ArrayList<>();
         SelectedRefactorings.selectedRefactorings.add(Refactorings.ExtractMethod);
-        Values.editor = ((TextEditor) FileEditorManager.getInstance(this.project).getSelectedEditor()).getEditor();
+        //Values.editor = ((TextEditor) FileEditorManager.getInstance(this.project).getSelectedEditor()).getEditor();
+        Values.editor = FileEditorManager.getInstance(this.project).openTextEditor(new OpenFileDescriptor(this.project, file.getVirtualFile()), true);
+        Values.isActive = true;
 
-        UtilitiesOverall utilitiesOverall = new UtilitiesOverall();
-        utilitiesOverall.startActions(file);
+        ApplicationManager.getApplication().runReadAction(() -> {
+            try {
+                Values.before = new FileMetrics(file);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            Values.currentFile = Values.before;
+
+            ExtractMethod extractMethod = new ExtractMethod(Values.editor, file);
+            extractMethod.run();
+        });
+
+        Candidates candidatesClass = new Candidates();
+        Values.candidates = candidatesClass.getSeverities();
+
+        System.out.println("Same: " + same);
+
+        if(Values.candidates.isEmpty()){
+            System.out.println("Values.candidates is empty");
+            saveAfterLifeRefMetricsSafe(null, id, same);
+            return;
+        }
 
         //Need to select candidates for the specific method
         ArrayList<Severity> candidates = new ArrayList<>();
@@ -434,20 +482,57 @@ public class DataCollection extends AnAction {
             }
         }
 
-        if(candidates.isEmpty())
+        if(candidates.isEmpty()){
+            System.out.println("No candidates for method " + methodName);
+            saveAfterLifeRefMetricsSafe(null, id, same);
             return;
+        } else {
+            System.out.println("Candidates for method " + methodName + ": " + candidates.size());
+        }
 
         candidates.sort(Comparator.comparingDouble(o -> o.severity));
         Severity severity = candidates.get(candidates.size() - 1);
+        ExtractMethodCandidate extractMethodCandidate = (ExtractMethodCandidate) severity.candidate;
+
+        ApplicationManager.getApplication().runReadAction(() -> {
+            System.out.println("Saving afterLiveRef for method: " + methodName);
+            System.out.println("Old method: ");
+            for(PsiStatement statement : method.getBody().getStatements()){
+                System.out.println(statement.getText());
+            }
+        });
 
         ExtractMethod extractMethod = new ExtractMethod(Values.editor);
 
-        PsiElement[] elements = extractMethod.getElements((ExtractMethodCandidate) severity.candidate);
+        //PsiElement[] elements = extractMethod.getElements((ExtractMethodCandidate) severity.candidate);
 
-        ExtractMethodHandler.invokeOnElements(this.project, Values.editor, file, elements);
+        //Values.lastRefactoring = new LastRefactoring(extractMethodCandidate.method, "Extract Method", elements, Values.currentFile, severity.severity, severity.indexColorGutter);
 
-        FileMetrics fileMetrics = new FileMetrics(file);
-        MethodMetrics methodMetrics = Utils.getMethodMetricsFromFile(file, methodName, className);
+        System.out.println("Before Extract");
+        ApplicationManager.getApplication().runReadAction(() -> {
+            extractMethod.extractMethod((ExtractMethodCandidate) severity.candidate, severity.severity, severity.indexColorGutter);
 
+        });
+        System.out.println("After Extract");
+
+        MethodMetrics methodMetrics = getMethodMetricsFromFile(file, methodName, className);
+        System.out.println("After get method metrics");
+
+        ApplicationManager.getApplication().runReadAction(() -> {
+            System.out.println("\nNew method: ");
+            for(PsiStatement statement : methodMetrics.method.getBody().getStatements()){
+                System.out.println(statement.getText());
+            }
+        });
+
+        saveAfterLifeRefMetricsSafe(methodMetrics, id, same);
+    }
+
+        private void saveAfterLifeRefMetricsSafe(MethodMetrics methodMetrics, int id, boolean same){
+        afterLiveRefLock.lock();
+
+        Database.saveAfterLiveRefMetrics(methodMetrics, id, same);
+
+        afterLiveRefLock.unlock();
     }
 }

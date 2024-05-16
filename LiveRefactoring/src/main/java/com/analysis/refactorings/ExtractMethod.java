@@ -51,26 +51,51 @@ public class ExtractMethod{
     public ArrayList<Fragment> getExtractableFragments(PsiJavaFile sourceFile) {
         ArrayList<Fragment> fragments = new ArrayList<>();
 
+//        for (MethodMetrics metrics : Values.before.methodMetrics) {
+//            if(!sourceFile.getName().contains(metrics.methodName)) {
+//                if(metrics.method.getBody() != null) {
+//                    if(PredictionModel.predictEM(metrics, this.editor.getProject())) {
+//                        PsiStatement[] statements = metrics.method.getBody().getStatements();
+//                        for (PsiStatement statement : statements) {
+//                            if (!(statement instanceof PsiReturnStatement) && !refactorUtils.containsBreakOrContinueOrReturn(statement)) {
+//                                ArrayList<PsiStatement> children = getChildrenStatements(statement);
+//                                if (children.size() == 0) fragments.add(addFragments(statement, metrics));
+//                                else {
+//                                    for (PsiStatement child : children) {
+//                                        fragments.add(addFragments(child, metrics));
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//                }
+//
+//            }
+//        }
+
         for (MethodMetrics metrics : Values.before.methodMetrics) {
             if(!sourceFile.getName().contains(metrics.methodName)) {
-                if(metrics.method.getBody() != null) {
-                    if(PredictionModel.predictEM(metrics, this.editor.getProject())) {
+                int totalLines = metrics.numberBlankLines + metrics.numberComments + metrics.numberLinesOfCode;
+                if (metrics.isLong || totalLines >= ThresholdsCandidates.extractMethodLines || metrics.complexityOfMethod >= ThresholdsCandidates.extractMethodComplexity ||
+                        metrics.halsteadEffort >= ThresholdsCandidates.extractMethodEffort) {
+                    if(metrics.method.getBody() != null) {
                         PsiStatement[] statements = metrics.method.getBody().getStatements();
-                        for (PsiStatement statement : statements) {
-                            if (!(statement instanceof PsiReturnStatement) && !refactorUtils.containsBreakOrContinueOrReturn(statement)) {
-                                ArrayList<PsiStatement> children = getChildrenStatements(statement);
-                                if (children.size() == 0) fragments.add(addFragments(statement, metrics));
-                                else {
-                                    for (PsiStatement child : children) {
-                                        fragments.add(addFragments(child, metrics));
+                        if (refactorUtils.getAllStatements(metrics.method).size() >= 2 * ThresholdsCandidates.minNumStatements) {
+                            for (PsiStatement statement : statements) {
+                                if (!(statement instanceof PsiReturnStatement) && !refactorUtils.containsBreakOrContinueOrReturn(statement)) {
+                                    ArrayList<PsiStatement> children = getChildrenStatements(statement);
+                                    if (children.size() == 0) fragments.add(addFragments(statement, metrics));
+                                    else {
+                                        for (PsiStatement child : children) {
+                                            fragments.add(addFragments(child, metrics));
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-
                 }
-
             }
         }
 
@@ -89,7 +114,7 @@ public class ExtractMethod{
         System.out.println("Before processor");
         ExtractMethodProcessor processor = new ExtractMethodProcessor(editor.getProject(),
                 editor, elements, null,
-                "Extract Method applied to " + candidate.method.getName(), candidate.method.getName(), HelpID.EXTRACT_METHOD);
+                "Extract Method applied to " + candidate.method.getName(), candidate.method.getName() + "Copy", HelpID.EXTRACT_METHOD);
         System.out.println("After processor");
         try {
             if (processor.prepare()) {

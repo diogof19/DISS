@@ -26,7 +26,6 @@ enum RefType {
 }
 
 public class Utils {
-    public static final String FILE_COPIES_DIR = Values.dataFolder;
     public static int counter = 0;
 
     /**
@@ -70,12 +69,13 @@ public class Utils {
      * @return PsiJavaFile
      */
     public static PsiJavaFile loadFile(String filePath, String folder, Project project) {
-        File tmpDir = new File(FILE_COPIES_DIR + folder + "/");
+        String fileCopiesFolder = Values.dataFolder + "fileCopies/";
+        File tmpDir = new File(fileCopiesFolder + folder + "/");
         if (!tmpDir.exists()) {
             tmpDir.mkdirs();
         }
 
-        String newFilePath = FILE_COPIES_DIR + folder + "/" + counter + ".java";
+        String newFilePath = fileCopiesFolder + folder + "/" + counter + ".java";
         counter++;
         try {
             Files.copy(Path.of(filePath), Path.of(newFilePath));
