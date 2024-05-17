@@ -16,7 +16,9 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.PsiMethod;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -27,11 +29,16 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.eclipse.jgit.api.Git;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -61,6 +68,7 @@ public class DataCollection extends AnAction {
     private final ReentrantLock lock = new ReentrantLock();
     private final ReentrantLock logLock = new ReentrantLock();
     private final ReentrantLock afterLiveRefLock = new ReentrantLock();
+    private int liveRefMetricsCount = 0;
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
@@ -102,13 +110,14 @@ public class DataCollection extends AnAction {
         MongoCollection<Document> collection = this.mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME);
 
         List<String> urlsToExclude = Arrays.asList(
-                "https://github.com/apache/wss4j.git"
+                "https://github.com/apache/wss4j.git",
+                "https://github.com/apache/phoenix.git"
         );
 
         Bson combinedFilter = match(nin("vcs_system.url", urlsToExclude));
 
         /*
-        Last extract method:
+        Last extract method for data only:
         skip(40000),
         limit(20000),
          */
@@ -121,7 +130,8 @@ public class DataCollection extends AnAction {
         }
         List<Bson> pipeline = asList(
                 match(eq("type", refactoringType)),
-                limit(100),
+                skip(65000),
+                limit(1000),
                 project(fields(include("_id", "commit_id", "type", "description"))),
                 lookup("commit", "commit_id", "_id", "commit"),
                 unwind("$commit"),
@@ -202,6 +212,8 @@ public class DataCollection extends AnAction {
 //        } finally {
 //            pool.shutdown();
 //        }
+
+        Database.countMetrics();
 
         ArrayList<String> reposList = new ArrayList<>(repoRefactoringMap.keySet());
         reposList.sort(Comparator.comparingInt(o -> repoRefactoringMap.get(o).size()));
@@ -440,7 +452,7 @@ public class DataCollection extends AnAction {
         logLock.unlock();
     }
 
-    //TODO: CHANGE getExtractableFragments FUNCTIONS IN ExtractMethod.java TO SARA'S
+    //TODO: CHANGE getExtractableFragments FUNCTION IN ExtractMethod.java TO SARA'S
     private void runPluginAndSaveResult(PsiJavaFile file, PsiMethod method, String methodName, String className, int id, boolean same) {
         System.out.println("Inside run plugin and save result");
         SelectedRefactorings.selectedRefactoring = Refactorings.ExtractMethod;
@@ -465,11 +477,8 @@ public class DataCollection extends AnAction {
         Candidates candidatesClass = new Candidates();
         Values.candidates = candidatesClass.getSeverities();
 
-        System.out.println("Same: " + same);
-
         if(Values.candidates.isEmpty()){
-            System.out.println("Values.candidates is empty");
-            saveAfterLifeRefMetricsSafe(null, id, same);
+            Database.saveAfterLiveRefMetrics(null, id, same);
             return;
         }
 
@@ -483,56 +492,77 @@ public class DataCollection extends AnAction {
         }
 
         if(candidates.isEmpty()){
-            System.out.println("No candidates for method " + methodName);
-            saveAfterLifeRefMetricsSafe(null, id, same);
+            Database.saveAfterLiveRefMetrics(null, id, same);
             return;
-        } else {
-            System.out.println("Candidates for method " + methodName + ": " + candidates.size());
         }
 
         candidates.sort(Comparator.comparingDouble(o -> o.severity));
         Severity severity = candidates.get(candidates.size() - 1);
         ExtractMethodCandidate extractMethodCandidate = (ExtractMethodCandidate) severity.candidate;
 
-        ApplicationManager.getApplication().runReadAction(() -> {
-            System.out.println("Saving afterLiveRef for method: " + methodName);
-            System.out.println("Old method: ");
-            for(PsiStatement statement : method.getBody().getStatements()){
-                System.out.println(statement.getText());
-            }
-        });
-
         ExtractMethod extractMethod = new ExtractMethod(Values.editor);
 
-        //PsiElement[] elements = extractMethod.getElements((ExtractMethodCandidate) severity.candidate);
+        Thread clickButtonThread = new Thread(() -> {
+            int count = 0;
+            JDialog dialog;
+            while ((dialog = getExtractMethodDialogOpen("Extract Method applied to " + extractMethodCandidate.method.getName())) == null && count < 10){
+                try {
+                    Thread.sleep(500);
+                    count++;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
 
-        //Values.lastRefactoring = new LastRefactoring(extractMethodCandidate.method, "Extract Method", elements, Values.currentFile, severity.severity, severity.indexColorGutter);
-
-        System.out.println("Before Extract");
-        ApplicationManager.getApplication().runReadAction(() -> {
-            extractMethod.extractMethod((ExtractMethodCandidate) severity.candidate, severity.severity, severity.indexColorGutter);
-
-        });
-        System.out.println("After Extract");
-
-        MethodMetrics methodMetrics = getMethodMetricsFromFile(file, methodName, className);
-        System.out.println("After get method metrics");
-
-        ApplicationManager.getApplication().runReadAction(() -> {
-            System.out.println("\nNew method: ");
-            for(PsiStatement statement : methodMetrics.method.getBody().getStatements()){
-                System.out.println(statement.getText());
+            if(dialog != null) {
+                clickRefactorButton(dialog);
+            } else {
+                System.out.println("Dialog not found");
             }
         });
+        clickButtonThread.start();
 
-        saveAfterLifeRefMetricsSafe(methodMetrics, id, same);
-    }
+        ApplicationManager.getApplication().runReadAction(() -> {
+            extractMethod.extractMethod(extractMethodCandidate, severity.severity, severity.indexColorGutter);
 
-        private void saveAfterLifeRefMetricsSafe(MethodMetrics methodMetrics, int id, boolean same){
-        afterLiveRefLock.lock();
+        });
+
+        MethodMetrics methodMetrics = getMethodMetricsFromFile(file, methodName, className);
+
+        if(methodMetrics == null){
+            return;
+        }
 
         Database.saveAfterLiveRefMetrics(methodMetrics, id, same);
+        liveRefMetricsCount++;
+        System.out.println("Saved after life ref metrics (" + liveRefMetricsCount + ")");
+    }
 
-        afterLiveRefLock.unlock();
+    private JDialog getExtractMethodDialogOpen(String title) {
+        for(Window window: Window.getWindows()){
+            if(window instanceof JDialog){
+                JDialog dialog = (JDialog) window;
+                if(dialog.getTitle().equals(title)){
+                    return dialog;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void clickRefactorButton(JDialog dialog) {
+        Component[] components = dialog.getComponents();
+        for(Component component : components){
+            try {
+                for(int i = 0; i < 5; i++) {
+                    SwingUtilities.invokeAndWait(() -> {
+                        component.dispatchEvent(new KeyEvent(component, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_ENTER, KeyEvent.CHAR_UNDEFINED));
+                        component.dispatchEvent(new KeyEvent(component, KeyEvent.KEY_RELEASED, System.currentTimeMillis(), 0, KeyEvent.VK_ENTER, KeyEvent.CHAR_UNDEFINED));
+                    });
+                }
+            } catch (InterruptedException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

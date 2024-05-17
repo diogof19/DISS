@@ -5,7 +5,6 @@ import com.analysis.metrics.MethodMetrics;
 import com.core.Fragment;
 import com.core.LastRefactoring;
 import com.core.MyRange;
-import com.datamining.PredictionModel;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.psi.*;
@@ -18,7 +17,6 @@ import com.utils.RefactorUtils;
 import com.utils.importantValues.ThresholdsCandidates;
 import com.utils.importantValues.Values;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -111,27 +109,24 @@ public class ExtractMethod{
     public void extractMethod(ExtractMethodCandidate candidate, double severity, int index) {
         Values.isRefactoring = true;
         PsiElement[] elements = getElements(candidate);
-        System.out.println("Before processor");
         ExtractMethodProcessor processor = new ExtractMethodProcessor(editor.getProject(),
                 editor, elements, null,
-                "Extract Method applied to " + candidate.method.getName(), candidate.method.getName() + "Copy", HelpID.EXTRACT_METHOD);
-        System.out.println("After processor");
+                "Extract Method applied to " + candidate.method.getName(), candidate.method.getName() + "LiveRefSara", HelpID.EXTRACT_METHOD);
+
         try {
             if (processor.prepare()) {
                 Values.lastRefactoring = new LastRefactoring(candidate.method, "Extract Method", elements, Values.currentFile, severity, index);
-                System.out.println("Before invokeOnElements");
                 ExtractMethodHandler.invokeOnElements(editor.getProject(), processor, candidate.sourceFile, true);
-                System.out.println("After invokeOnElements");
                 Values.allEM.add(candidate);
                 System.out.println("============ Extract Method Done!!! ============");
 
                 //Update Extract Method model with new data
-                PsiMethod method = candidate.method;
-                MethodMetrics metrics = candidate.metrics.getMethodMetrics(method);
-                PredictionModel.updateEMModel(metrics, editor.getProject());
+//                PsiMethod method = candidate.method;
+//                MethodMetrics metrics = candidate.metrics.getMethodMetrics(method);
+//                PredictionModel.updateEMModel(metrics, editor.getProject());
 
             }else Values.isRefactoring = false;
-        } catch (PrepareFailedException | IOException | InterruptedException e) {
+        } catch (PrepareFailedException e) {
             e.printStackTrace();
         }
     }

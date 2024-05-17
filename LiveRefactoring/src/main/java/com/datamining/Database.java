@@ -3,7 +3,6 @@ package com.datamining;
 import com.analysis.metrics.ClassMetrics;
 import com.analysis.metrics.MethodMetrics;
 import com.core.Pair;
-import com.utils.importantValues.Values;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -15,10 +14,10 @@ import static com.datamining.Utils.getMethodMetricsFromFile;
 public class Database {
     //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\resources\\metrics.db";
     //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\.gradle\\caches\\modules-2\\files-2.1\\com.jetbrains.intellij.idea\\ideaIC\\2021.1.1\\e051d885e757b286781f50305504d7b8db3e1dba\\ideaIC-2021.1.1\\bin\\tmp\\metrics.db";
-    private static final String DATABASE_URL = "jdbc:sqlite:" + Values.dataFolder + "metrics.db";
+    //private static final String DATABASE_URL = "jdbc:sqlite:" + Values.dataFolder + "metrics.db";
     //private static final String DATABASE_URL = "jdbc:sqlite:C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\resources\\metrics.db";
     //private static final String DATABASE_URL = "jdbc:sqlite:C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\Classification Model\\data\\metrics.db";
-    //private static final String DATABASE_URL = "jdbc:sqlite:C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\build\\idea-sandbox\\config\\liveRefData\\metrics.db";
+    private static final String DATABASE_URL = "jdbc:sqlite:C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\build\\idea-sandbox\\config\\liveRefData\\metrics.db";
 
     public static void main(String[] args) {
         //createDatabase();
@@ -34,7 +33,8 @@ public class Database {
 //        System.out.println("Number of models: " + getNumberOfModels());
 //        System.out.println("Selected model: " + getSelectedModelName());
 
-        createMetricsLiveRefTable();
+        //countMetrics();
+        //createMetricsLiveRefTable();
     }
 
     /**
@@ -491,6 +491,7 @@ public class Database {
     public static void countMetrics() {
         String countMethodMetricsSQL = "SELECT COUNT(*) FROM methodMetrics;";
         String countClassMetricsSQL = "SELECT COUNT(*) FROM classMetrics;";
+        String countLiveRefMetricsSQL = "SELECT COUNT(*) FROM metricsLiveRef;";
 
         try (Connection conn = connect()) {
             if (conn != null) {
@@ -502,6 +503,10 @@ public class Database {
                 rs = stmt.executeQuery(countClassMetricsSQL);
 
                 System.out.println("Number of class metrics: " + rs.getInt(1));
+
+                rs = stmt.executeQuery(countLiveRefMetricsSQL);
+
+                System.out.println("Number of live refactoring metrics: " + rs.getInt(1));
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
