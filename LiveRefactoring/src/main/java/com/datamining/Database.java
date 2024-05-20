@@ -33,7 +33,7 @@ public class Database {
 //        System.out.println("Number of models: " + getNumberOfModels());
 //        System.out.println("Selected model: " + getSelectedModelName());
 
-        //countMetrics();
+        countMetrics();
         //createMetricsLiveRefTable();
     }
 
@@ -492,6 +492,7 @@ public class Database {
         String countMethodMetricsSQL = "SELECT COUNT(*) FROM methodMetrics;";
         String countClassMetricsSQL = "SELECT COUNT(*) FROM classMetrics;";
         String countLiveRefMetricsSQL = "SELECT COUNT(*) FROM metricsLiveRef;";
+        String countGoodLiveRefMetricsSQL = "SELECT COUNT(*) FROM metricsLiveRef WHERE numberLinesOfCode IS NOT NULL;";
 
         try (Connection conn = connect()) {
             if (conn != null) {
@@ -507,6 +508,10 @@ public class Database {
                 rs = stmt.executeQuery(countLiveRefMetricsSQL);
 
                 System.out.println("Number of live refactoring metrics: " + rs.getInt(1));
+
+                rs = stmt.executeQuery(countGoodLiveRefMetricsSQL);
+
+                System.out.println("Number of good live refactoring metrics: " + rs.getInt(1));
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());

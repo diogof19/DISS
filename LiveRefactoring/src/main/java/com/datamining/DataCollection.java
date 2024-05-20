@@ -40,6 +40,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.datamining.Utils.*;
@@ -67,7 +68,6 @@ public class DataCollection extends AnAction {
     private final Map<String, ReentrantLock> repoLocks = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
     private final ReentrantLock logLock = new ReentrantLock();
-    private final ReentrantLock afterLiveRefLock = new ReentrantLock();
     private int liveRefMetricsCount = 0;
 
     @Override
@@ -110,8 +110,7 @@ public class DataCollection extends AnAction {
         MongoCollection<Document> collection = this.mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME);
 
         List<String> urlsToExclude = Arrays.asList(
-                "https://github.com/apache/wss4j.git",
-                "https://github.com/apache/phoenix.git"
+                "https://github.com/apache/wss4j.git"
         );
 
         Bson combinedFilter = match(nin("vcs_system.url", urlsToExclude));
@@ -122,6 +121,12 @@ public class DataCollection extends AnAction {
         limit(20000),
          */
 
+        /*
+        extract method for comparison:
+        66000 - 66350 (150 increments due to heap space)
+        70000 - 70050
+         */
+
         String refactoringType = "";
         if (REFACTORING_TYPE.equals(Refactorings.ExtractMethod)){
             refactoringType = "extract_method";
@@ -130,8 +135,8 @@ public class DataCollection extends AnAction {
         }
         List<Bson> pipeline = asList(
                 match(eq("type", refactoringType)),
-                skip(65000),
-                limit(1000),
+                skip(70050),
+                limit(50),
                 project(fields(include("_id", "commit_id", "type", "description"))),
                 lookup("commit", "commit_id", "_id", "commit"),
                 unwind("$commit"),
@@ -454,60 +459,116 @@ public class DataCollection extends AnAction {
 
     //TODO: CHANGE getExtractableFragments FUNCTION IN ExtractMethod.java TO SARA'S
     private void runPluginAndSaveResult(PsiJavaFile file, PsiMethod method, String methodName, String className, int id, boolean same) {
-        System.out.println("Inside run plugin and save result");
+        initialiseScriptValues(file);
+
+        boolean timeout = initialiseCandidates(file, method);
+        if (timeout) {
+            return;
+        }
+
+        ArrayList<Severity> candidates = getCandidates(method);
+        if (candidates == null) {
+            Database.saveAfterLiveRefMetrics(null, id, same);
+            return;
+        }
+
+        Severity severity = candidates.get(candidates.size() - 1);
+        ExtractMethodCandidate extractMethodCandidate = (ExtractMethodCandidate) severity.candidate;
+
+//        if(DumbService.isDumb(this.project)){
+//            DumbService.getInstance(this.project).waitForSmartMode();
+//        }
+
+        extractAndSave(extractMethodCandidate, severity, file, methodName, className, id, same);
+    }
+
+    private JDialog getExtractMethodDialogOpen(String title) {
+        for(Window window: Window.getWindows()){
+            if(window instanceof JDialog){
+                JDialog dialog = (JDialog) window;
+                if(dialog.getTitle().equals(title)){
+                    return dialog;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void initialiseScriptValues(PsiJavaFile file) {
         SelectedRefactorings.selectedRefactoring = Refactorings.ExtractMethod;
         SelectedRefactorings.selectedRefactorings = new ArrayList<>();
         SelectedRefactorings.selectedRefactorings.add(Refactorings.ExtractMethod);
-        //Values.editor = ((TextEditor) FileEditorManager.getInstance(this.project).getSelectedEditor()).getEditor();
         Values.editor = FileEditorManager.getInstance(this.project).openTextEditor(new OpenFileDescriptor(this.project, file.getVirtualFile()), true);
         Values.isActive = true;
+    }
 
-        ApplicationManager.getApplication().runReadAction(() -> {
+    private boolean initialiseCandidates(PsiJavaFile file, PsiMethod method) {
+        return ApplicationManager.getApplication().runReadAction((Computable<Boolean>) () -> {
             try {
                 Values.before = new FileMetrics(file);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
             Values.currentFile = Values.before;
+            Values.tempMethod = method;
 
             ExtractMethod extractMethod = new ExtractMethod(Values.editor, file);
-            extractMethod.run();
-        });
 
+            Callable<Void> task = () -> {
+                ApplicationManager.getApplication().runReadAction(extractMethod::run);
+                return null;
+            };
+
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Future<Void> future = executor.submit(task);
+
+            try {
+                future.get(30, TimeUnit.SECONDS);
+            } catch (TimeoutException e) {
+                System.out.println("timeout");
+                future.cancel(true); // Interrupt the task
+                executor.shutdownNow();
+                return true;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            } finally {
+                executor.shutdown();
+                return false;
+            }
+        });
+    }
+
+    private ArrayList<Severity> getCandidates(PsiMethod method) {
         Candidates candidatesClass = new Candidates();
         Values.candidates = candidatesClass.getSeverities();
 
         if(Values.candidates.isEmpty()){
-            Database.saveAfterLiveRefMetrics(null, id, same);
-            return;
+            return null;
         }
 
-        //Need to select candidates for the specific method
         ArrayList<Severity> candidates = new ArrayList<>();
         for (Severity severity : Values.candidates){
             ExtractMethodCandidate candidate = (ExtractMethodCandidate) severity.candidate;
-            if (candidate.method.equals(method)){
+            if (sameMethod(method, candidate.method)){
                 candidates.add(severity);
             }
         }
 
         if(candidates.isEmpty()){
-            Database.saveAfterLiveRefMetrics(null, id, same);
-            return;
+            return null;
         }
 
         candidates.sort(Comparator.comparingDouble(o -> o.severity));
-        Severity severity = candidates.get(candidates.size() - 1);
-        ExtractMethodCandidate extractMethodCandidate = (ExtractMethodCandidate) severity.candidate;
+        return candidates;
+    }
 
-        ExtractMethod extractMethod = new ExtractMethod(Values.editor);
-
+    private void simulateDialog(ExtractMethodCandidate extractMethodCandidate) {
         Thread clickButtonThread = new Thread(() -> {
             int count = 0;
             JDialog dialog;
-            while ((dialog = getExtractMethodDialogOpen("Extract Method applied to " + extractMethodCandidate.method.getName())) == null && count < 10){
+            while ((dialog = getExtractMethodDialogOpen("Extract Method applied to " + extractMethodCandidate.method.getName())) == null && count < 20){
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(600);
                     count++;
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -521,8 +582,13 @@ public class DataCollection extends AnAction {
             }
         });
         clickButtonThread.start();
+    }
+
+    private void extractAndSave(ExtractMethodCandidate extractMethodCandidate, Severity severity, PsiJavaFile file, String methodName, String className, int id, boolean same) {
+        simulateDialog(extractMethodCandidate);
 
         ApplicationManager.getApplication().runReadAction(() -> {
+            ExtractMethod extractMethod = new ExtractMethod(Values.editor);
             extractMethod.extractMethod(extractMethodCandidate, severity.severity, severity.indexColorGutter);
 
         });
@@ -538,23 +604,11 @@ public class DataCollection extends AnAction {
         System.out.println("Saved after life ref metrics (" + liveRefMetricsCount + ")");
     }
 
-    private JDialog getExtractMethodDialogOpen(String title) {
-        for(Window window: Window.getWindows()){
-            if(window instanceof JDialog){
-                JDialog dialog = (JDialog) window;
-                if(dialog.getTitle().equals(title)){
-                    return dialog;
-                }
-            }
-        }
-        return null;
-    }
-
     private void clickRefactorButton(JDialog dialog) {
         Component[] components = dialog.getComponents();
         for(Component component : components){
             try {
-                for(int i = 0; i < 5; i++) {
+                for(int i = 0; i < 7; i++) {
                     SwingUtilities.invokeAndWait(() -> {
                         component.dispatchEvent(new KeyEvent(component, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_ENTER, KeyEvent.CHAR_UNDEFINED));
                         component.dispatchEvent(new KeyEvent(component, KeyEvent.KEY_RELEASED, System.currentTimeMillis(), 0, KeyEvent.VK_ENTER, KeyEvent.CHAR_UNDEFINED));

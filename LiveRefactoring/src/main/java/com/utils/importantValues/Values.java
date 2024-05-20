@@ -10,6 +10,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.markup.RangeHighlighter;
+import com.intellij.psi.PsiMethod;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -66,6 +67,7 @@ public class Values {
     public static String projectName = "unknown";
 
     public static String dataFolder;
+    public static PsiMethod tempMethod;
 
     public void setLastRefactoring(LastRefactoring refactoring) {
         Values.lastRefactoring = refactoring;

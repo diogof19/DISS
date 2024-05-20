@@ -18,6 +18,7 @@ public class StartUp implements StartupActivity {
                 "Starting up the plugin. This may take a few seconds.",
                 NotificationType.INFORMATION
         );
+        System.out.println("System path: " + PathManager.getSystemPath());
         Thread thread = new Thread(new StartUpRunnable());
         thread.start();
     }

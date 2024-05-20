@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
+import static com.datamining.Utils.sameMethod;
+
 public class ExtractMethod{
     public RefactorUtils refactorUtils = new RefactorUtils();
     public PsiJavaFile psiJavaFile = null;
@@ -73,6 +75,10 @@ public class ExtractMethod{
 //        }
 
         for (MethodMetrics metrics : Values.before.methodMetrics) {
+            if(!sameMethod(metrics.method, Values.tempMethod))
+                continue;
+
+            System.out.println("Same");
             if(!sourceFile.getName().contains(metrics.methodName)) {
                 int totalLines = metrics.numberBlankLines + metrics.numberComments + metrics.numberLinesOfCode;
                 if (metrics.isLong || totalLines >= ThresholdsCandidates.extractMethodLines || metrics.complexityOfMethod >= ThresholdsCandidates.extractMethodComplexity ||

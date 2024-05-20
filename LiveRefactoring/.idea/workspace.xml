@@ -10,10 +10,191 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
+      <change afterPath="$PROJECT_DIR$/.idea/LiveRefactoring.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" afterPath="$PROJECT_DIR$/gradlew" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/images/images.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/IntelliJDeodorantBundle.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/META-INF/plugin.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/firebaseConfig/ServiceAccount.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/firebaseConfig/bot.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/circles/1.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/circles/10.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/circles/2.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/circles/3.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/circles/4.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/circles/5.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/circles/6.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/circles/7.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/circles/8.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/circles/9.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/colorBlind/1.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/colorBlind/10.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/colorBlind/2.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/colorBlind/3.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/colorBlind/4.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/colorBlind/5.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/colorBlind/6.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/colorBlind/7.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/colorBlind/8.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/colorBlind/9.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/gutters/1.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/gutters/10.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/gutters/2.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/gutters/3.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/gutters/4.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/gutters/5.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/gutters/6.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/gutters/7.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/gutters/8.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/icons/gutters/9.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/#40ff40.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/#caff40.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/#dbed1e.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/#e8da00.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/#f3c600.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/#fcb200.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/#ff4040.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/#ff5932.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/#ff7122.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/#ff870a.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/#ff9d00.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#154360.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#216490.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#2b85c0.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#2f91d0.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#40ff40.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#5faadb.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#7b241c.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#9b2d23.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#bb362a.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#caff40.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#cb3b2e.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#d3463a.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#d66810.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#d68910.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#dbed1e.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#e89511.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#e8da00.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#ee9e1f.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#f1ae43.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#f3c600.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#fcb200.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#ff4040.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#ff5932.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#ff7122.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#ff870a.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/circles/#ff9d00.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EC1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EC10.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EC2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EC3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EC4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EC5.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EC6.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EC7.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EC8.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EC9.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EM1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EM10.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EM2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EM3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EM4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EM5.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EM6.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EM7.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EM8.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EM9.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EV1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EV10.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EV2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EV3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EV4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EV5.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EV6.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EV7.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EV8.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/EV9.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/IPO1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/IPO10.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/IPO2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/IPO3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/IPO4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/IPO5.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/IPO6.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/IPO7.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/IPO8.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/IPO9.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/MM1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/MM10.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/MM2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/MM3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/MM4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/MM5.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/MM6.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/MM7.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/MM8.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/MM9.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/RPB1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/RPB10.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/RPB2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/RPB3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/RPB6.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/RPB7.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/RPB8.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/RPB9.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/RQB4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/RQB5.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SC1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SC10.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SC2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SC3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SC4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SC5.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SC6.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SC7.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SC8.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SC9.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SG1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SG10.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SG2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SG3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SG4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SG5.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SG6.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SG7.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SG8.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/SG9.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/colorsEC.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/colorsEM.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/colorsEV.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/colorsIPO.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/colorsMM.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/colorsRPB.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/colorsSC.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorBlind/colorsSG.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colors.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorsEC.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorsEM.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorsEV.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorsIPO.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorsMM.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorsRPB.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorsSC.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/images/colors/colorsSG.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/webview/cat.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/resources/webview/index.html" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractMethod.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractMethod.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/StartUp.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/StartUp.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/utils/importantValues/Values.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/utils/importantValues/Values.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,6 +227,16 @@
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="LiveRefactoring" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="LiveRefactoring" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="LiveRefactoring" type="f1a62948:ProjectNode" />
+                <item name="Dependencies" type="6de06a37:ExternalSystemViewDefaultContributor$MyDependenciesNode" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
@@ -105,6 +296,12 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "git-widget-placeholder": "main",
+    "node.js.selected.package.tslint": "(autodetect)"
+  }
+}]]></component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="com.analysis.refactorings" />
@@ -134,34 +331,8 @@
     </key>
   </component>
   <component name="RunManager" selected="Gradle.LiveRefactoring">
-    <configuration name="DataCollection" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.datamining.DataCollection" />
-      <module name="LiveRefactoring.main" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.datamining.RefType" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="Database" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.datamining.Database" />
-      <module name="LiveRefactoring.main" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.datamining.RefType" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="PredictionModel" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.datamining.PredictionModel" />
       <module name="LiveRefactoring.main" />
       <extension name="coverage">
         <pattern>
@@ -220,17 +391,19 @@
       <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="LiveRefactoring" type="GradleRunConfiguration" factoryName="Gradle" nameIsGenerated="true">
+    <configuration name="LiveRefactoring" type="GradleRunConfiguration" factoryName="Gradle">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="runIde" />
+        <option name="scriptParameters" value="" />
         <option name="taskDescriptions">
           <list />
         </option>
         <option name="taskNames">
-          <list />
+          <list>
+            <option value="runIde" />
+          </list>
         </option>
         <option name="vmOptions" />
       </ExternalSystemSettings>
@@ -248,8 +421,6 @@
       <item itemvalue="Application.TempDataCollection" />
       <item itemvalue="Application.Database" />
       <item itemvalue="Application.RepositoryMetricsExtraction" />
-      <item itemvalue="Application.PredictionModel" />
-      <item itemvalue="Application.DataCollection" />
       <item itemvalue="Gradle.BuildPlugin" />
       <item itemvalue="Gradle.LiveRefactoring" />
     </list>
@@ -258,16 +429,14 @@
         <item itemvalue="Application.TempDataCollection" />
         <item itemvalue="Application.Database" />
         <item itemvalue="Application.RepositoryMetricsExtraction" />
-        <item itemvalue="Application.PredictionModel" />
-        <item itemvalue="Application.DataCollection" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9f38398b9061-18abd8497189-intellij.indexing.shared.core-IU-241.14494.240" />
-        <option value="bundled-js-predefined-1d06a55b98c1-74d2a5396914-JavaScript-IU-241.14494.240" />
+        <option value="bundled-jdk-9f38398b9061-39b83d9b5494-intellij.indexing.shared.core-IU-241.15989.150" />
+        <option value="bundled-js-predefined-1d06a55b98c1-91d5c284f522-JavaScript-IU-241.15989.150" />
       </set>
     </attachedChunks>
   </component>
@@ -683,7 +852,21 @@
       <workItem from="1715762528563" duration="6720000" />
       <workItem from="1715845452519" duration="69000" />
       <workItem from="1715845545644" duration="17767000" />
-      <workItem from="1715939300919" duration="12501000" />
+      <workItem from="1715939300919" duration="22281000" />
+      <workItem from="1715965555958" duration="1702000" />
+      <workItem from="1715967311958" duration="324000" />
+      <workItem from="1715967651465" duration="903000" />
+      <workItem from="1715968576446" duration="150000" />
+      <workItem from="1716101816362" duration="735000" />
+      <workItem from="1716102618395" duration="1231000" />
+      <workItem from="1716106725595" duration="1098000" />
+      <workItem from="1716108136911" duration="423000" />
+      <workItem from="1716192411751" duration="3326000" />
+      <workItem from="1716197055682" duration="257000" />
+      <workItem from="1716197329682" duration="45000" />
+      <workItem from="1716198087481" duration="66000" />
+      <workItem from="1716198172301" duration="367000" />
+      <workItem from="1716198782147" duration="244000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>

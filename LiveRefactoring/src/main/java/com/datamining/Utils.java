@@ -12,6 +12,7 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.PsiMethod;
 import com.intellij.psi.util.PsiUtilBase;
 import com.utils.importantValues.Values;
 
@@ -179,5 +180,30 @@ public class Utils {
         );
 
         notification.notify(project);
+    }
+
+    public static boolean sameMethod(PsiMethod m1, PsiMethod m2){
+        try {
+            if (m1.getName().equals(m2.getName())) {
+                if (m1.getReturnType().equals(m2.getReturnType())) {
+                    if (m1.getContainingClass().equals(m2.getContainingClass())) {
+                        if (m1.getParameterList().getParametersCount() == m2.getParameterList().getParametersCount()) {
+                            for (int i = 0; i < m1.getParameterList().getParametersCount(); i++) {
+                                if (!m1.getParameterList().getParameters()[i].getType().equals(m2.getParameterList().getParameters()[i].getType())) {
+                                    return false;
+                                }
+                                if (!m1.getParameterList().getParameters()[i].getName().equals(m2.getParameterList().getParameters()[i].getName())) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return false;
     }
 }
