@@ -70,7 +70,7 @@ public class Utils {
      * @return PsiJavaFile
      */
     public static PsiJavaFile loadFile(String filePath, String folder, Project project) {
-        String fileCopiesFolder = Values.dataFolder + "fileCopies/";
+        String fileCopiesFolder = Values.dataFolder + "fileCopies27/";
         File tmpDir = new File(fileCopiesFolder + folder + "/");
         if (!tmpDir.exists()) {
             tmpDir.mkdirs();

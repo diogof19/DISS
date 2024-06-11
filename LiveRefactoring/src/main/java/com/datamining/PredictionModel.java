@@ -3,6 +3,7 @@ package com.datamining;
 import com.analysis.metrics.ClassMetrics;
 import com.analysis.metrics.MethodMetrics;
 import com.core.Pair;
+import com.core.Refactorings;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
 import com.utils.importantValues.Values;
@@ -56,7 +57,7 @@ public class PredictionModel {
 
         try {
             System.out.println("Starting EM Prediction");
-            boolean prediction = predictPython(data, project, RefType.EXTRACT_METHOD);
+            boolean prediction = predictPython(data, project, Refactorings.ExtractMethod);
             System.out.println("EM Prediction done: " + prediction);
             return prediction;
         } catch (IOException | InterruptedException e) {
@@ -102,7 +103,7 @@ public class PredictionModel {
 
         try {
             System.out.println("Starting EC Prediction");
-            boolean prediction = predictPython(data, project, RefType.EXTRACT_CLASS);
+            boolean prediction = predictPython(data, project, Refactorings.ExtractClass);
             System.out.println("EC Prediction done: " + prediction);
             return prediction;
         } catch (IOException | InterruptedException e) {
@@ -147,7 +148,7 @@ public class PredictionModel {
      * @throws IOException if the python script has a problem
      * @throws InterruptedException if the process is interrupted
      */
-    private static boolean predictPython(ArrayList<Double> data, Project project, RefType type) throws IOException, InterruptedException {
+    private static boolean predictPython(ArrayList<Double> data, Project project, Refactorings type) throws IOException, InterruptedException {
         String pythonPath = getPythonPath(project);
         if (pythonPath == null)
             return false;
@@ -155,9 +156,10 @@ public class PredictionModel {
         ModelInfo modelInfo = Database.getSelectedModel();
         File scalerFile;
         String modelPath;
-        if(type == RefType.EXTRACT_METHOD) {
+        if(type.equals(Refactorings.ExtractMethod)) {
             scalerFile = new File(EM_SCALER_FILE_PATH);
             modelPath = modelInfo.getPathEM();
+            //System.out.println("Model path: " + modelPath);
         }
         else {
             scalerFile = new File(EC_SCALER_FILE_PATH);

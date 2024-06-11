@@ -33,8 +33,10 @@ public class Database {
 //        System.out.println("Number of models: " + getNumberOfModels());
 //        System.out.println("Selected model: " + getSelectedModelName());
 
-        countMetrics();
-        //createMetricsLiveRefTable();
+        Database.createModel(new ModelInfo("Default",
+                "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\build\\idea-sandbox\\config\\liveRefData\\models\\DefaultEM.joblib",
+                "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\build\\idea-sandbox\\config\\liveRefData\\models\\DefaultEC.joblib",
+                true));
     }
 
     /**
@@ -493,6 +495,8 @@ public class Database {
         String countClassMetricsSQL = "SELECT COUNT(*) FROM classMetrics;";
         String countLiveRefMetricsSQL = "SELECT COUNT(*) FROM metricsLiveRef;";
         String countGoodLiveRefMetricsSQL = "SELECT COUNT(*) FROM metricsLiveRef WHERE numberLinesOfCode IS NOT NULL;";
+        String countLiveRefMetricsNewSQL = "SELECT COUNT(*) FROM metricsLiveRefNew;";
+        String countGoodLiveRefMetricsNewSQL = "SELECT COUNT(*) FROM metricsLiveRefNew WHERE extracted == 1;";
 
         try (Connection conn = connect()) {
             if (conn != null) {
@@ -506,12 +510,17 @@ public class Database {
                 System.out.println("Number of class metrics: " + rs.getInt(1));
 
                 rs = stmt.executeQuery(countLiveRefMetricsSQL);
-
-                System.out.println("Number of live refactoring metrics: " + rs.getInt(1));
+                int allLiveRefSara = rs.getInt(1);
 
                 rs = stmt.executeQuery(countGoodLiveRefMetricsSQL);
 
-                System.out.println("Number of good live refactoring metrics: " + rs.getInt(1));
+                System.out.println("Number of good liveRefSara metrics: " + rs.getInt(1) + "/" + allLiveRefSara);
+
+                rs = stmt.executeQuery(countLiveRefMetricsNewSQL);
+                int allLiveRefDiogo = rs.getInt(1);
+
+                rs = stmt.executeQuery(countGoodLiveRefMetricsNewSQL);
+                System.out.println("Number of good liveRefDiogo metrics: " + rs.getInt(1) + "/" + allLiveRefDiogo);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -1006,7 +1015,7 @@ public class Database {
     }
 
 
-    /* METRICS LIVEREF TABLE */
+    /* METRICS LIVEREF TABLES */
 
     public static void createMetricsLiveRefTable() {
         String deleteTableSQL = "DROP TABLE IF EXISTS metricsLiveRef;";
@@ -1099,6 +1108,43 @@ public class Database {
 
                 }
                 pstmt.setInt(20, same ? 1 : 0);
+
+                pstmt.executeUpdate();
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static void createMetricsLiveRefNewTable() {
+        String deleteTableSQL = "DROP TABLE IF EXISTS metricsLiveRefNew;";
+
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS metricsLiveRefNew (\n" +
+                "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+                "    extracted INTEGER,\n" +
+                "    sameBeforeAfter INTEGER\n" +
+                ");";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                conn.createStatement().executeUpdate(deleteTableSQL);
+                conn.createStatement().executeUpdate(createTableSQL);
+            }
+        } catch (SQLException e) {
+            System.out.println("Create metrics liveRef table: " + e.getMessage());
+        }
+    }
+
+    public static void saveAfterNewLiveRefMetrics(boolean extracted, boolean same) {
+        String insertSQL = "INSERT INTO metricsLiveRefNew (extracted, sameBeforeAfter) " +
+                "VALUES (?, ?);";
+
+        try (Connection conn = connect()) {
+            if(conn != null) {
+                PreparedStatement pstmt = conn.prepareStatement(insertSQL);
+
+                pstmt.setInt(1, extracted ? 1 : 0);
+                pstmt.setInt(2, same ? 1 : 0);
 
                 pstmt.executeUpdate();
             }

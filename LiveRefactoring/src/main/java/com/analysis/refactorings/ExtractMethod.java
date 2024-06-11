@@ -5,6 +5,7 @@ import com.analysis.metrics.MethodMetrics;
 import com.core.Fragment;
 import com.core.LastRefactoring;
 import com.core.MyRange;
+import com.datamining.PredictionModel;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.psi.*;
@@ -51,57 +52,59 @@ public class ExtractMethod{
     public ArrayList<Fragment> getExtractableFragments(PsiJavaFile sourceFile) {
         ArrayList<Fragment> fragments = new ArrayList<>();
 
-//        for (MethodMetrics metrics : Values.before.methodMetrics) {
-//            if(!sourceFile.getName().contains(metrics.methodName)) {
-//                if(metrics.method.getBody() != null) {
-//                    if(PredictionModel.predictEM(metrics, this.editor.getProject())) {
-//                        PsiStatement[] statements = metrics.method.getBody().getStatements();
-//                        for (PsiStatement statement : statements) {
-//                            if (!(statement instanceof PsiReturnStatement) && !refactorUtils.containsBreakOrContinueOrReturn(statement)) {
-//                                ArrayList<PsiStatement> children = getChildrenStatements(statement);
-//                                if (children.size() == 0) fragments.add(addFragments(statement, metrics));
-//                                else {
-//                                    for (PsiStatement child : children) {
-//                                        fragments.add(addFragments(child, metrics));
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//
-//                }
-//
-//            }
-//        }
-
         for (MethodMetrics metrics : Values.before.methodMetrics) {
             if(!sameMethod(metrics.method, Values.tempMethod))
                 continue;
 
-            System.out.println("Same");
             if(!sourceFile.getName().contains(metrics.methodName)) {
-                int totalLines = metrics.numberBlankLines + metrics.numberComments + metrics.numberLinesOfCode;
-                if (metrics.isLong || totalLines >= ThresholdsCandidates.extractMethodLines || metrics.complexityOfMethod >= ThresholdsCandidates.extractMethodComplexity ||
-                        metrics.halsteadEffort >= ThresholdsCandidates.extractMethodEffort) {
-                    if(metrics.method.getBody() != null) {
+                if(metrics.method.getBody() != null) {
+                    if(PredictionModel.predictEM(metrics, this.editor.getProject())) {
                         PsiStatement[] statements = metrics.method.getBody().getStatements();
-                        if (refactorUtils.getAllStatements(metrics.method).size() >= 2 * ThresholdsCandidates.minNumStatements) {
-                            for (PsiStatement statement : statements) {
-                                if (!(statement instanceof PsiReturnStatement) && !refactorUtils.containsBreakOrContinueOrReturn(statement)) {
-                                    ArrayList<PsiStatement> children = getChildrenStatements(statement);
-                                    if (children.size() == 0) fragments.add(addFragments(statement, metrics));
-                                    else {
-                                        for (PsiStatement child : children) {
-                                            fragments.add(addFragments(child, metrics));
-                                        }
+                        for (PsiStatement statement : statements) {
+                            if (!(statement instanceof PsiReturnStatement) && !refactorUtils.containsBreakOrContinueOrReturn(statement)) {
+                                ArrayList<PsiStatement> children = getChildrenStatements(statement);
+                                if (children.size() == 0) fragments.add(addFragments(statement, metrics));
+                                else {
+                                    for (PsiStatement child : children) {
+                                        fragments.add(addFragments(child, metrics));
                                     }
                                 }
                             }
                         }
                     }
+
                 }
+
             }
         }
+
+//        for (MethodMetrics metrics : Values.before.methodMetrics) {
+//            if(!sameMethod(metrics.method, Values.tempMethod))
+//                continue;
+//
+//            if(!sourceFile.getName().contains(metrics.methodName)) {
+//                int totalLines = metrics.numberBlankLines + metrics.numberComments + metrics.numberLinesOfCode;
+//                if (metrics.isLong || totalLines >= ThresholdsCandidates.extractMethodLines || metrics.complexityOfMethod >= ThresholdsCandidates.extractMethodComplexity ||
+//                        metrics.halsteadEffort >= ThresholdsCandidates.extractMethodEffort) {
+//                    if(metrics.method.getBody() != null) {
+//                        PsiStatement[] statements = metrics.method.getBody().getStatements();
+//                        if (refactorUtils.getAllStatements(metrics.method).size() >= 2 * ThresholdsCandidates.minNumStatements) {
+//                            for (PsiStatement statement : statements) {
+//                                if (!(statement instanceof PsiReturnStatement) && !refactorUtils.containsBreakOrContinueOrReturn(statement)) {
+//                                    ArrayList<PsiStatement> children = getChildrenStatements(statement);
+//                                    if (children.size() == 0) fragments.add(addFragments(statement, metrics));
+//                                    else {
+//                                        for (PsiStatement child : children) {
+//                                            fragments.add(addFragments(child, metrics));
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
 
         return fragments;
     }
@@ -132,7 +135,7 @@ public class ExtractMethod{
 //                PredictionModel.updateEMModel(metrics, editor.getProject());
 
             }else Values.isRefactoring = false;
-        } catch (PrepareFailedException e) {
+        } catch (PrepareFailedException | IllegalArgumentException e) {
             e.printStackTrace();
         }
     }

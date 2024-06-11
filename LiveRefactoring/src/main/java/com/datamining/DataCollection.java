@@ -123,8 +123,15 @@ public class DataCollection extends AnAction {
 
         /*
         extract method for comparison:
-        66000 - 66350 (150 increments due to heap space)
-        70000 - 70050
+        66000 - 66500 (150 increments due to heap space)
+        70000 - 70250
+        80000 - 80150
+
+        repos:
+        - httpcomponents-core
+        - mina-sshd.git
+        - jackrabbit.git
+        - https://github.com/apache/maven.git:
          */
 
         String refactoringType = "";
@@ -135,8 +142,8 @@ public class DataCollection extends AnAction {
         }
         List<Bson> pipeline = asList(
                 match(eq("type", refactoringType)),
-                skip(70050),
-                limit(50),
+                skip(66000),
+                limit(300),
                 project(fields(include("_id", "commit_id", "type", "description"))),
                 lookup("commit", "commit_id", "_id", "commit"),
                 unwind("$commit"),
@@ -234,7 +241,7 @@ public class DataCollection extends AnAction {
         }
 
         //delete fileCopies folder
-        String fileCopiesFolder = Values.dataFolder + "fileCopies/";
+        String fileCopiesFolder = Values.dataFolder + "fileCopies27/";
         File file = new File(fileCopiesFolder);
         try {
             FileUtils.deleteDirectory(file);
@@ -292,12 +299,15 @@ public class DataCollection extends AnAction {
                     equalMetrics++;
                 }
 
-                Integer id = saveMethodMetricsSafe(beforeMetrics, afterMetrics);
+//                Integer id = saveMethodMetricsSafe(beforeMetrics, afterMetrics);
+//
+//                if(id != null)
+//                    runPluginAndSaveResult(false, refactoringInfo.getBeforeFile(), beforeMetrics.method, refactoringInfo.getMethodName(), refactoringInfo.getClassName(), id, beforeMetrics.equals(afterMetrics));
 
-                if(id != null){
-                    runPluginAndSaveResult(refactoringInfo.getBeforeFile(), beforeMetrics.method, refactoringInfo.getMethodName(), refactoringInfo.getClassName(), id, beforeMetrics.equals(afterMetrics));
-                } else
-                    System.out.println("ID is null");
+                runPluginAndSaveResult(true, refactoringInfo.getBeforeFile(), beforeMetrics.method, refactoringInfo.getMethodName(), refactoringInfo.getClassName(), null, beforeMetrics.equals(afterMetrics));
+
+
+
             } else if (REFACTORING_TYPE.equals(Refactorings.ExtractClass)){
                 ClassMetrics beforeMetrics = getClassMetricsFromFile(refactoringInfo.getBeforeFile(), refactoringInfo.getClassName());
 
@@ -458,28 +468,39 @@ public class DataCollection extends AnAction {
     }
 
     //TODO: CHANGE getExtractableFragments FUNCTION IN ExtractMethod.java TO SARA'S
-    private void runPluginAndSaveResult(PsiJavaFile file, PsiMethod method, String methodName, String className, int id, boolean same) {
+    private void runPluginAndSaveResult(boolean mock, PsiJavaFile file, PsiMethod method, String methodName, String className, Integer id, boolean same) {
         initialiseScriptValues(file);
 
         boolean timeout = initialiseCandidates(file, method);
         if (timeout) {
+            System.out.println("Timeout on initialise candidates");
             return;
         }
 
         ArrayList<Severity> candidates = getCandidates(method);
         if (candidates == null) {
-            Database.saveAfterLiveRefMetrics(null, id, same);
+            if (!mock)
+                Database.saveAfterLiveRefMetrics(null, id, same);
+            else
+                Database.saveAfterNewLiveRefMetrics(false, same);
             return;
         }
 
-        Severity severity = candidates.get(candidates.size() - 1);
-        ExtractMethodCandidate extractMethodCandidate = (ExtractMethodCandidate) severity.candidate;
-
-//        if(DumbService.isDumb(this.project)){
-//            DumbService.getInstance(this.project).waitForSmartMode();
-//        }
-
-        extractAndSave(extractMethodCandidate, severity, file, methodName, className, id, same);
+        if (!mock) {
+            //Actually running the plugin and performing the refactoring
+            Severity severity = candidates.get(candidates.size() - 1);
+            ExtractMethodCandidate extractMethodCandidate = (ExtractMethodCandidate) severity.candidate;
+            try {
+                extractAndSave(extractMethodCandidate, severity, file, methodName, className, id, same);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            //Not performing the refactoring, but saving the fact that the plugin would do it
+            Database.saveAfterNewLiveRefMetrics(true, same);
+            liveRefMetricsCount++;
+            System.out.println("Saved after life ref metrics (" + liveRefMetricsCount + ")");
+        }
     }
 
     private JDialog getExtractMethodDialogOpen(String title) {
@@ -519,22 +540,7 @@ public class DataCollection extends AnAction {
                 return null;
             };
 
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            Future<Void> future = executor.submit(task);
-
-            try {
-                future.get(30, TimeUnit.SECONDS);
-            } catch (TimeoutException e) {
-                System.out.println("timeout");
-                future.cancel(true); // Interrupt the task
-                executor.shutdownNow();
-                return true;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            } finally {
-                executor.shutdown();
-                return false;
-            }
+            return runWithTimeout(task, 30);
         });
     }
 
@@ -590,14 +596,12 @@ public class DataCollection extends AnAction {
         ApplicationManager.getApplication().runReadAction(() -> {
             ExtractMethod extractMethod = new ExtractMethod(Values.editor);
             extractMethod.extractMethod(extractMethodCandidate, severity.severity, severity.indexColorGutter);
-
         });
 
         MethodMetrics methodMetrics = getMethodMetricsFromFile(file, methodName, className);
 
-        if(methodMetrics == null){
+        if (methodMetrics == null)
             return;
-        }
 
         Database.saveAfterLiveRefMetrics(methodMetrics, id, same);
         liveRefMetricsCount++;
@@ -618,5 +622,31 @@ public class DataCollection extends AnAction {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private boolean runWithTimeout(Callable<Void> task, int timeout) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<Void> future = executor.submit(task);
+        boolean timeoutReached = false;
+
+        try {
+            future.get(timeout, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            future.cancel(true); // Interrupt the task
+            timeoutReached = true;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(timeout, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                executor.shutdown();
+            }
+        }
+
+        return timeoutReached;
     }
 }

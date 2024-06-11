@@ -1009,8 +1009,6 @@ public class ConfigureTool extends AnAction {
             pythonPanel.add(label_pythonPath, BorderLayout.WEST);
             pythonPanel.add(textField_pythonPath, BorderLayout.EAST);
 
-            //TODO: Add python requirements button - will need to change rows in gridlayout to 2
-
             return pythonPanel;
         }
 
@@ -1073,15 +1071,20 @@ public class ConfigureTool extends AnAction {
             JPanel profilePanel = new JPanel(new BorderLayout());
 
             Box overallBox = Box.createVerticalBox();
-            overallBox.setPreferredSize(new Dimension(100, 100));
+            //overallBox.setPreferredSize(new Dimension(100, 100));
+
             Box authorBox = Box.createVerticalBox();
             authorBox.add(new JLabel("Authors:"));
 
             JPanel buttonsPannel = new JPanel(new GridLayout(1, 2));
             buttonsPannel.setPreferredSize(new Dimension(100, 30));
+            buttonsPannel.setMaximumSize(new Dimension(200, 20));
             JButton selectAllAuthors = getSelectAllButton(authorBox);
 
             JButton deleteProfile = getDeleteProfileButton(modelInfo.getName());
+
+            buttonsPannel.add(selectAllAuthors, BorderLayout.WEST);
+            buttonsPannel.add(deleteProfile, BorderLayout.EAST);
 
             JButton switchProfile = new JButton("Switch");
             switchProfile.setEnabled(!modelInfo.isSelected());
@@ -1089,9 +1092,6 @@ public class ConfigureTool extends AnAction {
             switchProfile.addActionListener(e -> {
                 this.selectedProfile = modelInfo;
             });
-
-            buttonsPannel.add(selectAllAuthors, BorderLayout.WEST);
-            buttonsPannel.add(deleteProfile, BorderLayout.EAST);
 
             ArrayList<AuthorInfo> authors = Database.getAuthorsPerModel(modelInfo.getName());
 
@@ -1107,7 +1107,7 @@ public class ConfigureTool extends AnAction {
 
             overallBox.add(buttonsPannel);
             overallBox.add(pane);
-            overallBox.add(switchProfile);
+            overallBox.add(switchProfile, BorderLayout.CENTER);
 
             profilePanel.add(overallBox, BorderLayout.CENTER);
 
@@ -1125,10 +1125,9 @@ public class ConfigureTool extends AnAction {
             overallBox.setPreferredSize(new Dimension(100, 70));
 
             Box nameBox = Box.createHorizontalBox();
-            nameBox.setPreferredSize(new Dimension(100, 10));
 
             JPanel panel = new JPanel(new GridLayout(1, 2));
-            panel.setPreferredSize(new Dimension(100, 10));
+            panel.setMaximumSize(new Dimension(500, 30));
 
             JLabel label_profileName = new JLabel("Profile Name");
             panel.add(label_profileName, BorderLayout.WEST);
