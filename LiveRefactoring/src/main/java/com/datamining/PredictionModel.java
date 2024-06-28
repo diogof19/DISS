@@ -16,32 +16,12 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Set;
 
-//TODO: Create a 'requirements.txt' folder and function that runs it with pip install
-//TODO: Handle python path not set now that it is saved in MySettings
 public class PredictionModel {
     private static final String PYTHON_PREDICTION_FILE_PATH = Values.dataFolder + "python/prediction.py";
     private static final String PYTHON_BIAS_FILE_PATH = Values.dataFolder + "python/bias_model.py";
     private static final String DATA_FILE_PATH = Values.dataFolder + "metrics.db";
     private static final String EM_SCALER_FILE_PATH = Values.dataFolder + "python/scalerEM.pkl";
     private static final String EC_SCALER_FILE_PATH = Values.dataFolder + "python/scalerEC.pkl";
-
-    public static void main(String[] args) {
-//        ArrayList<Double> data = new ArrayList<>();
-//
-//        // Add 18 test values to the array
-//        for (int i = 0; i < 18; i++) {
-//            data.add(0.0 + i);
-//        }
-//
-//        try {
-//            System.out.println(predictPython(data));
-//        } catch (IOException | InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
-
-        //System.out.println(getCurrentGitAuthor());
-    }
-
 
     /* PREDICTION */
 
@@ -96,6 +76,12 @@ public class PredictionModel {
         return data;
     }
 
+    /**
+     * Predicts if a class is an outlier or not
+     * @param classMetrics the metrics of the class
+     * @param project the project
+     * @return true if the class is an inlier, false if it is an outlier
+     */
     public static boolean predictEC(ClassMetrics classMetrics, Project project){
         ArrayList<Double> data = getClassMetrics(classMetrics);
         if (data.contains(null))
@@ -111,6 +97,11 @@ public class PredictionModel {
         }
     }
 
+    /**
+     * Gets the required metrics for the prediction model from the class metrics
+     * @param classMetrics the metrics of the class
+     * @return the metrics required for the prediction model
+     */
     private static ArrayList<Double> getClassMetrics(ClassMetrics classMetrics){
         ArrayList<Double> data = new ArrayList<>();
 
@@ -463,8 +454,6 @@ public class PredictionModel {
                     "Please set the python path by opening the 'Configure Tool' window and going to the 'Advanced Extract Method' tab.",
                     NotificationType.ERROR);
 
-            //TODO: Removed this after testing
-            pythonPath = "C:\\Program Files\\Python310\\python.exe";
             return null;
         }
 

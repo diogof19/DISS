@@ -28,7 +28,12 @@ To use this tool, we need to install it on IntelliJ IDE by following the next st
 3. Select the option of ___“Install Plugin from Disk”___ (see the following image);
 4. Search the folder where you place the **plugin distribution** and select its **.zip** folder depending of your IntelliJ IDE version ([LiveRef-2021.zip](./LiveRef-IntelliJ-2021.zip) or [LiveRef-2022.zip](./LiveRef-IntelliJ-2022.zip));
 5. Then, IntelliJ will install the plugin. 
-     
+
+For 2021 version, there a few extract steps in order to be able to use the tool for Extract Method and Extract Class after installing:
+1. Go to the ***“Configuran Panel”*** menu;
+2. Go to the ***“ML Refactorings”*** tab;
+3. Copy and Paste your Python installation path into the ***“Python Path”*** field;
+4. Then, the plugin will install the necessary libraries to run the Extract Method and Extract Class refactorings.
 
 ## Tool in action
 
@@ -72,3 +77,5 @@ To use this tool, we need to install it on IntelliJ IDE by following the next st
 * Folder [LiveRefactoring-2022](/LiveRefactoring-2022) contains the source code of our ***Live Refactoring Environment*** for **IntelliJ IDE 2022**;
 
 * Folder [Experiments](/Experiments) contains the main artifacts used by the participants of our empirical experiments and the main results collected from them.
+
+* RefactoringMiner is used on the 2021 version of this tool to extract refactoring data from repositories provided, when using the ***“Refactoring Metrics Extraction”*** in the LiveRef menu. The source code of RefactoringMiner can be found [here](https://github.com/tsantalis/RefactoringMinertab=readme-ov-file#how-to-cite-refactoringminer)

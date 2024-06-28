@@ -10,28 +10,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
-      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations/BuildPlugin.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations/LiveRefactoring.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Classification Model/Comparison data/EM - elliptic envelope.db" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/Comparison data/EM - elliptic envelope.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Classification Model/Comparison data/EM - one_class_SVM.db" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/Comparison data/EM - one_class_SVM.db" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Classification Model/Data Analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/Data Analysis.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Classification Model/Model Prep.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/Model Prep.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Classification Model/data/metrics.db" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/data/metrics.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Classification Model/models/elliptic_envelope_EM.joblib" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/models/elliptic_envelope_EM.joblib" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Classification Model/models/isolation_forest_EM.joblib" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/models/isolation_forest_EM.joblib" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Classification Model/models/one_class_svm_EM.joblib" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/models/one_class_svm_EM.joblib" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Classification Model/scalerEM.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/scalerEM.pkl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/LiveRefactoring.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/LiveRefactoring.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/LiveRefactoring.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../LiveRefactoring-2022/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../LiveRefactoring-2022/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractClass.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractClass.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractMethod.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractMethod.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/StartUp.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/StartUp.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/TODO.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/TempDataCollection.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/ToolRun.md" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/ui/ConfigureTool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ui/ConfigureTool.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/metrics.db" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/metrics.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/models/DefaultEM.joblib" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/models/DefaultEM.joblib" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/python/scalerEM.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/python/scalerEM.pkl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/utils/importantValues/Values.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/utils/importantValues/Values.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -122,27 +120,28 @@
   <component name="ProjectCodeStyleSettingsMigration">
     <option name="version" value="2" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 8
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
   <component name="ProjectId" id="23pKHhfg7SI7h0w4xPP8G0zgOyD" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.LiveRefactoring [:Database.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.LiveRefactoring.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="com.analysis.refactorings" />
@@ -171,7 +170,7 @@
       <recent name="com.ui.icons" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.LiveRefactoring">
+  <component name="RunManager" selected="Application.Database">
     <configuration name="Database" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.datamining.Database" />
       <module name="LiveRefactoring.main" />
@@ -678,6 +677,12 @@
       <workItem from="1717400466026" duration="601000" />
       <workItem from="1718091209590" duration="3654000" />
       <workItem from="1718125171383" duration="948000" />
+      <workItem from="1718186260215" duration="3294000" />
+      <workItem from="1718537321165" duration="2223000" />
+      <workItem from="1718783903901" duration="13828000" />
+      <workItem from="1719212588400" duration="4542000" />
+      <workItem from="1719486166457" duration="2926000" />
+      <workItem from="1719593768204" duration="2036000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>

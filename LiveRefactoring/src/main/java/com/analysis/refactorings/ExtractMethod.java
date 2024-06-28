@@ -18,11 +18,10 @@ import com.utils.RefactorUtils;
 import com.utils.importantValues.ThresholdsCandidates;
 import com.utils.importantValues.Values;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;
-
-import static com.datamining.Utils.sameMethod;
 
 public class ExtractMethod{
     public RefactorUtils refactorUtils = new RefactorUtils();
@@ -53,9 +52,6 @@ public class ExtractMethod{
         ArrayList<Fragment> fragments = new ArrayList<>();
 
         for (MethodMetrics metrics : Values.before.methodMetrics) {
-            if(!sameMethod(metrics.method, Values.tempMethod))
-                continue;
-
             if(!sourceFile.getName().contains(metrics.methodName)) {
                 if(metrics.method.getBody() != null) {
                     if(PredictionModel.predictEM(metrics, this.editor.getProject())) {
@@ -77,34 +73,6 @@ public class ExtractMethod{
 
             }
         }
-
-//        for (MethodMetrics metrics : Values.before.methodMetrics) {
-//            if(!sameMethod(metrics.method, Values.tempMethod))
-//                continue;
-//
-//            if(!sourceFile.getName().contains(metrics.methodName)) {
-//                int totalLines = metrics.numberBlankLines + metrics.numberComments + metrics.numberLinesOfCode;
-//                if (metrics.isLong || totalLines >= ThresholdsCandidates.extractMethodLines || metrics.complexityOfMethod >= ThresholdsCandidates.extractMethodComplexity ||
-//                        metrics.halsteadEffort >= ThresholdsCandidates.extractMethodEffort) {
-//                    if(metrics.method.getBody() != null) {
-//                        PsiStatement[] statements = metrics.method.getBody().getStatements();
-//                        if (refactorUtils.getAllStatements(metrics.method).size() >= 2 * ThresholdsCandidates.minNumStatements) {
-//                            for (PsiStatement statement : statements) {
-//                                if (!(statement instanceof PsiReturnStatement) && !refactorUtils.containsBreakOrContinueOrReturn(statement)) {
-//                                    ArrayList<PsiStatement> children = getChildrenStatements(statement);
-//                                    if (children.size() == 0) fragments.add(addFragments(statement, metrics));
-//                                    else {
-//                                        for (PsiStatement child : children) {
-//                                            fragments.add(addFragments(child, metrics));
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
 
         return fragments;
     }
@@ -130,12 +98,12 @@ public class ExtractMethod{
                 System.out.println("============ Extract Method Done!!! ============");
 
                 //Update Extract Method model with new data
-//                PsiMethod method = candidate.method;
-//                MethodMetrics metrics = candidate.metrics.getMethodMetrics(method);
-//                PredictionModel.updateEMModel(metrics, editor.getProject());
+                PsiMethod method = candidate.method;
+                MethodMetrics metrics = candidate.metrics.getMethodMetrics(method);
+                PredictionModel.updateEMModel(metrics, editor.getProject());
 
             }else Values.isRefactoring = false;
-        } catch (PrepareFailedException | IllegalArgumentException e) {
+        } catch (PrepareFailedException | IllegalArgumentException | IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }

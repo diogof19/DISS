@@ -30,9 +30,6 @@ import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.*;
 
-//TODO: Give credits to RefactoringMiner
-//      https://github.com/tsantalis/RefactoringMiner?tab=readme-ov-file#how-to-cite-refactoringminer
-
 public class RepositoryMetricsExtraction extends AnAction {
     private String repositoryPath;
     private String branch;

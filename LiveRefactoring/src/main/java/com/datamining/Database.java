@@ -3,6 +3,7 @@ package com.datamining;
 import com.analysis.metrics.ClassMetrics;
 import com.analysis.metrics.MethodMetrics;
 import com.core.Pair;
+import com.utils.importantValues.Values;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -12,32 +13,7 @@ import java.util.Set;
 import static com.datamining.Utils.getMethodMetricsFromFile;
 
 public class Database {
-    //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\resources\\metrics.db";
-    //private static final String DATABASE_FILE_PATH = "C:\\Users\\dluis\\.gradle\\caches\\modules-2\\files-2.1\\com.jetbrains.intellij.idea\\ideaIC\\2021.1.1\\e051d885e757b286781f50305504d7b8db3e1dba\\ideaIC-2021.1.1\\bin\\tmp\\metrics.db";
-    //private static final String DATABASE_URL = "jdbc:sqlite:" + Values.dataFolder + "metrics.db";
-    //private static final String DATABASE_URL = "jdbc:sqlite:C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\src\\main\\resources\\metrics.db";
-    //private static final String DATABASE_URL = "jdbc:sqlite:C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\Classification Model\\data\\metrics.db";
-    private static final String DATABASE_URL = "jdbc:sqlite:C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\build\\idea-sandbox\\config\\liveRefData\\metrics.db";
-
-    public static void main(String[] args) {
-        //createDatabase();
-        //addTestData();
-
-//        ArrayList<AuthorInfo> authors = getAuthorsPerModel("Model 1");
-//        for(AuthorInfo author : authors){
-//            System.out.println(author + " - " + author.isSelected());
-//        }
-
-//        countMetrics();
-//        System.out.println("Number of authors: " + getAllAuthors().size());
-//        System.out.println("Number of models: " + getNumberOfModels());
-//        System.out.println("Selected model: " + getSelectedModelName());
-
-        Database.createModel(new ModelInfo("Default",
-                "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\build\\idea-sandbox\\config\\liveRefData\\models\\DefaultEM.joblib",
-                "C:\\Users\\dluis\\Documents\\Docs\\Universidade\\M 2 ano\\Thesis\\DISS\\LiveRefactoring\\build\\idea-sandbox\\config\\liveRefData\\models\\DefaultEC.joblib",
-                true));
-    }
+    private static final String DATABASE_URL = "jdbc:sqlite:" + Values.dataFolder + "metrics.db";
 
     /**
      * Connects to the sqlite database
@@ -85,43 +61,39 @@ public class Database {
      */
     private static void addTestData() {
         String authorsInsertSQL = "INSERT INTO authors (name, email) VALUES (?, ?);";
-        String modelsInsertSQL = "INSERT INTO models (name, path, selected) VALUES (?, ?, ?);";
+        String modelsInsertSQL = "INSERT INTO models (name, pathEM, pathEC, selected) VALUES (?, ?, ?, ?);";
         String authorsModelsInsertSQL = "INSERT INTO authors_models (author_id, model_id) VALUES (?, ?);";
 
         try (Connection conn = connect()) {
             if (conn != null) {
                 PreparedStatement pstmt = conn.prepareStatement(authorsInsertSQL);
 
-                pstmt.setString(1, "Diana");
-                pstmt.setString(2, "d@g.com");
-                pstmt.executeUpdate();
+                pstmt.setString(1, "Taylor Swift");
+                pstmt.setString(2, "no_its_becky@gmail.com");
+                //pstmt.executeUpdate();
 
-                pstmt.setString(1, "Luis");
-                pstmt.setString(2, "l@g.com");
-                pstmt.executeUpdate();
+                pstmt.setString(1, "Stiles Stilinski");
+                pstmt.setString(2, "sparky@gmail.com");
+                //pstmt.executeUpdate();
 
-                pstmt.setString(1, "Ana");
-                pstmt.setString(2, "a@g.com");
-                pstmt.executeUpdate();
+                pstmt.setString(1, "Niklaus Mikaelson");
+                pstmt.setString(2, "thehybrid@outlook.com");
+                //pstmt.executeUpdate();
 
-                pstmt.setString(1, "Joao");
-                pstmt.setString(2, "j@g.com");
-                pstmt.executeUpdate();
+                pstmt.setString(1, "Piper Halliwell");
+                pstmt.setString(2, "freeze@outlook.com");
+                //pstmt.executeUpdate();
 
-                pstmt.setString(1, "Andre");
-                pstmt.setString(2, "a@g.com");
-                pstmt.executeUpdate();
+                pstmt.setString(1, "Derek Hale");
+                pstmt.setString(2, "sourwolf@gmail.com");
+                //pstmt.executeUpdate();
 
                 pstmt = conn.prepareStatement(modelsInsertSQL);
 
-                pstmt.setString(1, "Model 1");
-                pstmt.setString(2, "models/model1.joblib");
-                pstmt.setInt(3, 1);
-                pstmt.executeUpdate();
-
-                pstmt.setString(1, "Model 2");
-                pstmt.setString(2, "models/model2.joblib");
-                pstmt.setInt(3, 0);
+                pstmt.setString(1, "Team");
+                pstmt.setString(2, "models/TeamEM.joblib");
+                pstmt.setString(3, "models/TeamEC.joblib");
+                pstmt.setInt(4, 1);
                 pstmt.executeUpdate();
 
                 pstmt = conn.prepareStatement(authorsModelsInsertSQL);
@@ -283,10 +255,11 @@ public class Database {
     }
 
     /**
-     * Save the metrics of a refactoring
+     * Save the metrics of an Extract Method refactoring
      * @param author The author of the refactoring
      * @param beforeMethodMetrics The metrics before the refactoring
      * @param afterMethodMetrics The metrics after the refactoring
+     * @return The id of the refactoring
      */
     public static Integer saveMethodMetrics(Pair<String, String> author, MethodMetrics beforeMethodMetrics, MethodMetrics afterMethodMetrics) {
         int beforeTotalLines = beforeMethodMetrics.numberLinesOfCode + beforeMethodMetrics.numberComments +
@@ -412,7 +385,14 @@ public class Database {
         return null;
     }
 
-    public static void saveClassMetrics(Pair<String, String> author, ClassMetrics beforeClassMetrics, ClassMetrics afterClassMetrics) {
+    /**
+     * Saves the metrics of an Extract Class refactoring
+     * @param author The author of the refactoring
+     * @param beforeClassMetrics The metrics before the refactoring
+     * @param afterClassMetrics The metrics after the refactoring
+     * @return The id of the refactoring
+     */
+    public static Integer saveClassMetrics(Pair<String, String> author, ClassMetrics beforeClassMetrics, ClassMetrics afterClassMetrics) {
         int numMethodsToExtract = beforeClassMetrics.numMethods - afterClassMetrics.numMethods;
         int numFieldsToExtract = beforeClassMetrics.numProperties - afterClassMetrics.numProperties;
 
@@ -480,11 +460,18 @@ public class Database {
 
                 deletePstmt.setInt(1, id);
 
-                deletePstmt.executeUpdate();
+                int numDeletedRows = deletePstmt.executeUpdate();
+
+                if(numDeletedRows > 0){
+                    return null;
+                } else
+                    return id;
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+
+        return null;
     }
 
     /**
@@ -493,10 +480,6 @@ public class Database {
     public static void countMetrics() {
         String countMethodMetricsSQL = "SELECT COUNT(*) FROM methodMetrics;";
         String countClassMetricsSQL = "SELECT COUNT(*) FROM classMetrics;";
-        String countLiveRefMetricsSQL = "SELECT COUNT(*) FROM metricsLiveRef;";
-        String countGoodLiveRefMetricsSQL = "SELECT COUNT(*) FROM metricsLiveRef WHERE numberLinesOfCode IS NOT NULL;";
-        String countLiveRefMetricsNewSQL = "SELECT COUNT(*) FROM metricsLiveRefNew;";
-        String countGoodLiveRefMetricsNewSQL = "SELECT COUNT(*) FROM metricsLiveRefNew WHERE extracted == 1;";
 
         try (Connection conn = connect()) {
             if (conn != null) {
@@ -508,19 +491,6 @@ public class Database {
                 rs = stmt.executeQuery(countClassMetricsSQL);
 
                 System.out.println("Number of class metrics: " + rs.getInt(1));
-
-                rs = stmt.executeQuery(countLiveRefMetricsSQL);
-                int allLiveRefSara = rs.getInt(1);
-
-                rs = stmt.executeQuery(countGoodLiveRefMetricsSQL);
-
-                System.out.println("Number of good liveRefSara metrics: " + rs.getInt(1) + "/" + allLiveRefSara);
-
-                rs = stmt.executeQuery(countLiveRefMetricsNewSQL);
-                int allLiveRefDiogo = rs.getInt(1);
-
-                rs = stmt.executeQuery(countGoodLiveRefMetricsNewSQL);
-                System.out.println("Number of good liveRefDiogo metrics: " + rs.getInt(1) + "/" + allLiveRefDiogo);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -1015,7 +985,7 @@ public class Database {
     }
 
 
-    /* METRICS LIVEREF TABLES */
+    /* UTIL METRICS LIVEREF TABLES */
 
     public static void createMetricsLiveRefTable() {
         String deleteTableSQL = "DROP TABLE IF EXISTS metricsLiveRef;";
@@ -1145,6 +1115,144 @@ public class Database {
 
                 pstmt.setInt(1, extracted ? 1 : 0);
                 pstmt.setInt(2, same ? 1 : 0);
+
+                pstmt.executeUpdate();
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static void createClassMetricsLiveRefTable() {
+        String deleteTableSQL = "DROP TABLE IF EXISTS classMetricsLiveRef;";
+
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS classMetricsLiveRef (\n" +
+                "    id INTEGER PRIMARY KEY,\n" +
+                "    numProperties INTEGER,\n" +
+                "    numPublicAttributes INTEGER,\n" +
+                "    numPublicMethods INTEGER,\n" +
+                "    numProtectedFields INTEGER,\n" +
+                "    numProtectedMethods INTEGER,\n" +
+                "    numLongMethods INTEGER,\n" +
+                "    numLinesCode INTEGER,\n" +
+                "    lackOfCohesion REAL,\n" +
+                "    cyclomaticComplexity REAL,\n" +
+                "    cognitiveComplexity REAL,\n" +
+                "    numMethods INTEGER,\n" +
+                "    numConstructors INTEGER,\n" +
+                "    halsteadLength REAL,\n" +
+                "    halsteadVocabulary REAL,\n" +
+                "    halsteadVolume REAL,\n" +
+                "    halsteadDifficulty REAL,\n" +
+                "    halsteadEffort REAL,\n" +
+                "    halsteadLevel REAL,\n" +
+                "    halsteadTime REAL,\n" +
+                "    halsteadBugsDelivered REAL,\n" +
+                "    halsteadMaintainability REAL,\n" +
+                "    FOREIGN KEY (id) REFERENCES classMetrics(id)\n" +
+                ");";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                conn.createStatement().executeUpdate(deleteTableSQL);
+                conn.createStatement().executeUpdate(createTableSQL);
+            }
+        } catch (SQLException e) {
+            System.out.println("Create class metrics liveRef table: " + e.getMessage());
+        }
+    }
+
+    public static void saveAfterClassLiveRefMetrics(ClassMetrics classMetrics, int id) {
+        String insertSQL = "INSERT INTO classMetricsLiveRef (id, numProperties, numPublicAttributes, numPublicMethods, " +
+                "numProtectedFields, numProtectedMethods, numLongMethods, numLinesCode, lackOfCohesion, " +
+                "cyclomaticComplexity, cognitiveComplexity, numMethods, numConstructors, halsteadLength, " +
+                "halsteadVocabulary, halsteadVolume, halsteadDifficulty, halsteadEffort, halsteadLevel, " +
+                "halsteadTime, halsteadBugsDelivered, halsteadMaintainability) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                PreparedStatement pstmt = conn.prepareStatement(insertSQL);
+
+                pstmt.setInt(1, id);
+                if (classMetrics != null) {
+                    pstmt.setInt(2, classMetrics.numProperties);
+                    pstmt.setInt(3, classMetrics.numPublicAttributes);
+                    pstmt.setInt(4, classMetrics.numPublicMethods);
+                    pstmt.setInt(5, classMetrics.numProtectedFields);
+                    pstmt.setInt(6, classMetrics.numProtectedMethods);
+                    pstmt.setInt(7, classMetrics.numLongMethods);
+                    pstmt.setInt(8, classMetrics.numLinesCode);
+                    pstmt.setDouble(9, classMetrics.lackOfCohesion);
+                    pstmt.setDouble(10, classMetrics.complexity);
+                    pstmt.setDouble(11, classMetrics.cognitiveComplexity);
+                    pstmt.setInt(12, classMetrics.numMethods);
+                    pstmt.setInt(13, classMetrics.numConstructors);
+                    pstmt.setDouble(14, classMetrics.halsteadLength);
+                    pstmt.setDouble(15, classMetrics.halsteadVocabulary);
+                    pstmt.setDouble(16, classMetrics.halsteadVolume);
+                    pstmt.setDouble(17, classMetrics.halsteadDifficulty);
+                    pstmt.setDouble(18, classMetrics.halsteadEffort);
+                    pstmt.setDouble(19, classMetrics.halsteadLevel);
+                    pstmt.setDouble(20, classMetrics.halsteadTime);
+                    pstmt.setDouble(21, classMetrics.halsteadBugsDelivered);
+                    pstmt.setDouble(22, classMetrics.halsteadMaintainability);
+                } else {
+                    pstmt.setNull(2, Types.INTEGER);
+                    pstmt.setNull(3, Types.INTEGER);
+                    pstmt.setNull(4, Types.INTEGER);
+                    pstmt.setNull(5, Types.INTEGER);
+                    pstmt.setNull(6, Types.INTEGER);
+                    pstmt.setNull(7, Types.INTEGER);
+                    pstmt.setNull(8, Types.INTEGER);
+                    pstmt.setNull(9, Types.REAL);
+                    pstmt.setNull(10, Types.REAL);
+                    pstmt.setNull(11, Types.REAL);
+                    pstmt.setNull(12, Types.INTEGER);
+                    pstmt.setNull(13, Types.INTEGER);
+                    pstmt.setNull(14, Types.REAL);
+                    pstmt.setNull(15, Types.REAL);
+                    pstmt.setNull(16, Types.REAL);
+                    pstmt.setNull(17, Types.REAL);
+                    pstmt.setNull(18, Types.REAL);
+                    pstmt.setNull(19, Types.REAL);
+                    pstmt.setNull(20, Types.REAL);
+                    pstmt.setNull(21, Types.REAL);
+                    pstmt.setNull(22, Types.REAL);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void createClassMetricsLiveRefSaraYesNo() {
+        String deleteTableSQL = "DROP TABLE IF EXISTS classMetricsLiveRefSaraYesNo;";
+
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS classMetricsLiveRefSaraYesNo (\n" +
+                "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+                "    extracted INTEGER\n" +
+                ");";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                conn.createStatement().executeUpdate(deleteTableSQL);
+                conn.createStatement().executeUpdate(createTableSQL);
+            }
+        } catch (SQLException e) {
+            System.out.println("Create class metrics liveRef table: " + e.getMessage());
+        }
+    }
+
+    public static void saveClassMetricsLiveRefSaraYesNo(boolean extracted){
+        String insertSQL = "INSERT INTO classMetricsLiveRefSaraYesNo (extracted) " +
+                "VALUES (?);";
+
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                PreparedStatement pstmt = conn.prepareStatement(insertSQL);
+
+                pstmt.setInt(1, extracted ? 1 : 0);
 
                 pstmt.executeUpdate();
             }

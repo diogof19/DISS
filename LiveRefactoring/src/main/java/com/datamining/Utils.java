@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.util.PsiUtilBase;
@@ -20,11 +21,6 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-
-enum RefType {
-    EXTRACT_METHOD,
-    EXTRACT_CLASS
-}
 
 public class Utils {
     public static int counter = 0;
@@ -53,9 +49,12 @@ public class Utils {
         return new Pair<>(fullClass, className);
     }
 
+    /**
+     * Extracts the old class name from the refactoring description
+     * @param description refactoring description from RefactoringMiner or refDiff
+     * @return pair with full class name and short class name
+     */
     public static Pair<String, String> getOldClass(String description){
-        //Extract Class	org.apache.ivy.core.cache.CacheManager from class org.apache.ivy.Ivy
-
         String oldClass = description.split("from class")[1].trim();
         String[] oldClassParts = oldClass.split("\\.");
         String oldClassName = oldClassParts[oldClassParts.length - 1];
@@ -70,7 +69,7 @@ public class Utils {
      * @return PsiJavaFile
      */
     public static PsiJavaFile loadFile(String filePath, String folder, Project project) {
-        String fileCopiesFolder = Values.dataFolder + "fileCopies27/";
+        String fileCopiesFolder = Values.dataFolder + "fileCopies/";
         File tmpDir = new File(fileCopiesFolder + folder + "/");
         if (!tmpDir.exists()) {
             tmpDir.mkdirs();
@@ -144,6 +143,12 @@ public class Utils {
         });
     }
 
+    /**
+     * Extracts the class metrics from a PsiJavaFile
+     * @param file PsiJavaFile
+     * @param className class name
+     * @return class metrics
+     */
     public static ClassMetrics getClassMetricsFromFile(PsiJavaFile file, String className) {
         return ApplicationManager.getApplication().runReadAction((Computable<ClassMetrics>) () -> {
             try {
@@ -182,6 +187,12 @@ public class Utils {
         notification.notify(project);
     }
 
+    /**
+     * Checks if two methods are the same
+     * @param m1 method 1
+     * @param m2 method 2
+     * @return true if the methods are the same, false otherwise
+     */
     public static boolean sameMethod(PsiMethod m1, PsiMethod m2){
         try {
             if (m1.getName().equals(m2.getName())) {
@@ -199,6 +210,25 @@ public class Utils {
                             return true;
                         }
                     }
+                }
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if two classes are the same
+     * @param c1 class 1
+     * @param c2 class 2
+     * @return true if the classes are the same, false otherwise
+     */
+    public static boolean sameClass(PsiClass c1, PsiClass c2){
+        try {
+            if (c1.getName().equals(c2.getName())) {
+                if (c1.getQualifiedName().equals(c2.getQualifiedName())) {
+                    return true;
                 }
             }
         } catch (Exception e) {

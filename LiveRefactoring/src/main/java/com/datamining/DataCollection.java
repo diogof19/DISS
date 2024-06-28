@@ -1,10 +1,12 @@
 package com.datamining;
 
 import com.analysis.Candidates;
+import com.analysis.candidates.ExtractClassCandidate;
 import com.analysis.candidates.ExtractMethodCandidate;
 import com.analysis.metrics.ClassMetrics;
 import com.analysis.metrics.FileMetrics;
 import com.analysis.metrics.MethodMetrics;
+import com.analysis.refactorings.ExtractClass;
 import com.analysis.refactorings.ExtractMethod;
 import com.core.Pair;
 import com.core.Refactorings;
@@ -57,7 +59,7 @@ public class DataCollection extends AnAction {
     private static final String CONNECTION_STRING = "mongodb://localhost:27017";
     private static final String DATABASE_NAME = "smartshark_2_2";
     private static final String COLLECTION_NAME = "refactoring";
-    private static final Refactorings REFACTORING_TYPE = Refactorings.ExtractMethod;
+    private static final Refactorings REFACTORING_TYPE = Refactorings.ExtractClass;
     private MongoClient mongoClient;
     private Project project;
 
@@ -115,25 +117,6 @@ public class DataCollection extends AnAction {
 
         Bson combinedFilter = match(nin("vcs_system.url", urlsToExclude));
 
-        /*
-        Last extract method for data only:
-        skip(40000),
-        limit(20000),
-         */
-
-        /*
-        extract method for comparison:
-        66000 - 66500 (150 increments due to heap space)
-        70000 - 70250
-        80000 - 80150
-
-        repos:
-        - httpcomponents-core
-        - mina-sshd.git
-        - jackrabbit.git
-        - https://github.com/apache/maven.git:
-         */
-
         String refactoringType = "";
         if (REFACTORING_TYPE.equals(Refactorings.ExtractMethod)){
             refactoringType = "extract_method";
@@ -142,8 +125,7 @@ public class DataCollection extends AnAction {
         }
         List<Bson> pipeline = asList(
                 match(eq("type", refactoringType)),
-                skip(66000),
-                limit(300),
+                //limit(500),
                 project(fields(include("_id", "commit_id", "type", "description"))),
                 lookup("commit", "commit_id", "_id", "commit"),
                 unwind("$commit"),
@@ -168,6 +150,10 @@ public class DataCollection extends AnAction {
         return collection.aggregate(pipeline).into(new HashSet<>());
     }
 
+    /**
+     * Converts the documents to a map where the key is the repository and the value is a list of documents
+     * @param documents The documents to convert
+     */
     public void documentsToMap(HashSet<Document> documents) {
         repoRefactoringMap.clear();
 
@@ -182,6 +168,9 @@ public class DataCollection extends AnAction {
         }
     }
 
+    /**
+     * Extracts the metrics from the documents
+     */
     private void extractMetrics() {
 //        ThreadPoolExecutor pool = new ThreadPoolExecutor(
 //                MAX_THREADS,
@@ -241,7 +230,7 @@ public class DataCollection extends AnAction {
         }
 
         //delete fileCopies folder
-        String fileCopiesFolder = Values.dataFolder + "fileCopies27/";
+        String fileCopiesFolder = Values.dataFolder + "fileCopies/";
         File file = new File(fileCopiesFolder);
         try {
             FileUtils.deleteDirectory(file);
@@ -252,6 +241,11 @@ public class DataCollection extends AnAction {
         Database.countMetrics();
     }
 
+    /**
+     * Extracts the metrics from the documents
+     * @param documents The documents to extract the metrics from
+     * @param repo The repository the documents are from
+     */
     private void extractMetrics(ArrayList<Document> documents, String repo) throws IOException {
         repoLocks.get(repo).lock();
         System.out.println("(" + Thread.currentThread().getId() + ") Extracting metrics for " + repo);
@@ -299,14 +293,9 @@ public class DataCollection extends AnAction {
                     equalMetrics++;
                 }
 
-//                Integer id = saveMethodMetricsSafe(beforeMetrics, afterMetrics);
-//
-//                if(id != null)
-//                    runPluginAndSaveResult(false, refactoringInfo.getBeforeFile(), beforeMetrics.method, refactoringInfo.getMethodName(), refactoringInfo.getClassName(), id, beforeMetrics.equals(afterMetrics));
+                Integer id = saveMethodMetricsSafe(beforeMetrics, afterMetrics);
 
-                runPluginAndSaveResult(true, refactoringInfo.getBeforeFile(), beforeMetrics.method, refactoringInfo.getMethodName(), refactoringInfo.getClassName(), null, beforeMetrics.equals(afterMetrics));
-
-
+                //runPluginAndSaveResult(false, refactoringInfo.getBeforeFile(), beforeMetrics.method, refactoringInfo.getMethodName(), refactoringInfo.getClassName(), id, beforeMetrics.equals(afterMetrics));
 
             } else if (REFACTORING_TYPE.equals(Refactorings.ExtractClass)){
                 ClassMetrics beforeMetrics = getClassMetricsFromFile(refactoringInfo.getBeforeFile(), refactoringInfo.getClassName());
@@ -327,7 +316,9 @@ public class DataCollection extends AnAction {
                     equalMetrics++;
                 }
 
-                saveClassMetricsSafe(beforeMetrics, afterMetrics);
+                Integer id = saveClassMetricsSafe(beforeMetrics, afterMetrics);
+
+                //runPluginAndSaveResult(refactoringInfo.getBeforeFile(), beforeMetrics.targetClass, id, refactoringInfo.getClassName());
             }
         }
 
@@ -345,6 +336,12 @@ public class DataCollection extends AnAction {
         repoLocks.get(repo).unlock();
     }
 
+    /**
+     * Gets the refactoring info from the document
+     * @param document The document to get the info from
+     * @return The refactoring info
+     * @throws IOException If there is an error getting the refactoring info
+     */
     private RefactoringInfo getRefactoringInfo(Document document) throws IOException {
         RefactoringInfo info = new RefactoringInfo();
 
@@ -389,6 +386,14 @@ public class DataCollection extends AnAction {
         return info;
     }
 
+    /**
+     * Finds the file path of the refactored file
+     * @param git The git object
+     * @param repoName The name of the repository
+     * @param info The refactoring info
+     * @param document The document
+     * @return The file path
+     */
     private String findFilePath(Git git, String repoName, RefactoringInfo info, Document document) {
         for (String filePath : document.getList("files", String.class)) {
             if (filePath.contains(info.getFullClass().replace(".", "/") + ".java")) {
@@ -427,6 +432,14 @@ public class DataCollection extends AnAction {
         return null;
     }
 
+    /**
+     * Gets the file from the specific commit
+     * @param git The git object
+     * @param filePath The file path
+     * @param repoName The name of the repository
+     * @param commitHash The commit hash
+     * @return The file
+     */
     private PsiJavaFile getFileFromCommit(Git git, String filePath, String repoName, String commitHash) {
         try {
             git.checkout().setName(commitHash).call();
@@ -438,6 +451,12 @@ public class DataCollection extends AnAction {
         return loadFile(filePath, repoName, this.project);
     }
 
+    /**
+     * Saves the method metrics to the database
+     * @param beforeMetrics The metrics before the refactoring
+     * @param afterMetrics The metrics after the refactoring
+     * @return The id of the saved metrics
+     */
     private Integer saveMethodMetricsSafe(MethodMetrics beforeMetrics, MethodMetrics afterMetrics) {
         lock.lock();
 
@@ -448,14 +467,26 @@ public class DataCollection extends AnAction {
         return id;
     }
 
-    private void saveClassMetricsSafe(ClassMetrics beforeMetrics, ClassMetrics afterMetrics) {
+    /**
+     * Saves the class metrics to the database
+     * @param beforeMetrics The metrics before the refactoring
+     * @param afterMetrics The metrics after the refactoring
+     * @return The id of the saved metrics
+     */
+    private Integer saveClassMetricsSafe(ClassMetrics beforeMetrics, ClassMetrics afterMetrics) {
         lock.lock();
 
-        Database.saveClassMetrics(null, beforeMetrics, afterMetrics);
+        Integer id = Database.saveClassMetrics(null, beforeMetrics, afterMetrics);
 
         lock.unlock();
+
+        return id;
     }
 
+    /**
+     * Logs progress to a file
+     * @param message The message to log
+     */
     private void logProgress(String message){
         logLock.lock();
         String path = "C:\\Users\\dluis\\Documents\\log.txt";
@@ -467,9 +498,109 @@ public class DataCollection extends AnAction {
         logLock.unlock();
     }
 
-    //TODO: CHANGE getExtractableFragments FUNCTION IN ExtractMethod.java TO SARA'S
+
+    /* MOCK PLUGIN */
+
+        /* COMMON */
+
+    /**
+     * Initialises the values needed to run the plugin
+     * @param file The file to run the plugin on
+     * @param refactoring The type of refactoring to run
+     */
+    private void initialiseScriptValues(PsiJavaFile file, Refactorings refactoring) {
+        SelectedRefactorings.selectedRefactoring = refactoring;
+        SelectedRefactorings.selectedRefactorings = new ArrayList<>();
+        SelectedRefactorings.selectedRefactorings.add(refactoring);
+        Values.editor = FileEditorManager.getInstance(this.project).openTextEditor(new OpenFileDescriptor(this.project, file.getVirtualFile()), true);
+        Values.isActive = true;
+    }
+
+    /**
+     * Gets the candidates for the refactoring
+     * @param isMethod If true, the refactoring is Extract Method, otherwise it is Extract Class
+     * @param object The candidate object (ExtractMethodCandidate or ExtractClassCandidate)
+     * @return The candidates
+     */
+    private ArrayList<Severity> getCandidates(boolean isMethod, Object object) {
+        Candidates candidatesClass = new Candidates();
+        Values.candidates = candidatesClass.getSeverities();
+
+        if(Values.candidates.isEmpty()){
+            return null;
+        }
+
+        ArrayList<Severity> candidates = new ArrayList<>();
+        for (Severity severity : Values.candidates){
+            if(isMethod) {
+                PsiMethod method = (PsiMethod) object;
+                ExtractMethodCandidate candidate = (ExtractMethodCandidate) severity.candidate;
+                if (sameMethod(method, candidate.method)) {
+                    candidates.add(severity);
+                }
+            } else {
+                PsiClass _class = (PsiClass) object;
+                ExtractClassCandidate candidate = (ExtractClassCandidate) severity.candidate;
+                if (sameClass(_class, candidate.targetClass)) {
+                    candidates.add(severity);
+                }
+            }
+        }
+
+        if(candidates.isEmpty()){
+            return null;
+        }
+
+        candidates.sort(Comparator.comparingDouble(o -> o.severity));
+        return candidates;
+    }
+
+    /**
+     * Runs a task with a timeout
+     * @param task The task to run
+     * @param timeout The timeout in seconds
+     * @return If the task timed out
+     */
+    private boolean runWithTimeout(Callable<Void> task, int timeout) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<Void> future = executor.submit(task);
+        boolean timeoutReached = false;
+
+        try {
+            future.get(timeout, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            future.cancel(true); // Interrupt the task
+            timeoutReached = true;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(timeout, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                executor.shutdown();
+            }
+        }
+
+        return timeoutReached;
+    }
+
+        /* EXTRACT METHOD */
+
+    /**
+     * Runs the plugin for Extract Method to test and (possibly) saves the resulting metrics
+     * @param mock If true, the plugin will not perform the refactoring
+     * @param file The file to run the plugin on
+     * @param method The method to run the plugin on
+     * @param methodName The name of the method
+     * @param className The name of the class
+     * @param id The id of the method metrics on the database to be able to link it to the new metrics
+     * @param same
+     */
     private void runPluginAndSaveResult(boolean mock, PsiJavaFile file, PsiMethod method, String methodName, String className, Integer id, boolean same) {
-        initialiseScriptValues(file);
+        initialiseScriptValues(file, Refactorings.ExtractMethod);
 
         boolean timeout = initialiseCandidates(file, method);
         if (timeout) {
@@ -477,7 +608,7 @@ public class DataCollection extends AnAction {
             return;
         }
 
-        ArrayList<Severity> candidates = getCandidates(method);
+        ArrayList<Severity> candidates = getCandidates(true, method);
         if (candidates == null) {
             if (!mock)
                 Database.saveAfterLiveRefMetrics(null, id, same);
@@ -503,26 +634,12 @@ public class DataCollection extends AnAction {
         }
     }
 
-    private JDialog getExtractMethodDialogOpen(String title) {
-        for(Window window: Window.getWindows()){
-            if(window instanceof JDialog){
-                JDialog dialog = (JDialog) window;
-                if(dialog.getTitle().equals(title)){
-                    return dialog;
-                }
-            }
-        }
-        return null;
-    }
-
-    private void initialiseScriptValues(PsiJavaFile file) {
-        SelectedRefactorings.selectedRefactoring = Refactorings.ExtractMethod;
-        SelectedRefactorings.selectedRefactorings = new ArrayList<>();
-        SelectedRefactorings.selectedRefactorings.add(Refactorings.ExtractMethod);
-        Values.editor = FileEditorManager.getInstance(this.project).openTextEditor(new OpenFileDescriptor(this.project, file.getVirtualFile()), true);
-        Values.isActive = true;
-    }
-
+    /**
+     * Runs the plugin to get the candidates for Extract Method
+     * @param file The file to run the plugin on
+     * @param method The method to run the plugin on
+     * @return If the plugin timed out
+     */
     private boolean initialiseCandidates(PsiJavaFile file, PsiMethod method) {
         return ApplicationManager.getApplication().runReadAction((Computable<Boolean>) () -> {
             try {
@@ -544,52 +661,16 @@ public class DataCollection extends AnAction {
         });
     }
 
-    private ArrayList<Severity> getCandidates(PsiMethod method) {
-        Candidates candidatesClass = new Candidates();
-        Values.candidates = candidatesClass.getSeverities();
-
-        if(Values.candidates.isEmpty()){
-            return null;
-        }
-
-        ArrayList<Severity> candidates = new ArrayList<>();
-        for (Severity severity : Values.candidates){
-            ExtractMethodCandidate candidate = (ExtractMethodCandidate) severity.candidate;
-            if (sameMethod(method, candidate.method)){
-                candidates.add(severity);
-            }
-        }
-
-        if(candidates.isEmpty()){
-            return null;
-        }
-
-        candidates.sort(Comparator.comparingDouble(o -> o.severity));
-        return candidates;
-    }
-
-    private void simulateDialog(ExtractMethodCandidate extractMethodCandidate) {
-        Thread clickButtonThread = new Thread(() -> {
-            int count = 0;
-            JDialog dialog;
-            while ((dialog = getExtractMethodDialogOpen("Extract Method applied to " + extractMethodCandidate.method.getName())) == null && count < 20){
-                try {
-                    Thread.sleep(600);
-                    count++;
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            if(dialog != null) {
-                clickRefactorButton(dialog);
-            } else {
-                System.out.println("Dialog not found");
-            }
-        });
-        clickButtonThread.start();
-    }
-
+    /**
+     * Performs the actual Extract Method refactoring and saves the resulting metrics
+     * @param extractMethodCandidate The candidate to perform the refactoring
+     * @param severity The severity of the candidate
+     * @param file The file to perform the refactoring on
+     * @param methodName The name of the method
+     * @param className The name of the class
+     * @param id The id of the method metrics on the database to be able to link it to the new metrics
+     * @param same
+     */
     private void extractAndSave(ExtractMethodCandidate extractMethodCandidate, Severity severity, PsiJavaFile file, String methodName, String className, int id, boolean same) {
         simulateDialog(extractMethodCandidate);
 
@@ -608,6 +689,38 @@ public class DataCollection extends AnAction {
         System.out.println("Saved after life ref metrics (" + liveRefMetricsCount + ")");
     }
 
+    /**
+     * Simulates the use of the dialog to perform the refactoring
+     * @param candidate The candidate to perform the refactoring
+     */
+    private void simulateDialog(ExtractMethodCandidate candidate) {
+        Thread clickButtonThread = new Thread(() -> {
+            int count = 0;
+            JDialog dialog;
+
+            String title = "Extract Method applied to " + candidate.method.getName();
+            while ((dialog = getDialogOpen(title)) == null && count < 20){
+                try {
+                    Thread.sleep(600);
+                    count++;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if(dialog != null) {
+                clickRefactorButton(dialog);
+            } else {
+                System.out.println("Dialog not found");
+            }
+        });
+        clickButtonThread.start();
+    }
+
+    /**
+     * Clicks the refactor button on the dialog
+     * @param dialog The dialog to click the button on
+     */
     private void clickRefactorButton(JDialog dialog) {
         Component[] components = dialog.getComponents();
         for(Component component : components){
@@ -624,29 +737,77 @@ public class DataCollection extends AnAction {
         }
     }
 
-    private boolean runWithTimeout(Callable<Void> task, int timeout) {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<Void> future = executor.submit(task);
-        boolean timeoutReached = false;
-
-        try {
-            future.get(timeout, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
-            future.cancel(true); // Interrupt the task
-            timeoutReached = true;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            executor.shutdown();
-            try {
-                if (!executor.awaitTermination(timeout, TimeUnit.SECONDS)) {
-                    executor.shutdownNow();
+    /**
+     * Finds an open Dialog
+     * @param title The title of the dialog
+     * @return The dialog
+     */
+    private JDialog getDialogOpen(String title) {
+        for(Window window: Window.getWindows()){
+            if(window instanceof JDialog){
+                JDialog dialog = (JDialog) window;
+                if(dialog.getTitle().equals(title)){
+                    return dialog;
                 }
-            } catch (InterruptedException e) {
-                executor.shutdown();
             }
         }
+        return null;
+    }
 
-        return timeoutReached;
+        /* EXTRACT CLASS */
+
+    /**
+     * Runs the plugin for Extract Class to test and saves if it would perform the refactoring or not
+     * @param file The file to run the plugin on
+     * @param _class The class to run the plugin on
+     * @param id The id of the class metrics on the database to be able to link it to the new metrics
+     * @param className The name of the class
+     */
+    private void runPluginAndSaveResult(PsiJavaFile file, PsiClass _class, Integer id, String className) {
+        initialiseScriptValues(file, Refactorings.ExtractClass);
+
+        boolean timeout = initialiseCandidates(file, _class);
+        if (timeout) {
+            System.out.println("Timeout on initialise candidates");
+            return;
+        }
+
+        ArrayList<Severity> candidates = getCandidates(false, _class);
+        if (candidates == null) {
+            Database.saveClassMetricsLiveRefSaraYesNo(false);
+            return;
+        }
+
+        //Not performing the refactoring, but saving the fact that the plugin would do it
+        Database.saveClassMetricsLiveRefSaraYesNo(true);
+        liveRefMetricsCount++;
+        System.out.println("Saved after life ref metrics (" + liveRefMetricsCount + ")");
+    }
+
+    /**
+     * Runs the plugin to get the candidates for Extract Method
+     * @param file The file to run the plugin on
+     * @param _class The class to run the plugin on
+     * @return If the plugin timed out
+     */
+    private boolean initialiseCandidates(PsiJavaFile file, PsiClass _class) {
+        return ApplicationManager.getApplication().runReadAction((Computable<Boolean>) () -> {
+            try {
+                Values.before = new FileMetrics(file);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            Values.currentFile = Values.before;
+            Values.tempClass = _class;
+
+            ExtractClass extractClass = new ExtractClass(file, Values.editor);
+
+            Callable<Void> task = () -> {
+                ApplicationManager.getApplication().runReadAction(extractClass::run);
+                return null;
+            };
+
+            return runWithTimeout(task, 30);
+        });
     }
 }

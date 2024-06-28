@@ -258,6 +258,13 @@ public class ConfigureTool extends AnAction {
         }
     }
 
+    /**
+     * Apply the selected authors
+     * @param wrapper dialog wrapper
+     * @throws IOException if an I/O error occurs
+     * @throws ClassNotFoundException if the class of a serialized object cannot be found
+     * @throws InterruptedException if a thread is interrupted
+     */
     private void applySelectedAuthors(ConfigureTool.MyDialogWrapper wrapper) throws IOException, ClassNotFoundException, InterruptedException {
         for (Map.Entry<String, Pair<Box, JButton>> entry : wrapper.profileBoxes.entrySet()) {
             String profileName = entry.getKey();
@@ -286,6 +293,12 @@ public class ConfigureTool extends AnAction {
         }
     }
 
+    /**
+     * Create a new profile
+     * @param authorsBox authors box
+     * @param name profile name
+     * @param project project
+     */
     private void createProfile(Box authorsBox, String name, Project project) {
         ModelInfo modelInfo = new ModelInfo(name,
                 Values.dataFolder + "models/" + name + "EM.joblib",
@@ -304,6 +317,11 @@ public class ConfigureTool extends AnAction {
                 NotificationType.INFORMATION);
     }
 
+    /**
+     * Get the checked authors from the authors box
+     * @param authorsBox authors box
+     * @return set of checked authors
+     */
     private Set<AuthorInfo> getCheckedAuthors(Box authorsBox) {
         Set<AuthorInfo> checkedAuthors = new HashSet<>();
 
@@ -977,6 +995,10 @@ public class ConfigureTool extends AnAction {
             return tabbedPane.getComponent();
         }
 
+        /**
+         * Creates the ML Refactorings Tab
+         * @return the tab
+         */
         private TabInfo createAdvancedExtractMethodTab() {
             JPanel tabPanel = new JPanel();
             tabPanel.setLayout(new BorderLayout());
@@ -992,7 +1014,7 @@ public class ConfigureTool extends AnAction {
              */
 
             TabInfo tabInfo = new TabInfo(tabPanel);
-            tabInfo.setText("Advanced Refactorings");
+            tabInfo.setText("ML Refactorings");
 
             return tabInfo;
         }
@@ -1214,6 +1236,11 @@ public class ConfigureTool extends AnAction {
             return checkBoxes;
         }
 
+        /**
+         * Creates the 'Delete Profile' button for the author bias panel.
+         * @param modelName The name of the model to delete
+         * @return The 'Delete Profile' button
+         */
         private JButton getDeleteProfileButton(String modelName) {
             JButton deleteProfile = new JButton("Delete Profile");
             deleteProfile.addActionListener(e -> {

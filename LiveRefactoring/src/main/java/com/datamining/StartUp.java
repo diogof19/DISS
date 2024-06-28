@@ -18,7 +18,6 @@ public class StartUp implements StartupActivity {
                 "Starting up the plugin. This may take a few seconds.",
                 NotificationType.INFORMATION
         );
-        System.out.println("System path: " + PathManager.getSystemPath());
         Thread thread = new Thread(new StartUpRunnable());
         thread.start();
     }
@@ -40,7 +39,6 @@ public class StartUp implements StartupActivity {
         if (!folder.exists()) {
             folder.mkdirs();
         }
-        System.out.println("DATA FOLDER: " + folder.getAbsolutePath());
         Values.dataFolder = folder.getAbsolutePath() + "/";
 
         extractFileIfNotExists(folder.getAbsolutePath(),"/metrics.db");

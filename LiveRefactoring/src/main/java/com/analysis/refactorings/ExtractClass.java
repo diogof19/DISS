@@ -81,9 +81,7 @@ public class ExtractClass{
         Application application = ApplicationManager.getApplication();
 
         if (application.isDispatchThread()) {
-
             application.runWriteAction(runnable);
-
         } else {
             application.invokeLater(() -> application.runWriteAction(runnable));
         }
@@ -106,7 +104,6 @@ public class ExtractClass{
                 }
             }
 
-            //if(classMetrics.numMethods >= ThresholdsCandidates.numMethodsEC && (classMetrics.lackOfCohesion < lcom || foreign)){
             if (PredictionModel.predictEC(classMetrics, editor.getProject())) {
                 List<List<PsiMethod>> methodCombinations = utilitiesOverall.generateCombinations(methods);
                 ArrayList<ArrayList<String>> methodsToBeExtractedNames = new ArrayList<>();
