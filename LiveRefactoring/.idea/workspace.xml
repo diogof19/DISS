@@ -10,26 +10,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7e95f9c-08bc-4f13-b6e9-2c042c25a44f" name="Changes" comment="Saving extracted metrics from before and after refactoring">
-      <change beforePath="$PROJECT_DIR$/../Classification Model/Comparison data/EM - elliptic envelope.db" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/Comparison data/EM - elliptic envelope.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Classification Model/Comparison data/EM - one_class_SVM.db" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/Comparison data/EM - one_class_SVM.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Classification Model/Data Analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/Data Analysis.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Classification Model/Model Prep.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/Model Prep.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Classification Model/data/metrics.db" beforeDir="false" afterPath="$PROJECT_DIR$/../Classification Model/data/metrics.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../LiveRefactoring-2022/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../LiveRefactoring-2022/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractClass.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractClass.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractMethod.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/analysis/refactorings/ExtractMethod.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/DataCollection.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Database.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/PredictionModel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/RepositoryMetricsExtraction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/StartUp.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/StartUp.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/TODO.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/TempDataCollection.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/ToolRun.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/datamining/Utils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ui/ConfigureTool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ui/ConfigureTool.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/utils/importantValues/Values.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/utils/importantValues/Values.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -683,6 +665,7 @@
       <workItem from="1719212588400" duration="4542000" />
       <workItem from="1719486166457" duration="2926000" />
       <workItem from="1719593768204" duration="2036000" />
+      <workItem from="1719932181113" duration="26000" />
     </task>
     <task id="LOCAL-00095" summary="Correcting bug metrics firebase">
       <created>1667732551197</created>

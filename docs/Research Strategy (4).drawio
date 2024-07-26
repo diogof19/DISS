@@ -1,0 +1,178 @@
+<mxfile host="app.diagrams.net" modified="2024-07-01T15:30:14.966Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 OPR/109.0.0.0 (Edition std-1)" etag="4sV8hEF4ZnlMtModWcVj" version="24.6.4" type="device">
+  <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
+    <mxGraphModel dx="1438" dy="778" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
+        <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-44" value="&lt;div&gt;Total relevant publications&lt;/div&gt;&lt;div&gt;n = 26&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="560" y="820" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-50" value="SQ1" style="swimlane;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="40" y="70" width="580" height="670" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-51" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="DS_RFPNbNPmUgXQbwRz7-50" source="DS_RFPNbNPmUgXQbwRz7-52" target="DS_RFPNbNPmUgXQbwRz7-58" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-52" value="Publications identified in Scopus&lt;div&gt;n = 97&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-50" vertex="1">
+          <mxGeometry x="20" y="50" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="DS_RFPNbNPmUgXQbwRz7-50" source="DS_RFPNbNPmUgXQbwRz7-54" target="DS_RFPNbNPmUgXQbwRz7-60" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-54" value="Publications identified in Web of Science&lt;div&gt;n = 73&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-50" vertex="1">
+          <mxGeometry x="160" y="50" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-55" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="DS_RFPNbNPmUgXQbwRz7-50" source="DS_RFPNbNPmUgXQbwRz7-56" target="DS_RFPNbNPmUgXQbwRz7-62" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-56" value="Publications identified in ACM&lt;div&gt;n = 32&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-50" vertex="1">
+          <mxGeometry x="300" y="50" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-57" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="DS_RFPNbNPmUgXQbwRz7-50" source="DS_RFPNbNPmUgXQbwRz7-58" target="DS_RFPNbNPmUgXQbwRz7-64" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-58" value="Relevant publications&lt;div&gt;n = 16&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-50" vertex="1">
+          <mxGeometry x="20" y="150" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-59" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="DS_RFPNbNPmUgXQbwRz7-50" source="DS_RFPNbNPmUgXQbwRz7-60" target="DS_RFPNbNPmUgXQbwRz7-64" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-60" value="Relevant publications&lt;div&gt;n = 12&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-50" vertex="1">
+          <mxGeometry x="160" y="150" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-61" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="DS_RFPNbNPmUgXQbwRz7-50" source="DS_RFPNbNPmUgXQbwRz7-62" target="DS_RFPNbNPmUgXQbwRz7-64" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-62" value="Relevant publications&lt;div&gt;n = 8&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-50" vertex="1">
+          <mxGeometry x="300" y="150" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-63" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="DS_RFPNbNPmUgXQbwRz7-50" source="DS_RFPNbNPmUgXQbwRz7-64" target="DS_RFPNbNPmUgXQbwRz7-66" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-64" value="&lt;div&gt;Total publications removing duplicates&lt;/div&gt;&lt;div&gt;n = 11&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-50" vertex="1">
+          <mxGeometry x="230" y="250" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-65" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="DS_RFPNbNPmUgXQbwRz7-50" source="DS_RFPNbNPmUgXQbwRz7-66" target="DS_RFPNbNPmUgXQbwRz7-67" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-66" value="&lt;div&gt;Snowballed Publications&lt;/div&gt;&lt;div&gt;n += 2&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-50" vertex="1">
+          <mxGeometry x="230" y="350" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-67" value="&lt;div&gt;Total relevant publications for SQ1&lt;/div&gt;&lt;div&gt;n = 13&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-50" vertex="1">
+          <mxGeometry x="230" y="450" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DhLbjAZ-KfU3s2Z8sAMo-0" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="DS_RFPNbNPmUgXQbwRz7-50" source="DhLbjAZ-KfU3s2Z8sAMo-1" target="DhLbjAZ-KfU3s2Z8sAMo-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DhLbjAZ-KfU3s2Z8sAMo-1" value="Publications identified in IEEE Xplorer&lt;div&gt;n = 81&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" vertex="1" parent="DS_RFPNbNPmUgXQbwRz7-50">
+          <mxGeometry x="440" y="50" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DhLbjAZ-KfU3s2Z8sAMo-3" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="DS_RFPNbNPmUgXQbwRz7-50" source="DhLbjAZ-KfU3s2Z8sAMo-2" target="DS_RFPNbNPmUgXQbwRz7-64">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DhLbjAZ-KfU3s2Z8sAMo-2" value="Relevant publications&lt;div&gt;n = 8&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" vertex="1" parent="DS_RFPNbNPmUgXQbwRz7-50">
+          <mxGeometry x="440" y="150" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-68" value="SQ2" style="swimlane;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="640" y="70" width="580" height="670" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-43" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="DS_RFPNbNPmUgXQbwRz7-68" source="DS_RFPNbNPmUgXQbwRz7-19" target="DS_RFPNbNPmUgXQbwRz7-35" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-19" value="Publications identified in Scopus&lt;div&gt;n = 369&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-68" vertex="1">
+          <mxGeometry x="20" y="50" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-42" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="DS_RFPNbNPmUgXQbwRz7-68" source="DS_RFPNbNPmUgXQbwRz7-21" target="DS_RFPNbNPmUgXQbwRz7-36" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-21" value="Publications identified in Web of Science&lt;div&gt;n = 280&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-68" vertex="1">
+          <mxGeometry x="160" y="50" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-41" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="DS_RFPNbNPmUgXQbwRz7-68" source="DS_RFPNbNPmUgXQbwRz7-23" target="DS_RFPNbNPmUgXQbwRz7-37" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-23" value="Publications identified in ACM&lt;div&gt;n = 1047&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-68" vertex="1">
+          <mxGeometry x="300" y="50" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-24" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="DS_RFPNbNPmUgXQbwRz7-68" source="DS_RFPNbNPmUgXQbwRz7-25" target="DS_RFPNbNPmUgXQbwRz7-31" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-25" value="Relevant publications&lt;div&gt;n = 5&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-68" vertex="1">
+          <mxGeometry x="20" y="250" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-26" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="DS_RFPNbNPmUgXQbwRz7-68" source="DS_RFPNbNPmUgXQbwRz7-27" target="DS_RFPNbNPmUgXQbwRz7-31" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-27" value="Relevant publications&lt;div&gt;n = 9&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-68" vertex="1">
+          <mxGeometry x="160" y="250" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-28" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="DS_RFPNbNPmUgXQbwRz7-68" source="DS_RFPNbNPmUgXQbwRz7-29" target="DS_RFPNbNPmUgXQbwRz7-31" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-29" value="Relevant publications&lt;div&gt;n = 6&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-68" vertex="1">
+          <mxGeometry x="300" y="250" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DhLbjAZ-KfU3s2Z8sAMo-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="DS_RFPNbNPmUgXQbwRz7-68" source="DS_RFPNbNPmUgXQbwRz7-31" target="DS_RFPNbNPmUgXQbwRz7-34">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-31" value="&lt;div&gt;Total publications removing duplicates&lt;/div&gt;&lt;div&gt;n = 10&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-68" vertex="1">
+          <mxGeometry x="230" y="350" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DhLbjAZ-KfU3s2Z8sAMo-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="DS_RFPNbNPmUgXQbwRz7-68" source="DS_RFPNbNPmUgXQbwRz7-34" target="DhLbjAZ-KfU3s2Z8sAMo-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-34" value="&lt;div&gt;Snowballed publications&lt;/div&gt;&lt;div&gt;n += 3&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-68" vertex="1">
+          <mxGeometry x="230" y="451" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-38" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="DS_RFPNbNPmUgXQbwRz7-68" source="DS_RFPNbNPmUgXQbwRz7-35" target="DS_RFPNbNPmUgXQbwRz7-25" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-35" value="Relevant publications&lt;div&gt;n = 20&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-68" vertex="1">
+          <mxGeometry x="20" y="150" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-39" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="DS_RFPNbNPmUgXQbwRz7-68" source="DS_RFPNbNPmUgXQbwRz7-36" target="DS_RFPNbNPmUgXQbwRz7-27" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-36" value="Relevant publications&lt;div&gt;n = 20&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-68" vertex="1">
+          <mxGeometry x="160" y="150" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-40" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="DS_RFPNbNPmUgXQbwRz7-68" source="DS_RFPNbNPmUgXQbwRz7-37" target="DS_RFPNbNPmUgXQbwRz7-29" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-37" value="Relevant publications&lt;div&gt;n = 20&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="DS_RFPNbNPmUgXQbwRz7-68" vertex="1">
+          <mxGeometry x="300" y="150" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DhLbjAZ-KfU3s2Z8sAMo-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="DS_RFPNbNPmUgXQbwRz7-68" source="DhLbjAZ-KfU3s2Z8sAMo-5" target="DhLbjAZ-KfU3s2Z8sAMo-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DhLbjAZ-KfU3s2Z8sAMo-5" value="Publications identified in IEEE Xplorer&lt;div&gt;n = 352&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" vertex="1" parent="DS_RFPNbNPmUgXQbwRz7-68">
+          <mxGeometry x="440" y="50" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DhLbjAZ-KfU3s2Z8sAMo-9" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="DS_RFPNbNPmUgXQbwRz7-68" source="DhLbjAZ-KfU3s2Z8sAMo-6" target="DS_RFPNbNPmUgXQbwRz7-31">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DhLbjAZ-KfU3s2Z8sAMo-6" value="Relevant publications&lt;div&gt;n = 7&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" vertex="1" parent="DS_RFPNbNPmUgXQbwRz7-68">
+          <mxGeometry x="440" y="250" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DhLbjAZ-KfU3s2Z8sAMo-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="DS_RFPNbNPmUgXQbwRz7-68" source="DhLbjAZ-KfU3s2Z8sAMo-8" target="DhLbjAZ-KfU3s2Z8sAMo-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DhLbjAZ-KfU3s2Z8sAMo-8" value="Relevant publications&lt;div&gt;n = 20&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" vertex="1" parent="DS_RFPNbNPmUgXQbwRz7-68">
+          <mxGeometry x="440" y="150" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DhLbjAZ-KfU3s2Z8sAMo-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="DS_RFPNbNPmUgXQbwRz7-68" source="DS_RFPNbNPmUgXQbwRz7-31" target="DS_RFPNbNPmUgXQbwRz7-31">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DhLbjAZ-KfU3s2Z8sAMo-13" value="&lt;div&gt;Total relevant publications for SQ2&lt;/div&gt;&lt;div&gt;n = 13&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" vertex="1" parent="DS_RFPNbNPmUgXQbwRz7-68">
+          <mxGeometry x="230" y="550" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-86" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="DhLbjAZ-KfU3s2Z8sAMo-13" target="DS_RFPNbNPmUgXQbwRz7-44" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DS_RFPNbNPmUgXQbwRz7-87" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="DS_RFPNbNPmUgXQbwRz7-67" target="DS_RFPNbNPmUgXQbwRz7-44" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
